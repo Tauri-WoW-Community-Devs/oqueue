@@ -1,0 +1,24 @@
+
+
+
+4.  check whether a person can enter a bg when they get the pop up.  box should stay up until 
+the person can click it
+    - in combat
+    - falling
+
+5.  invite person fails, slot needs to be removed
+
+16. note on bnfriends should not change if already set to something other then an OQ msg
+
+17. OQgeneral should not be channel-id 1
+
+21.  remove an offline member not working (requires hardware event from group leader)
+
+28.  disband should also remove people from bg queue (requires hardware event by the user)
+
+conflict:
+1.  addon: elv-ui  auto-accept party invites must be turned off (auto-removes from group)
+
+-- Unifar's list
+2.  missed invite or invite sent by not received
+

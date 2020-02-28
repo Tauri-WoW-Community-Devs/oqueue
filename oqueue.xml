@@ -1,0 +1,456 @@
+<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">
+
+<Frame name="OQMainFrame"
+       toplevel="true"
+       frameStrata="BACKGROUND"
+       enableMouse="true"
+       movable="true"
+       resizable="true" 
+       hidden="false"
+       parent="UIParent">
+       <Size> 
+           <AbsDimension x="835" y="475"/>
+       </Size>
+       <ResizeBounds>
+         <minResize x="835" y="475"/>
+         <maxResize x="835" y="1000"/>
+       </ResizeBounds>
+
+       <Anchors>
+           <Anchor point="CENTER">
+               <Offset><AbsDimension x="-200" y="200"/></Offset>
+           </Anchor>
+       </Anchors>
+       
+       <Backdrop bgFile="Interface\FrameGeneral\UI-Background-Marble" 
+                 edgeFile="Interface\DialogFrame\UI-DialogBox-Border" 
+                 horizTile="true" vertTile="true">
+         <EdgeSize>
+           <AbsValue val="16"/>
+         </EdgeSize>
+         <BackgroundInsets>
+           <AbsInset left="2" right="3" top="3" bottom="2"/>
+         </BackgroundInsets>
+       </Backdrop>       
+       
+       <Layers>
+           <Layer level="ARTWORK">
+               <Texture name="OQFrameHeader" file="Interface\DialogFrame\UI-DialogBox-Header">
+                   <Size>
+                       <AbsDimension x="500" y="64"/>
+                   </Size>
+                   <Anchors>
+                       <Anchor point="TOP">
+                           <Offset>
+                               <AbsDimension x="0" y="12"/>
+                           </Offset>
+                       </Anchor>
+                   </Anchors>
+               </Texture>
+               <FontString name="OQFrameHeaderLogo" inherits="GameFontNormal" text="oQueue vx.xx - Premade finder">
+                   <Anchors>
+                       <Anchor point="TOP" relativeTo="OQFrameHeader">
+                           <Offset>
+                               <AbsDimension x="0" y="-14"/>
+                           </Offset>
+                       </Anchor>
+                   </Anchors>
+               </FontString>
+           </Layer>
+       </Layers>
+       <Frames>
+			<Button name="$parentResizeCorner">
+				<Size x="16" y="16"/>
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT">
+						<Offset x="-3" y="3"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnMouseDown>
+						OQ_ResizeMouse_down( self ) ;
+					</OnMouseDown>
+					<OnLoad>
+						self:GetNormalTexture():SetVertexColor(0.6, 0.6, 0.6)
+					</OnLoad>
+					<OnMouseUp>
+						OQ_ResizeMouse_up( self ) ;
+					</OnMouseUp>
+					<OnHide>
+						self:GetParent():StopMovingOrSizing()
+					</OnHide>
+				</Scripts>
+				<NormalTexture file="Interface\AddOns\oqueue\art\resize"/>
+			</Button>
+			
+           <Frame name="OQTabPage1" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+           <Frame name="OQTabPage2" hidden="false">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>
+
+           <Frame name="OQTabPage3" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+           <Frame name="OQTabPage4" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+           <Frame name="OQTabPage5" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+           <Frame name="OQTabPage6" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+           <Frame name="OQTabPage7" hidden="true">
+               <Anchors>
+                   <Anchor point="TOPLEFT"/>
+                   <Anchor point="BOTTOMRIGHT"/>
+               </Anchors>
+               <Layers>
+                   <Layer level="ARTWORK">
+                       <FontString inherits="GameFontNormal" text="">
+                           <Anchors>
+                               <Anchor point="TOPLEFT" relativeTo="$parent">
+                                   <Offset>
+                                       <AbsDimension x="20" y="-30"/>
+                                   </Offset>
+                               </Anchor>
+                           </Anchors>
+                       </FontString>
+                   </Layer>
+               </Layers>
+               <Frames>
+               </Frames> 
+           </Frame>   
+
+           <Button name="$parentTab1" inherits="CharacterFrameTabButtonTemplate" id="1" text= "Premade" >
+               <Anchors>
+                   <Anchor point="CENTER" relativePoint="BOTTOMLEFT">
+                       <Offset>
+                           <AbsDimension x="60" y="-12"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 1);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Show();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+           <Button name="$parentTab2" inherits="CharacterFrameTabButtonTemplate" id="2" text= "Find Premade" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 2);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Show();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+           <Button name="$parentTab3" inherits="CharacterFrameTabButtonTemplate" id="3" text= "Create Premade" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab2" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 3);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Show();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+
+           <Button name="$parentTab4" inherits="CharacterFrameTabButtonTemplate" id="4" text= "The Score" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab3" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 4);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Show();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+
+           <Button name="$parentTab5" inherits="CharacterFrameTabButtonTemplate" id="5" text= "Setup" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab4" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 5);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Show();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+           <Button name="$parentTab6" inherits="CharacterFrameTabButtonTemplate" id="6" text= "Ban List" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab5" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 6);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Show();
+                       OQTabPage7:Hide();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+           <Button name="$parentTab7" inherits="CharacterFrameTabButtonTemplate" id="7" text= "Wait List (999)" >
+               <Anchors>
+                   <Anchor point="LEFT" relativeTo="$parentTab6" relativePoint="RIGHT">
+                       <Offset>
+                           <AbsDimension x="-16" y="0"/>
+                       </Offset>
+                   </Anchor>
+               </Anchors>
+               <Scripts>
+                   <OnClick>
+                       PanelTemplates_SetTab(OQMainFrame, 7);
+                       OQ_hide_menu_popup() ;
+                       OQTabPage1:Hide();
+                       OQTabPage2:Hide();
+                       OQTabPage3:Hide();
+                       OQTabPage4:Hide();
+                       OQTabPage5:Hide();
+                       OQTabPage6:Hide();
+                       OQTabPage7:Show();
+                       PlaySound("igCharacterInfoTab");
+                   </OnClick>
+               </Scripts>
+           </Button>
+
+       </Frames>
+       <Scripts>
+           <OnLoad>
+               tinsert(UISpecialFrames, self:GetName());
+               PanelTemplates_SetNumTabs(OQMainFrame, 7);
+               PanelTemplates_SetTab(OQMainFrame, 2);
+               OQ_onLoad(self) ;
+           </OnLoad>
+       </Scripts>
+</Frame>
+
+
+	<Button name="OQ_MinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="true">
+		<Size>
+			<AbsDimension x="32" y="32"/>
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="OQ_MinimapButton_Icon" file="Interface\AddOns\oqueue\art\oq_button.tga">
+					<Size>
+						<AbsDimension x="30" y="30"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset> <AbsDimension x="0" y="0" /> </Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+					<Size>
+						<AbsDimension x="50" y="50"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="OQ_MinimapButton_DraggingFrame" hidden="true">
+				<Scripts>
+					<OnUpdate>
+						OQ_MinimapButton_DraggingFrame_OnUpdate()
+					</OnUpdate>
+				</Scripts>
+			</Frame>
+		</Frames>
+		<HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+		<Scripts>
+			<OnLoad> OQ_buttonLoad(self); </OnLoad>
+			<OnDragStart>
+				self:LockHighlight()
+				OQ_MinimapButton_DraggingFrame:Show()
+			</OnDragStart>
+			<OnDragStop>
+				self:UnlockHighlight()
+				OQ_MinimapButton_DraggingFrame:Hide()
+			</OnDragStop>
+		</Scripts>
+	</Button>
+
+</Ui>
