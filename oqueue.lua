@@ -180,6 +180,11 @@ OQ.MAX_SENDFRIENDREQ_MSGSZ     = 127 ;
 OQ.MAX_PENDING_NOTE            = 70 ;
 OQ.QUEUE_POP_BREAK             = 200 ; -- millisecond breaks
 
+function BNConnected()
+  return true;
+end
+
+
 local _ ; -- throw away (was getting taint warning; what happened blizz?)
 
 local oq = { my_tok   = nil,
@@ -1919,7 +1924,7 @@ function oq.harddrop()
 end
 
 function oq.dip( opt )
-  local n_bnfriends = select( 1, BNGetNumFriends() )  ;
+  local n_bnfriends = select( 1, GetNumFriends() )  ;
   if (n_bnfriends >= OQ_MAX_BNFRIENDS) then
     print( OQ.LILSKULL_ICON .." ".. string.format( OQ.NODIPFORYOU, OQ_MAX_BNFRIENDS ) ) ;
     return ;
@@ -2549,7 +2554,7 @@ function oq.dump_statistics()
   end
   local nShown, nPremades = oq.n_premades() ;
   print( "  # of premades        : ".. nShown .." / ".. nPremades ) ;
-  print( "  # of BN friends      : ".. select( 1, BNGetNumFriends() ) ) ;
+  print( "  # of BN friends      : ".. select( 1, GetNumFriends() ) ) ;
   print( "  packets recv         : ".. oq.pkt_recv._cnt .." (".. string.format( "%5.3f", oq.pkt_recv._aps ) .." per sec)" ) ;
   print( "  packets processed    : ".. oq.pkt_processed._cnt .." (".. string.format( "%5.3f", oq.pkt_processed._aps ) .." per sec)" ) ;
   print( "  packets sent         : ".. oq.pkt_sent._cnt .." (".. string.format( "%5.3f", oq.pkt_sent._aps ) .." per sec)  ".. #oq.send_q .." q'd" ) ;
@@ -2580,12 +2585,12 @@ function oq.show_member(m)
 end
 
 function oq.show_adds()
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local cnt = 0 ;
   print( "---  OQ added friends" ) ;
   local friendId ;
   for friendId=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( _f, GetFriendInfo( friendId ) ) ;
     local presenceID = _f[1] ;
     local givenName  = _f[2] ;
     local btag       = _f[3] ;
@@ -5709,6 +5714,7 @@ function oq.space_it( s )
 end
 
 function oq.realm_cooked(realm)
+  print(realm);
   if (realm == nil) or (realm == "-") or (realm == "nil") or (realm == "n/a") or (realm == "") then
     return 0 ;
   end
@@ -5724,7 +5730,7 @@ function oq.realm_cooked(realm)
   elseif (OQ.REALMNAMES_SPECIAL[ strlower( realm ) ] ~= nil) then
     r = OQ.REALMNAMES_SPECIAL[ strlower(realm) ] ;
   end
-  
+  print(r);
   if (OQ.SHORT_BGROUPS[ r ] == nil) then
     -- for some reason, realms like "Bleeding Hollow" will come from blizz as "BleedingHollow".. sometimes
     r = oq.space_it( r ) ; 
@@ -5951,13 +5957,13 @@ function oq.find_group_member( name )
 end
 
 function oq.remove_one_mesh_node()
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local now = oq.utc_time() ;
   local rc = nil ;
   local option = "silent" ;
   local i ;
   for i=ntotal,1,-1 do
-    tbl.fill( _f, BNGetFriendInfo( i ) ) ;
+    tbl.fill( _f, GetNumFriends( i ) ) ;
 
     local presenceID = _f[1] ;
     local givenName  = _f[2] ;
@@ -5985,7 +5991,7 @@ function oq.update_bn_friend_info( friendId )
   if (OQ.BNET_CAPB4THECAP == nil) or (OQ.BNET_CAPB4THECAP < 90) or (friendId == nil) then
     return ;
   end
-  tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+  tbl.fill( _f, GetFriendInfo( friendId ) ) ;
   if (_f[3]) then
     _f[3] = strlower(_f[3]) ;
   end
@@ -6063,7 +6069,7 @@ end
 
 function oq.check_cap_before_the_cap()
   local now = oq.utc_time() ;
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   if (ntotal) and (OQ.BNET_CAPB4THECAP) and (ntotal > OQ.BNET_CAPB4THECAP) then
     -- remove one
     if (oq.remove_one_mesh_node()) then
@@ -6080,10 +6086,10 @@ function oq.check_cap_before_the_cap()
 end
 
 function oq.is_toon_friended( name, realm )
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local friendId, toonIndx ;
   for friendId=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( _f, GetFriendInfo( friendId ) ) ;
     local client     = _f[7] ;
     local online     = _f[8] ;
     local nToons = BNGetNumFriendToons( friendId ) ;
@@ -6125,10 +6131,10 @@ function oq.is_bnfriend(btag_, name_, realm_)
   btag_  = strlower( btag_ ) ; -- just to make sure
   name_  = strlower( name_ or "" ) ;
   realm_ = strlower( realm_ or "" ) ;
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local friendId ;
   for friendId=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( _f, GetFriendInfo( friendId ) ) ;
     
     local presenceID = _f[1] ;
     local btag       = _f[3] ;
@@ -6171,12 +6177,12 @@ function oq.get_nConnections()
   if (nlocals > 0) then
     nlocals = nlocals - 1 ; -- subtract player
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   return nlocals, cnt, ntotal ;
 end
 
 function oq.n_connections()
-  local nOQlocals, nOQfriends, nBNfriends = oq.get_nConnections() ;
+  local nOQlocals, nOQfriends, nBNfriends = 0;
   if (oq.loaded) then
     oq.tab2_nfriends:SetText( string.format( OQ.BNET_FRIENDS, nBNfriends ) ) ; 
     oq.tab2._connection:SetText( string.format( OQ.CONNECTIONS, nOQlocals, nOQfriends )) ;
@@ -6444,12 +6450,12 @@ function oq.show_btags(opt)
   if (opt) and (opt:find(' ')) then
     arg = strlower(opt:sub(opt:find(' ')+1, -1)) ;
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local btags    = tbl.new() ;
   local btag_ids = tbl.new() ;
   local i, v ;
   for i=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( i ) ) ;
+    tbl.fill( _f, GetFriendInfo( i ) ) ;
 
     if (_f[3] ~= nil) then
       btags[_f[3]]      = tbl.new() ;
@@ -6530,7 +6536,7 @@ end
 -- options: all, offline, 5, show, list
 --
 function oq.remove_OQadded_bn_friends( option )
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local now = oq.utc_time() ;
   local removal_text = "REMOVE ".. OQ_HEADER ;
   local i ;
@@ -6539,7 +6545,7 @@ function oq.remove_OQadded_bn_friends( option )
   end
   local cnt = 0 ;
   for i=ntotal,1,-1 do
-    tbl.fill( _f, BNGetFriendInfo( i ) ) ;
+    tbl.fill( _f, GetFriendInfo( i ) ) ;
 
     local presenceID = _f[1] ;
     local givenName  = _f[2] ;
@@ -6567,7 +6573,7 @@ function oq.remove_OQadded_bn_friends( option )
 end
 
 function oq.remove_bn_friend_by_btag( btag_, iff_offline )
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local now = oq.utc_time() ;
   local removal_text = "REMOVE ".. OQ_HEADER ;
   local i ;
@@ -6575,7 +6581,7 @@ function oq.remove_bn_friend_by_btag( btag_, iff_offline )
     return ;
   end
   for i=ntotal,1,-1 do
-    tbl.fill( _f, BNGetFriendInfo( i ) ) ;
+    tbl.fill( _f, GetFriendInfo( i ) ) ;
 
     local presenceID = _f[1] ;
     local givenName  = _f[2] ;
@@ -8348,14 +8354,14 @@ function oq.leader_quit_raid()
 end
 
 function oq.remove_temporary_bnfriend( name, realm )
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local cnt = 0 ;
   local f = tbl.new() ;
   name = strlower(name) ;
   realm = strlower(realm) ;
   local friendId, toonIndx ;
   for friendId=1,ntotal do
-    tbl.fill( f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( f, GetFriendInfo( friendId ) ) ;
     local presenceID = f[1] ;
     local givenName  = f[2] ;
     local btag       = f[3] ;
@@ -10716,7 +10722,7 @@ function oq.on_mesh_tag( faction_, rid_ )
   if (OQ_data.autoaccept_mesh_request ~= 1) then
     return ;
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   if (ntotal < OQ_MAX_BNFRIENDS) then
     _ok2decline = nil ;
     _oq_note    = "OQ,mesh node" ;
@@ -11176,7 +11182,7 @@ function oq.populate_npc_table()
   OQ.npc[ 1215] = L["Alchemist Mallory"] ; -- outside SW
   OQ.npc[ 3935] = L["Toddrick"] ;  -- goldshire
   OQ.npc[ 6121] = L["Remen Marcot"] ; -- goldshire
-  OQ.npc[  327] = L["Goldtooth"] ; -- south of goldshire
+  OQ.npc[  327] = L["Goldtooth"]; -- south of goldshire
   OQ.npc[44865] = L["Auctioneer Fazdran"] ; -- org
   OQ.npc[44854] = L["Kixa"] ; -- org banker
   OQ.npc[39379] = L["Gor the Enforcer"] ; -- outside of org
@@ -16737,7 +16743,7 @@ function oq.get_battle_tag()
   oq._bnetdown_error_cnt = nil ;
   oq._bnetdown_error_tm  = nil ;
   
-  player_realid = select( 2, BNGetInfo() ) ;
+  player_realid = select( 1, UnitName("player")) ;
   if (player_realid == nil) then
     local now = oq.utc_time() ;
     if ((oq._btag_error_tm == nil) or ((now - oq._btag_error_tm) > 120)) and (oq._init_completed) then
@@ -16852,7 +16858,7 @@ function oq.bnfriend_note( presenceId )
   if (presenceId == nil) or (presenceId == 0) then
     return nil ;
   end
-  local noteText = select( 12, BNGetFriendInfoByID(presenceId)) ;
+  local noteText = select( 12, GetFriendInfo(presenceId)) ;
 --  pid, givenName, surname, toonName, toonID, client, isOnline, lastOnline, 
 --  isAFK, isDND, messageText, noteText, isFriend, unknown = BNGetFriendInfoByID(presenceID) ;
   return noteText ;
@@ -19172,7 +19178,7 @@ function oq.on_req_mesh( token )
   if (OQ_data.autoaccept_mesh_request ~= 1) or (token == nil) then
     return ;
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   if (ntotal >= OQ_MAX_BNFRIENDS) then
     return ;
   end
@@ -19201,7 +19207,7 @@ function oq.on_imesh( token, btag )
     -- my tag, disregard
     return ;
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   if (ntotal >= OQ_MAX_BNFRIENDS) then
     return ;
   end
@@ -19290,7 +19296,7 @@ function oq.waitlist_invite_all()
   oq.tab7.inviteall_button:Disable() ;
   oq.timer_oneshot( OQ_INVITEALL_CD, oq.enable_button, oq.tab7.inviteall_button ) ;
 
-  local nfriends = select( 1, BNGetNumFriends() ) ;
+  local nfriends = select( 1, GetNumFriends() ) ;
   if (nfriends < OQ.BNET_CAPB4THECAP) then
     local cnt = 0 ;
     local max_inv = min( 40 - GetNumGroupMembers(), 10 ) ;
@@ -22341,7 +22347,7 @@ function oq.forward_msg( source, sender, msg_type, msg_id, msg )
 end
 
 function oq.bnfriend_offline( pid ) 
-  tbl.fill( _f, BNGetFriendInfoByID( pid )) ;
+  tbl.fill( _f, GetFriendInfo( pid )) ;
   local toon_id = _f[6] ;
   if (toon_id) then
     tbl.fill( _toon, BNGetToonInfo( toon_id )) ;
@@ -22369,7 +22375,7 @@ function oq.bnfriend_offline( pid )
 end
 
 function oq.bnfriend_online( pid ) 
-  tbl.fill( _f, BNGetFriendInfoByID( pid )) ;
+  tbl.fill( _f, GetFriendInfo( pid )) ;
   local toon_id = _f[6] ;
   tbl.fill( _toon, BNGetToonInfo( toon_id )) ;
   local toonName  = tostring(_toon[2]) ;
@@ -22434,10 +22440,10 @@ function oq.ping_oq_toon( toon_pid, toonName, realmName, ts, ack )
 end
 
 function oq.tid2pid( tid )
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local friendId, toonIndx ;
   for friendId=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( _f, GetFriendInfo( friendId ) ) ;
     local pid        = _f[1] ;
     local online     = _f[8] ;
     local nToons = BNGetNumFriendToons( friendId ) ;
@@ -22461,12 +22467,12 @@ function oq.ping_the_world()
   if (player_faction == "A") then
     p_faction = 1 ;
   end
-  local ntotal, nonline = BNGetNumFriends() ;
+  local ntotal, nonline = GetNumFriends() ;
   local cnt = 0 ;
   local now = oq.utc_time() ;
   local friendId, toonIndx ;
   for friendId=1,ntotal do
-    tbl.fill( _f, BNGetFriendInfo( friendId ) ) ;
+    tbl.fill( _f, GetFriendInfo( friendId ) ) ;
     local online     = _f[8] ;
     local nToons = BNGetNumFriendToons( friendId ) ;
     if (nToons > 0) and (online == true) then
@@ -23324,10 +23330,7 @@ function oq.on_addon_loaded( name )
 end
 
 function oq.good_region_info()
-  if (string.sub(GetCVar("realmList"),1,2) == "us") then
-    return true ;
-  end
-  if (string.sub(GetCVar("realmList"),1,2) == "eu") then
+  if (string.sub(GetCVar("realmList"),1,2) == "hu") then
     return true ;
   end
   return nil ;
@@ -25627,18 +25630,18 @@ function oq.ui_toggle()
     oq.ui:Show() ;
     _ui_open = true ;
     -- bnet down
-    if (BNConnected() == false) then
-      oq.bnet_down_shade() ;
-      return ;
-    end
+--    if (BNConnected() == false) then
+  --    oq.bnet_down_shade() ;
+    --  return ;
+    --end
     -- check bad btag
-    if (oq.loaded == nil) then
-      oq.init_if_good_region() ;
-    end
-    if (oq.get_battle_tag() == nil) then
-      oq.badtag_shade() ;
-      return ;
-    end
+  --  if (oq.loaded == nil) then
+   --   oq.init_if_good_region() ;
+  --  end
+  --  if (oq.get_battle_tag() == nil) then
+--oq.badtag_shade() ;
+  --    return ;
+ --   end
     -- check if banned 
     if (oq._banned) then
       oq.banned_shade() ;
