@@ -18,7 +18,7 @@ print(GetCVar("realmList"));
 OQ.REGION   = "hu" ;
 OQ.SK_BTAG  = "OQSK#2404" ;
 OQ.SK_NAME  = "Scorekeeper" ;
-OQ.SK_REALM = "[EN] Evermoon" ;
+OQ.SK_REALM = "[EN] Evermoon (5.4.8)" ;
 OQ.DEFAULT_PREMADE_TEXT = "teamspeak:  ts.overheatedpenguins.com" ;
 
 OQ.BGROUP_ICON = {["Misery"] = "Interface\\Icons\\Spell_Shadow_Misery"};
