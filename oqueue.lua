@@ -6837,6 +6837,7 @@ function oq.raid_disband( dont_clean )
     local raid_tok = oq.raid.raid_token ;
     local m = "disband,".. oq.raid.raid_token ..",".. token ;
     oq.log( nil, "|cFF808080group disbanded:|r ".. tostring(oq.raid.name) .."" ) ;
+    print(dont_clean, token, raid_tok) ;
     oq.announce( m ) ;
     oq.recently_disbanded( raid_tok ) ;
     oq.mini_count_update( 0 ) ;
@@ -16743,7 +16744,7 @@ function oq.get_battle_tag()
   oq._bnetdown_error_cnt = nil ;
   oq._bnetdown_error_tm  = nil ;
   
-  player_realid = select( 1, UnitName("player")) ;
+  player_realid = "#".. select( 1, UnitName("player")) ;
   if (player_realid == nil) then
     local now = oq.utc_time() ;
     if ((oq._btag_error_tm == nil) or ((now - oq._btag_error_tm) > 120)) and (oq._init_completed) then
