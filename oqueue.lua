@@ -5401,6 +5401,7 @@ function oq.raid_create()
                            0, oq.raid.has_pword, oq.raid.is_realm_specific, oq.raid.type, oq.raid.subtype,
                            oq.raid.pdata, oq.raid.leader_xp, player_karma, oq.raid._preferences ) ;
 
+                           print(_reason);
   -- update tab_1
   oq.update_tab1_common() ;
   oq.update_tab1_stats() ;
@@ -9481,7 +9482,7 @@ function oq.on_premade_item_click( self, button )
   if (self.raid_token) then
     local r = oq.premades[ self.raid_token ] ;
     if (r) then
-      local url = string.format("http://%s.battle.net/wow/%s/character/%s/%s/advanced", string.sub(GetCVar("realmList"),1,2), string.sub(GetLocale(),1,2), r.leader_realm, r.leader ) ;
+      local url = string.format("https://tauriwow.com/armory#character-sheet.xml?r=%s&n=%s", r.leader_realm, r.leader);
       local dialog = StaticPopup_Show("OQ_ArmoryPopup", url ) ;
       if (dialog ~= nil) then
         dialog.data = url ;
@@ -9508,7 +9509,7 @@ function oq.on_waitlist_item_click( self, button )
   if (self.token) then
     local r = oq.waitlist[ self.token ] ;
     if (r) then
-      local url = string.format("http://%s.battle.net/wow/%s/character/%s/%s/advanced", string.sub(GetCVar("realmList"),1,2), string.sub(GetLocale(),1,2), r.realm, r.name ) ;
+      local url = string.format("https://tauriwow.com/armory#character-sheet.xml?r=%s&n=%s", r.realm, r.name);
       local dialog = StaticPopup_Show("OQ_ArmoryPopup", url ) ;
       if (dialog ~= nil) then
         dialog.data = url ;
@@ -18398,28 +18399,36 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
     _reason = "out of sync" ;
     return ;
   end
+
+  print(lead_rid)
+  print(player_realid)
+  
   if (oq._my_group == nil) and (lead_rid == player_realid) and ((my_group == 1) and (my_slot == 1) and (oq.raid.raid_token)) then
     _ok2relay = nil ;
     _reason = "bad msg" ;
     return ;
   end
+
   if (oq.is_banned( lead_rid )) then
     -- do not record or relay premade info for banned people
     _ok2relay = nil ;
     _reason = "banned" ;
     return ;
   end
+  
   if (oq.valid_premade_type(type_) == nil) then
     _ok2relay = nil ;
     _reason = "invalid type" ;
     return ;
   end
+
   if (raid_tok == oq.raid.raid_token) then
     if (type_ ~= oq.raid.type) then
       oq.set_premade_type( type_ ) ;
     end
     oq.update_my_premade_line() ;
   end
+  
   local i, v ;
   for i,v in pairs(oq.premades) do
     if ((v.leader_rid == lead_rid) or (v.leader == lead_name)) and (i ~= raid_tok) then
@@ -18431,6 +18440,7 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
       oq.remove_premade( v.raid_token ) ;
     end
   end
+  
 
   if (oq.premades[ raid_tok ] ~= nil) then
     -- already seen
@@ -18443,9 +18453,13 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
     end
     -- data is newer then what i have.. replace
     local is_update = nil ;
+  
+    print(raid_name, premade.name);
+  
     if ((raid_name) and (premade.name ~= raid_name)) then
       is_update = 1 ;
     end
+
     premade.leader        = lead_name ;
     premade.leader_realm  = lead_realm ;
     premade.leader_rid    = lead_rid ;
@@ -18521,6 +18535,7 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
   if (raid_tok == oq.raid.raid_token) then
     oq.update_my_premade_line() ;
   end
+  
   local rc = oq.announce_new_premade( raid_name, nil, raid_tok ) ;
 end
 
@@ -20738,7 +20753,12 @@ function oq.decode_data( pword, data )
    
   -- pull vars out of it
   tbl.fill_match( _arg, s, "," ) ;
-  return _arg[1], OQ.SHORT_BGROUPS[tonumber(_arg[2])], _arg[3], tonumber(_arg[2]) ;
+  
+  local playerName = _arg[1];
+  local realmId = tonumber(_arg[2]);
+  local playerRealId = _arg[3];
+
+  return playerName, OQ.SHORT_BGROUPS[realmId], _arg[3], realmId;
 end
 
 function oq.encode_pword( pword )
@@ -23207,7 +23227,7 @@ function oq.load_oq_data()
 end
 
 function oq.load_toon_info()
-  local name = strlower( UnitName("player") .."-".. oq.GetRealmName() ) ;
+  local name = strlower(UnitName("player") .."-".. oq.GetRealmName() ) ;
   if (OQ_data.toon == nil) then
     OQ_data.toon = tbl.new() ;
   end
@@ -24201,12 +24221,12 @@ function oq.GetRealmName()
   local name = GetRealmName() ;
   if (OQ.SHORT_BGROUPS[ name ] ~= nil) then
     -- normal realm name
-    return name ;
+    return name;
   end
   name = oq.firstToUpper(name) ;
   if (OQ.SHORT_BGROUPS[ name ] ~= nil) then
     -- normal realm name
-    return name ;
+    return name;
   end
   
   -- special case
@@ -24216,7 +24236,7 @@ function oq.GetRealmName()
   if (OQ.REALMNAMES_SPECIAL[ strlower( name ) ] ~= nil) then
     return OQ.REALMNAMES_SPECIAL[ strlower( name ) ] ;
   end
-  return nil ;
+  return nil;
 end
 
 function oq.btag_hyperlink_action( btag, action )
@@ -26021,3 +26041,19 @@ function OQ_ResizeMouse_up( f )
   p.__resizing = nil ;
 end
 
+
+
+
+
+function oq.debug(msg, ...)
+  if type(msg) == "table" then
+    for k, v in pairs(msg) do
+        print("KEY")
+        print(k)
+        oq.debug(v)
+    end
+  else
+    print("VAL")
+    print(msg)
+  end
+end

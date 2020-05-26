@@ -25,18 +25,21 @@ OQ.REALMNAMES_SPECIAL = {
 } ;
 
 OQ.BGROUPS = {
-["Misery"] = {
-  "[EN] Evermoon",
-  "[HU] Tauri WoW Server",
-  "[HU] Warriors of Darkness",
-},
-
+  ["Misery"] = {
+    "[EN] Evermoon",
+    "[HU] Tauri WoW Server",
+    "[HU] Warriors of Darkness",
+  },
 } ;
 
 OQ.SHORT_BGROUPS = {
-	["[EN] Evermoon"] = 1,
-	["[HU] Tauri WoW Server"] = 2,
-	["[HU] Warriors of Darkness"] = 9, -- Not sure about that, might require checking with API
+	["[EN] Evermoon"] = 1, -- [1]
+	["[HU] Tauri WoW Server"] = 2, -- [2]
+  ["[HU] Warriors of Darkness"] = 3, -- [3]
+
+  [1] = "[EN] Evermoon",
+  [2] = "[HU] Tauri WoW Server",
+  [3] = "[HU] Warriors of Darkness",
 } ;
 
 
