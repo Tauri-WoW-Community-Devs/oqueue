@@ -135,7 +135,6 @@ OQ.SETUP_ALTLIST      = "Liste d'alts sur ce compte battle.net:\n (seulement pou
 OQ.SETUP_AUTOROLE     = "Choix automatique du rôle" ;
 OQ.SETUP_CLASSPORTRAIT = "Utiliser des portaits de classe" ;
 OQ.SETUP_GARBAGE      = "garbage collect (30 sec intervals)" ;
-OQ.SETUP_SHOUTKBS     = "Annoncer killing blows" ;
 OQ.SETUP_SHOUTCAPS    = "Annoncer objectifs BG" ;
 OQ.SETUP_SHOUTADS     = "Annoncer groupes" ;
 OQ.SETUP_AUTOACCEPT_MESH_REQ = "Accepter automatiquement les requêtes réseaux B-TAG" ;

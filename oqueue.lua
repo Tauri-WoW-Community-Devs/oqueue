@@ -1964,7 +1964,6 @@ function oq.toon_init( t )
   t.last_tm         = 0 ;
   t.auto_role       = 1 ;
   t.class_portrait  = 1 ;
-  t.shout_kbs       = 1 ;
   t.shout_caps      = 1 ;
   t.shout_ragequits = 1 ;
   t.reports         = tbl.new() ;
@@ -3985,7 +3984,7 @@ function oq.calc_player_stats()
   end
 
   -- function to hold player stat info
-  -- bg name, time of start, hks, dmg, heals, kbs
+  -- bg name, time of start, hks, dmg, heals
   -- other player names and their stats
   local winner = GetBattlefieldWinner() ; -- nil, 0, 1, 255
   if (winner) then
@@ -16286,9 +16285,6 @@ function oq.create_tab_setup()
   oq.tab5_autoinspect = oq.checkbox( parent, x, y,  23, cy, 200, OQ.AUTO_INSPECT, (OQ_data.ok2autoinspect == 1), 
                function(self) oq.toggle_autoinspect( self ) ; end ) ;
   y  = y + cy ;
-  oq.tab5_shoutkbs = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTKBS, (oq.toon.shout_kbs == 1), 
-               function(self) oq.toggle_shout_kbs( self ) ; end ) ;
-  y  = y + cy ;
   oq.tab5_shoutcaps = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTCAPS, (oq.toon.shout_caps == 1), 
                function(self) oq.toggle_shout_caps( self ) ; end ) ;
   y  = y + cy ;
@@ -23400,7 +23396,7 @@ function oq.toggle_autoinspect( cb )
 end
 
 function oq.turnon_CLEU_ifneeded()
-  if (oq._inside_instance == 1) and ((oq.toon.shout_kbs == 1) or (oq._instance_type == "pve")) then
+  if (oq._inside_instance == 1) and (oq._instance_type == "pve") then
     oq.ui:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
   else
     oq.CLEU_world_mode() ;
@@ -23409,15 +23405,6 @@ end
 
 function oq.CLEU_world_mode()
   oq.ui:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
-end
-
-function oq.toggle_shout_kbs( cb )
-  if (cb:GetChecked()) then 
-    oq.toon.shout_kbs = 1 ; 
-  else 
-    oq.toon.shout_kbs = 0 ; 
-  end 
-  oq.turnon_CLEU_ifneeded() ;
 end
 
 function oq.toggle_premade_ads( cb )
@@ -23625,17 +23612,6 @@ function oq.on_party_kill( ... )
         oq.log( true, OQ.LILSKULL_ICON .." ".. string.format( OQ.BOUNTY_TARGET, is_bty_target ) ) ;
       elseif (contract.type > 1) and (contract.type < 10) then
         oq.log( true, OQ.LILSKULL_ICON .." ".. OQ.DEATHMATCH_SCORE ) ;
-      end
-    end
-  end
-
-  if (oq._instance_type) and (oq._instance_type == "pvp") then
-    local caster = _arg[5] ;
-    local target = _arg[9] ;
-    if (oq.toon.shout_kbs == 1) and (_enemy ~= nil) and (target ~= nil) then
-      if (caster == player_name) and (_enemy[target] ~= nil) then
-        _nkbs = _nkbs + 1 ;
-        oq.log( true, OQ.LILSKULL_ICON .." killing blow: ".. target .."  (".. _nkbs .." so far)" ) ;
       end
     end
   end
@@ -25122,7 +25098,6 @@ function oq.on_logout()
   -- hang onto group data if still in an OQ_group (may come back)
   local disabled = oq.toon.disabled ;
   
-  oq.toon.shout_kbs         = oq.toon.shout_kbs or 0 ;
   oq.toon.shout_caps        = oq.toon.shout_caps or 0 ;
   oq.toon.shout_ragequits   = oq.toon.shout_ragequits or 1 ;
   OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 0 ;
@@ -25175,7 +25150,6 @@ function oq.attempt_group_recovery()
   
   if (oq.toon) then
     oq.toon.class_portrait          = oq.toon.class_portrait or 1 ;
-    oq.toon.shout_kbs               = oq.toon.shout_kbs or 1 ;
     oq.toon.shout_caps              = oq.toon.shout_caps or 1 ;
     oq.toon.shout_ragequits         = oq.toon.shout_ragequits or 1 ;
     OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 1 ; 
@@ -25317,7 +25291,6 @@ function oq.attempt_group_recovery()
   oq.tab5_ar:SetChecked( (oq.toon.auto_role == 1) ) ;
   oq.tab5_cp:SetChecked( (oq.toon.class_portrait == 1) ) ;
   oq.tab5_autoinspect:SetChecked( (OQ_data.ok2autoinspect == 1) ) ;
-  oq.tab5_shoutkbs:SetChecked( (oq.toon.shout_kbs == 1) ) ;
   oq.tab5_shoutads:SetChecked( (OQ_data.show_premade_ads == 1) ) ;
   oq.tab5_shoutcontracts:SetChecked( (OQ_data.show_contract_ads == 1) ) ;
   oq.tab5_shoutcaps:SetChecked( (oq.toon.shout_caps == 1) ) ;

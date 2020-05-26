@@ -126,7 +126,6 @@ OQ.SETUP_ALTLIST    = "lista de personajes alternativos\nen esta cuenta battle.n
 OQ.SETUP_AUTOROLE   = "Auto seleccionar rol" ;
 OQ.SETUP_CLASSPORTRAIT = "Usar retratos de clase" ;
 OQ.SETUP_GARBAGE    = "recolector de basura\n(intervalos de 30 seg)" ;
-OQ.SETUP_SHOUTKBS   = "Anunciar golpes mortales" ;
 OQ.SETUP_SHOUTCAPS  = "Anunciar objetivos de CdB" ;
 OQ.SETUP_SHOUTADS   = "Anunciar premades" ;
 OQ.SETUP_AUTOACCEPT_MESH_REQ = "Autoaceptar peticiones\nbattletag de la malla" ;

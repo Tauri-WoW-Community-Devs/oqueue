@@ -131,7 +131,6 @@ OQ.SETUP_ALTLIST      = "list of alts on this battle.net account:\n(only for mul
 OQ.SETUP_AUTOROLE     = "Auto set role" ;
 OQ.SETUP_CLASSPORTRAIT = "Use class portraits" ;
 OQ.SETUP_GARBAGE      = "garbage collect (30 sec intervals)" ;
-OQ.SETUP_SHOUTKBS     = "Announce killing blows" ;
 OQ.SETUP_SHOUTCAPS    = "Announce BG objectives" ;
 OQ.SETUP_SHOUTADS     = "Announce premades" ;
 OQ.SETUP_AUTOACCEPT_MESH_REQ = "Auto accept b-tag mesh requests" ;
