@@ -130,7 +130,6 @@ OQ.SETUP_REMOVEBTAG   = "Remove b-tag from scorekeeper" ;
 OQ.SETUP_ALTLIST      = "list of alts on this battle.net account:\n(only for multi-boxers)" ;
 OQ.SETUP_AUTOROLE     = "Auto set role" ;
 OQ.SETUP_CLASSPORTRAIT = "Use class portraits" ;
-OQ.SETUP_WHOPOPPED    = "Who Popped Lust?" ;
 OQ.SETUP_GARBAGE      = "garbage collect (30 sec intervals)" ;
 OQ.SETUP_SHOUTKBS     = "Announce killing blows" ;
 OQ.SETUP_SHOUTCAPS    = "Announce BG objectives" ;

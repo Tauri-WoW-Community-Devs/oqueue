@@ -134,7 +134,6 @@ OQ.SETUP_REMOVEBTAG   = "Retirer B-TAG du marqueur" ;
 OQ.SETUP_ALTLIST      = "Liste d'alts sur ce compte battle.net:\n (seulement pour multi-boxing)" ;
 OQ.SETUP_AUTOROLE     = "Choix automatique du rôle" ;
 OQ.SETUP_CLASSPORTRAIT = "Utiliser des portaits de classe" ;
-OQ.SETUP_WHOPOPPED    = "Who Popped Lust?" ;
 OQ.SETUP_GARBAGE      = "garbage collect (30 sec intervals)" ;
 OQ.SETUP_SHOUTKBS     = "Annoncer killing blows" ;
 OQ.SETUP_SHOUTCAPS    = "Annoncer objectifs BG" ;

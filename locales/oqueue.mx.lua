@@ -125,7 +125,6 @@ OQ.SETUP_REMOVEBTAG = "Eliminar battletag del tanteador" ;
 OQ.SETUP_ALTLIST    = "lista de personajes alternativos\nen esta cuenta battle.net:\n(solo para multi-boxers)" ;
 OQ.SETUP_AUTOROLE   = "Auto seleccionar rol" ;
 OQ.SETUP_CLASSPORTRAIT = "Usar retratos de clase" ;
-OQ.SETUP_WHOPOPPED  = "�Quien ha tirado Ansia?" ;
 OQ.SETUP_GARBAGE    = "recolector de basura\n(intervalos de 30 seg)" ;
 OQ.SETUP_SHOUTKBS   = "Anunciar golpes mortales" ;
 OQ.SETUP_SHOUTCAPS  = "Anunciar objetivos de CdB" ;

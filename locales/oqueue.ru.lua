@@ -130,7 +130,6 @@ OQ.SETUP_REMOVEBTAG   = "Отозвать свой b-tag" ;
 OQ.SETUP_ALTLIST      = "Список альтов на b-net аккаунте:\n(Мультибоксинг)" ;
 OQ.SETUP_AUTOROLE     = "Автовыставление роли" ;
 OQ.SETUP_CLASSPORTRAIT = "Использовать иконки классов" ;
-OQ.SETUP_WHOPOPPED    = "Оповещать о Героизме" ;
 OQ.SETUP_GARBAGE      = "Собирать мусор (интервал 30 сек)" ;
 OQ.SETUP_SHOUTKBS     = "Оповещать о смертельных ударах" ;
 OQ.SETUP_SHOUTCAPS    = "Оповещать о целях поля боя" ;

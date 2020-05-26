@@ -132,7 +132,6 @@ OQ.SETUP_REMOVEBTAG   = "Rimuovi b-tag dal segnapunti" ;
 OQ.SETUP_ALTLIST      = "Lista degli alts sul tuo account battle.net :\n(solo per più spec)" ;
 OQ.SETUP_AUTOROLE     = "Auto imposta ruolo" ;
 OQ.SETUP_CLASSPORTRAIT = "Usa il ritratto di classe" ;
-OQ.SETUP_WHOPOPPED    = "Chi ha spuntato bramosia?" ;
 OQ.SETUP_GARBAGE      = "Colleziona rifiuti garbage collect(intervallo 30 secs)" ;
 OQ.SETUP_SHOUTKBS     = "Annuncia colpi mortali" ;
 OQ.SETUP_SHOUTCAPS    = "Annuncia gli obbiettivi dei CB" ;

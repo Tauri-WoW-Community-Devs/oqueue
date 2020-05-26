@@ -124,7 +124,6 @@ OQ.SETUP_REMOVEBTAG = "Remover b-tag do mantenedor do placar" ;
 OQ.SETUP_ALTLIST    = "Lista de alts nesta conta battle.net:\n(apenas para multi-boxers)" ;
 OQ.SETUP_AUTOROLE   = "Auto definir função" ;
 OQ.SETUP_CLASSPORTRAIT = "Usar fotos de classe" ;
-OQ.SETUP_WHOPOPPED  = "Quem usou Lust?" ;
 OQ.SETUP_GARBAGE    = "garbage collect (intervalo de 30 sec)" ;
 OQ.SETUP_SHOUTKBS   = "Anunciar Golpes Fatais" ;
 OQ.SETUP_SHOUTCAPS  = "Anunciar objetivos da BG" ;

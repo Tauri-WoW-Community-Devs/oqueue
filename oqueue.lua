@@ -128,7 +128,6 @@ local _to_name                 = nil ;
 local _to_realm                = nil ;
 local _from                    = nil ;
 local _lucky_charms            = nil ;
-local _last_lust               = nil ;
 local _last_report             = nil ;
 local _last_tops               = nil ;
 local _last_bg                 = nil ;
@@ -241,15 +240,6 @@ function OQ:mod()  return oq ; end
 -------------------------------------------------------------------------------
 --   local defines
 -------------------------------------------------------------------------------
-oq.WhoPoppedList_Ids = 
-{
-  [ 2825] = L["Bloodlust"],
-  [32182] = L["Heroism"],
-  [80353] = L["Time Warp"],
-  [90355] = L["Ancient Hysteria"],
---  [57330] = L["Horn of Winter"],  -- testing
-} ;
-
 local OQ_versions = 
 { [ "1.7.7"    ] =  1,
   [ "1.7.8"    ] =  2,
@@ -371,7 +361,6 @@ function oq.hook_options()
   oq.options[ "id"          ] = oq.id_target ; 
   oq.options[ "inviteall"   ] = oq.waitlist_invite_all ;
   oq.options[ "log"         ] = oq.log_cmdline ; 
-  oq.options[ "lust"        ] = oq.last_lust ;   
   oq.options[ "mbsync"      ] = oq.mbsync ;
   oq.options[ "mycrew"      ] = oq.mycrew ;
   oq.options[ "mini"        ] = oq.toggle_mini ;
@@ -1937,14 +1926,6 @@ function oq.ban_user( tag )
   end
 end
 
-function oq.last_lust()
-  if (_last_lust ~= nil) then
-    print( _last_lust ) ;
-  else
-    print( "nothing to report" ) ;
-  end
-end
-
 function oq.usage()
   print( "oQueue v".. OQUEUE_VERSION .."  build ".. OQ_BUILD .." (".. tostring(OQ.REGION) ..")" ) ;
   print( L["usage:  /oq [command]"] ) ;
@@ -1961,7 +1942,6 @@ function oq.usage()
   print( L["  godark          send 'oq stop' to all your OQ enabled friends"] ) ;
   print( L["  id              show guid, id, and name of target"] ) ;
   print( L["  log [clear]     toggle log on/off or clear"] ) ;
-  print( L["  lust            re-display the last lust message"] ) ;
   print( L["  mini            toggle the minimap button"] ) ;
   print( L["  mycrew [clear]  for boxers, populate the alt list"] ) ;
   print( L["  now             print the current utc time (only visible to user)"] ) ;
@@ -1987,7 +1967,6 @@ function oq.toon_init( t )
   t.shout_kbs       = 1 ;
   t.shout_caps      = 1 ;
   t.shout_ragequits = 1 ;
-  t.who_popped_lust = 1 ;
   t.reports         = tbl.new() ;
 end
 
@@ -3491,7 +3470,6 @@ function oq.entering_bg()
   _lucky_charms = nil ;
   _winner       = nil ;
   _nkbs         = 0 ;
-  _last_lust    = nil ;
   _last_report  = nil ;
   _last_bg      = nil ;
   _last_crc     = nil ;
@@ -16307,9 +16285,6 @@ function oq.create_tab_setup()
   y = y + cy ;
   oq.tab5_autoinspect = oq.checkbox( parent, x, y,  23, cy, 200, OQ.AUTO_INSPECT, (OQ_data.ok2autoinspect == 1), 
                function(self) oq.toggle_autoinspect( self ) ; end ) ;
-  y = y + cy ;
-  oq.tab5_wp = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_WHOPOPPED, (oq.toon.who_popped_lust == 1), 
-               function(self) oq.toggle_who_popped_lust( self ) end ) ;
   y  = y + cy ;
   oq.tab5_shoutkbs = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTKBS, (oq.toon.shout_kbs == 1), 
                function(self) oq.toggle_shout_kbs( self ) ; end ) ;
@@ -23425,7 +23400,7 @@ function oq.toggle_autoinspect( cb )
 end
 
 function oq.turnon_CLEU_ifneeded()
-  if (oq._inside_instance == 1) and ((oq.toon.who_popped_lust == 1) or (oq.toon.shout_kbs == 1) or (oq._instance_type == "pve")) then
+  if (oq._inside_instance == 1) and ((oq.toon.shout_kbs == 1) or (oq._instance_type == "pve")) then
     oq.ui:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
   else
     oq.CLEU_world_mode() ;
@@ -23461,15 +23436,6 @@ function oq.toggle_contract_ads( cb )
   else 
     OQ_data.show_contract_ads = 0 ; 
   end 
-end
-
-function oq.toggle_who_popped_lust( cb )
-  if (cb:GetChecked()) then 
-    oq.toon.who_popped_lust = 1 ; 
-  else 
-    oq.toon.who_popped_lust = 0 ; 
-  end 
-  oq.turnon_CLEU_ifneeded() ;
 end
 
 function oq.toggle_premade_qualified(cb)
@@ -23786,23 +23752,6 @@ function oq.on_encounter_start(encounterID, encounterName, difficultyID, raidSiz
   -- This usually returns nil. When done on encounter end, it returns the guid unless its something wierd, like spoils.
 end
 
--- who popped lust?
-function oq.on_spell_cast_success( ... )
--- should already be populated in on_combat_log_event_unfiltered
---  _arg = { ... } ;
-
-  local spellId = _arg[12] ;
-  local caster  = _arg[5] ;
-  if (oq.toon.who_popped_lust == 1) and ((_inside_bg) or (oq._inside_instance)) and (caster) then
-    -- _flags holding same faction player list by player name
-    -- 
-    if (_arg[2] == "SPELL_CAST_SUCCESS") and (oq.WhoPoppedList_Ids[ spellId ] ~= nil) and ((_inside_bg and (_flags and _flags[caster])) or oq._inside_instance) then
-      _last_lust = OQ.LILSKULL_ICON .." ".. (caster or "(unknown)") .." popped ".. oq.WhoPoppedList_Ids[ spellId ] ;
-      print( _last_lust ) ;
-    end
-  end
-end
-
 function oq.attr( attr, s )
   return "|cFF".. attr .."".. tostring(s) .."|r" ;
 end
@@ -23905,7 +23854,6 @@ function oq.register_events()
   
   oq.combat_handler = tbl.new() ;
   oq.combat_handler[ "PARTY_KILL"         ] = oq.on_party_kill ;
-  oq.combat_handler[ "SPELL_CAST_SUCCESS" ] = oq.on_spell_cast_success ;
 
   oq.ui:SetScript( "OnShow", function( self ) oq.onShow( self ) ; end ) ;
 
@@ -25227,7 +25175,6 @@ function oq.attempt_group_recovery()
   
   if (oq.toon) then
     oq.toon.class_portrait          = oq.toon.class_portrait or 1 ;
-    oq.toon.who_popped_lust         = oq.toon.who_popped_lust or 1 ;
     oq.toon.shout_kbs               = oq.toon.shout_kbs or 1 ;
     oq.toon.shout_caps              = oq.toon.shout_caps or 1 ;
     oq.toon.shout_ragequits         = oq.toon.shout_ragequits or 1 ;
@@ -25370,7 +25317,6 @@ function oq.attempt_group_recovery()
   oq.tab5_ar:SetChecked( (oq.toon.auto_role == 1) ) ;
   oq.tab5_cp:SetChecked( (oq.toon.class_portrait == 1) ) ;
   oq.tab5_autoinspect:SetChecked( (OQ_data.ok2autoinspect == 1) ) ;
-  oq.tab5_wp:SetChecked( (oq.toon.who_popped_lust == 1) ) ;
   oq.tab5_shoutkbs:SetChecked( (oq.toon.shout_kbs == 1) ) ;
   oq.tab5_shoutads:SetChecked( (OQ_data.show_premade_ads == 1) ) ;
   oq.tab5_shoutcontracts:SetChecked( (OQ_data.show_contract_ads == 1) ) ;
