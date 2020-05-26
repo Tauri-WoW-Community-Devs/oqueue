@@ -373,7 +373,6 @@ function oq.hook_options()
   oq.options[ "ping"        ] = oq.ping_toon ;
   oq.options[ "pos"         ] = oq.where_am_i ;
   oq.options[ "purge"       ] = oq.remove_OQadded_bn_friends ;
-  oq.options[ "rage"        ] = oq.report_rage ;
   oq.options[ "raw"         ] = oq.show_raw_numbers ;
   oq.options[ "reset"       ] = oq.data_reset ;
   oq.options[ "show"        ] = oq.show_data ;
@@ -1950,7 +1949,6 @@ function oq.usage()
   print( L["  pnow            print the current utc time to party chat"] ) ;
   print( L["  pos             print your current location in the world"] ) ;
   print( L["  purge           purge friends list of OQ added b.net friends"] ) ;
-  print( L["  rage            report the number of rage-quitters (in BG only)"] ) ;
   print( L["  rc              start role check (OQ premade leader only)"] ) ;
   print( L["  refresh         sends out a request to refresh find-premade list"] ) ;
   print( L["  show <opt>      show various information"] ) ;
@@ -1964,7 +1962,6 @@ function oq.toon_init( t )
   t.last_tm         = 0 ;
   t.auto_role       = 1 ;
   t.class_portrait  = 1 ;
-  t.shout_ragequits = 1 ;
   t.reports         = tbl.new() ;
 end
 
@@ -3293,9 +3290,7 @@ function oq.check_currency()
     oq.log( true, OQ.LOST .." ".. delta .." ".. OQ.TT_MMR .."  (".. OQ.NOW .." ".. mmr ..")" ) ;
   end
 
-  if (OQ_data.nrage > 0) and (oq._instance_type == "pvp") then
-    oq.report_rage() ;
-  elseif (oq._instance_end_tm) and (oq._instance_end_tm > 0) then
+  if (oq._instance_end_tm) and (oq._instance_end_tm > 0) then
     oq.log( true, OQ.INSTANCE_LASTED .." ".. floor(duration / 60) ..":".. string.format( "%02d", floor( duration % 60) ) ) ;
   end
   
@@ -3423,23 +3418,10 @@ function oq.flag_watcher()
           if (e.strike >= 1) then
             -- don't report until the 2nd strike.  the scorecard can be flaky
             e.reported = true ;
-            e.ragequit = true ;
             if (IsRatedBattleground() == false) then
               oq.new_tears( 1 ) ; -- acct wide; should increment your tear count only for regular bgs, as only enemy faction counts
             end
             OQ_data.nrage = OQ_data.nrage + 1 ;
-
-            if (oq.toon.shout_ragequits == 1) then
-              local diff = e.last_seen - e.appearance ;
-              local min = floor((diff)/60) ;
-              local sec = diff % 60 ;
-              print( OQ.STAR_ICON .."".. string.format( OQ.RAGEQUITSOFAR, i, min, sec, OQ_data.nrage or 0 ) ) ;
-              -- play sound
-              if ((now - last_runaway) > OQ_MIN_RUNAWAY_TM) then
-                last_runaway = now ;
-                PlaySoundFile("Sound\\Creature\\HoodWolf\\HoodWolfTransformPlayer01.wav") ;
-              end
-            end
           else
             e.strike = e.strike + 1 ;
           end
@@ -3513,7 +3495,6 @@ function oq.game_ended()
   end  
 
   oq.calc_game_stats() ;
-  oq.announce_nquitters() ;
   oq.calc_player_stats() ;
   oq.calc_game_report() ;
   
@@ -3948,23 +3929,6 @@ function oq.announce_new_premade( name, name_change, raid_token )
     print( hlink .."  ".. string.format( OQ.NEW_PREMADE, nShown, premade.leader, name, premade.bgs ) .."|h".. wtoken ) ;
   end
   return 1 ;
-end
-
-function oq.announce_nquitters()
-  if (oq.toon.shout_ragequits == 1) and (_enemy ~= nil) then
-    local cnt = 0 ;
-    local i, e ;
-    for i,e in pairs(_enemy) do
-      if (e.ragequit ~= nil) then
-        cnt = cnt + 1 ;
-      end
-    end
-    if (cnt > 0) then
-      local min = floor((OQ_data.stats.bg_length)/60) ;
-      local sec = OQ_data.stats.bg_length % 60 ;
-      print( OQ.STAR_ICON .." ".. string.format( OQ.RAGEQUITTERS, cnt, min, sec ) ) ;
-    end
-  end
 end
 
 function oq.calc_player_stats()
@@ -4663,16 +4627,6 @@ function oq.report_score( winner, scores, tops )
     _last_report = bg .."".. winner .."".. crc .."".. end_tm .."".. start_tm .."".. oq.encode_mime64_1digit(oq.nMembers()) .."".. is_rated ;
     _last_bg     = OQ.BG_NAMES[ _bg_zone ].type_id ;
     _last_tops   = tbl.copy( tops, _last_tops, true ) ;
-  end
-end
-
-function oq.report_rage()
-  if (_inside_bg) then
-    print( string.format( OQ.RAGEQUITS, OQ_data.nrage ) ) ;
-  else
-    local min = floor((OQ_data.stats.bg_length)/60) ;
-    local sec = OQ_data.stats.bg_length % 60 ;
-    oq.log( true, string.format( OQ.RAGELASTGAME, OQ_data.nrage, min, sec ) ) ;
   end
 end
 
@@ -16285,9 +16239,7 @@ function oq.create_tab_setup()
   y  = y + cy ;
   oq.tab5_shoutcontracts = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTCONTRACTS, (OQ_data.show_contract_ads == 1), 
                function(self) oq.toggle_contract_ads( self ) ; end ) ;
-  y  = y + cy ;
-  oq.tab5_ragequits = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_ANNOUNCE_RAGEQUIT, (oq.toon.shout_ragequits == 1), 
-               function(self) oq.toggle_ragequits( self ) ; end ) ;
+
   y  = y + cy ;
   oq.tab5_autoaccept_mesh_request = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_AUTOACCEPT_MESH_REQ, (OQ_data.autoaccept_mesh_request == 1), 
                function(self) oq.toggle_autoaccept_mesh_request( self ) ; end ) ;
@@ -23442,14 +23394,6 @@ function oq.toggle_auto_role( cb )
   end
 end
 
-function oq.toggle_ragequits( cb ) 
-  if (cb:GetChecked()) then 
-    oq.toon.shout_ragequits = 1 ; 
-  else 
-    oq.toon.shout_ragequits = 0 ; 
-  end
-end
-
 function oq.toggle_show_controlled( cb )
   if (cb:GetChecked()) then 
     OQ_data.show_controlled = 1 ; 
@@ -25082,7 +25026,6 @@ function oq.on_logout()
   -- hang onto group data if still in an OQ_group (may come back)
   local disabled = oq.toon.disabled ;
   
-  oq.toon.shout_ragequits   = oq.toon.shout_ragequits or 1 ;
   OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 0 ;
   OQ_data.show_premade_ads  = OQ_data.show_premade_ads or 0 ;
   OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1 ;
@@ -25133,7 +25076,6 @@ function oq.attempt_group_recovery()
   
   if (oq.toon) then
     oq.toon.class_portrait          = oq.toon.class_portrait or 1 ;
-    oq.toon.shout_ragequits         = oq.toon.shout_ragequits or 1 ;
     OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 1 ; 
     OQ_data.ok2autoinspect          = OQ_data.ok2autoinspect or 1 ;
       
@@ -25275,7 +25217,6 @@ function oq.attempt_group_recovery()
   oq.tab5_autoinspect:SetChecked( (OQ_data.ok2autoinspect == 1) ) ;
   oq.tab5_shoutads:SetChecked( (OQ_data.show_premade_ads == 1) ) ;
   oq.tab5_shoutcontracts:SetChecked( (OQ_data.show_contract_ads == 1) ) ;
-  oq.tab5_ragequits:SetChecked( (oq.toon.shout_ragequits == 1) ) ;
   oq.tab5_autoaccept_mesh_request:SetChecked( (OQ_data.autoaccept_mesh_request == 1) ) ;
   oq.tab5_autojoin_oqgeneral:SetChecked( (OQ_data.auto_join_oqgeneral == 1) ) ;
   oq.tab5_autohide_friendreqs:SetChecked( (OQ_data.autohide_friendreqs == 1) ) ;
