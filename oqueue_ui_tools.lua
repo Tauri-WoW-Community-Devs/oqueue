@@ -64,7 +64,7 @@ function oq.make_frame_moveable( f )
   end)
 end
 
-function oq.moveto( f, x, y ) 
+function oq.moveto( f, x, y )
   if (y >= 0) then
     if (x >= 0) then 
       f:SetPoint("TOPLEFT",f:GetParent(),"TOPLEFT", x, -1 * y)

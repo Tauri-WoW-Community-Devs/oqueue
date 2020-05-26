@@ -1696,7 +1696,6 @@ function oq.frame_resize()
   OQTabPage2:_resize() ;
   OQTabPage3:SetHeight( OQTabPage3:GetHeight() + dy ) ;
   OQTabPage3:_resize() ;
-  oq.moveto( oq.tab4._tag, 20, OQTabPage4:GetHeight()-30 ) ;
   OQTabPage5:SetHeight( OQTabPage6:GetHeight() + dy ) ;
   OQTabPage5:_resize() ;
   OQTabPage6:SetHeight( OQTabPage6:GetHeight() + dy ) ;
@@ -2704,6 +2703,7 @@ function oq.channel_join( chan_name, pword )
 end
 
 function oq.hook_roster_update(chan_name)
+
   local n = strlower( chan_name ) ;
   local nchannels = GetNumDisplayChannels() ;
   local i ;
@@ -13331,7 +13331,6 @@ function oq.create_tab1_common( parent )
   
   parent._resize = function(self)
     local cy = self:GetHeight() ;
-    oq.move_y( self._tag              , cy-30 ) ;
     oq.move_y( self._voip             , cy-25*2-70 ) ;
     oq.move_y( self._lang             , cy-25*2-70 ) ;    
     oq.move_y( self._notes_label      , cy-25*2-50 ) ;
@@ -14230,7 +14229,6 @@ function oq.create_tab2()
 
   parent._resize = function(self)
     local cy = self:GetHeight() ;
-    oq.move_y( self._tag                , cy-30 ) ;
     oq.move_y( self._findmesh_but       , cy-30 ) ;
     oq.move_y( self._clearfilters_but   , cy-30 ) ;
     oq.move_y( self._filter             , cy-32 ) ;
@@ -14502,7 +14500,6 @@ function oq.create_tab3()
 
   oq.tab3._resize = function(self)
     local cy = self:GetHeight() ;
-    oq.move_y( self._tag              , cy-30 ) ;
     oq.move_y( self._create_but       , cy-70 ) ;
     oq.theme_resize(self) ;
   end
@@ -14828,7 +14825,6 @@ function oq.create_tab_waitlist()
 
   parent._resize = function(self)
     local cy = self:GetHeight() ;
-    oq.move_y( self._tag             , cy-30 ) ;
     oq.move_y( self.remove_offline   , cy-32 ) ;
     oq.move_y( self.waitlist_nfriends, cy-30 ) ;
     oq.move_y( self.inviteall_button , cy-32 ) ;
@@ -14874,7 +14870,6 @@ function oq.create_tab_banlist()
 
   parent._resize = function(self)
     local cy = self:GetHeight() ;
-    oq.move_y( self._tag         , cy-30 ) ;
     oq.move_y( self._ban_but     , cy-30 ) ;
     self._scroller:SetHeight( cy - (50+38) ) ;
     oq.theme_resize(self) ;
@@ -16502,7 +16497,6 @@ function oq.create_tab_setup()
     local h  = self:GetHeight() ;
     local y  = h - 37 ;
     local cy = 18 ;
-    oq.move_y( self._tag                  , h-30 ) ;
     oq.move_y( self._oq_pktsent_label     , y ) ;
     oq.move_y( self._oq_pktsent           , y ) ;  
     oq.move_y( self._oq_send_queuesz      , y ) ;  y = y - cy ;
