@@ -1987,7 +1987,6 @@ function oq.toon_init( t )
   t.shout_kbs       = 1 ;
   t.shout_caps      = 1 ;
   t.shout_ragequits = 1 ;
-  t.say_sapped      = 1 ;
   t.who_popped_lust = 1 ;
   t.reports         = tbl.new() ;
 end
@@ -16309,9 +16308,6 @@ function oq.create_tab_setup()
   oq.tab5_autoinspect = oq.checkbox( parent, x, y,  23, cy, 200, OQ.AUTO_INSPECT, (OQ_data.ok2autoinspect == 1), 
                function(self) oq.toggle_autoinspect( self ) ; end ) ;
   y = y + cy ;
-  oq.tab5_ss = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SAYSAPPED, (oq.toon.say_sapped == 1), 
-               function(self) oq.toggle_say_sapped( self ) ; end ) ;
-  y = y + cy ;
   oq.tab5_wp = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_WHOPOPPED, (oq.toon.who_popped_lust == 1), 
                function(self) oq.toggle_who_popped_lust( self ) end ) ;
   y  = y + cy ;
@@ -23429,7 +23425,7 @@ function oq.toggle_autoinspect( cb )
 end
 
 function oq.turnon_CLEU_ifneeded()
-  if (oq._inside_instance == 1) and ((oq.toon.who_popped_lust == 1) or (oq.toon.say_sapped == 1) or (oq.toon.shout_kbs == 1) or (oq._instance_type == "pve")) then
+  if (oq._inside_instance == 1) and ((oq.toon.who_popped_lust == 1) or (oq.toon.shout_kbs == 1) or (oq._instance_type == "pve")) then
     oq.ui:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
   else
     oq.CLEU_world_mode() ;
@@ -23437,11 +23433,7 @@ function oq.turnon_CLEU_ifneeded()
 end
 
 function oq.CLEU_world_mode()
-  if (oq.toon.say_sapped == 1) then
-    oq.ui:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
-  else
-    oq.ui:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
-  end
+  oq.ui:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED") ;
 end
 
 function oq.toggle_shout_kbs( cb )
@@ -23469,15 +23461,6 @@ function oq.toggle_contract_ads( cb )
   else 
     OQ_data.show_contract_ads = 0 ; 
   end 
-end
-
-function oq.toggle_say_sapped( cb )
-  if (cb:GetChecked()) then 
-    oq.toon.say_sapped = 1 ; 
-  else 
-    oq.toon.say_sapped = 0 ; 
-  end 
-  oq.turnon_CLEU_ifneeded() ;
 end
 
 function oq.toggle_who_popped_lust( cb )
@@ -23803,25 +23786,6 @@ function oq.on_encounter_start(encounterID, encounterName, difficultyID, raidSiz
   -- This usually returns nil. When done on encounter end, it returns the guid unless its something wierd, like spoils.
 end
 
--- say sapped
-function oq.on_spell_aura_applied( ... ) 
--- should already be populated in on_combat_log_event_unfiltered
---  _arg = { ... } ;
-  local spellId = _arg[12] ;
-  local target = _arg[9] ;
-  local caster = _arg[5] ;
-  
-  if (oq.toon.say_sapped == 1) then
-    if ((spellId == 6770)
-    and (target == player_name)
-    and (_arg[2] == "SPELL_AURA_APPLIED" or _arg[2] == "SPELL_AURA_REFRESH"))
-    then
-      oq.SendChatMessage(OQ.SAPPED, "SAY")
-      DEFAULT_CHAT_FRAME:AddMessage("Sapped by: "..(caster or "(unknown)"))
-    end
-  end
-end
-
 -- who popped lust?
 function oq.on_spell_cast_success( ... )
 -- should already be populated in on_combat_log_event_unfiltered
@@ -23941,8 +23905,6 @@ function oq.register_events()
   
   oq.combat_handler = tbl.new() ;
   oq.combat_handler[ "PARTY_KILL"         ] = oq.on_party_kill ;
-  oq.combat_handler[ "SPELL_AURA_APPLIED" ] = oq.on_spell_aura_applied ;
-  oq.combat_handler[ "SPELL_AURA_REFRESH" ] = oq.on_spell_aura_applied ;
   oq.combat_handler[ "SPELL_CAST_SUCCESS" ] = oq.on_spell_cast_success ;
 
   oq.ui:SetScript( "OnShow", function( self ) oq.onShow( self ) ; end ) ;
@@ -25265,7 +25227,6 @@ function oq.attempt_group_recovery()
   
   if (oq.toon) then
     oq.toon.class_portrait          = oq.toon.class_portrait or 1 ;
-    oq.toon.say_sapped              = oq.toon.say_sapped or 1 ;
     oq.toon.who_popped_lust         = oq.toon.who_popped_lust or 1 ;
     oq.toon.shout_kbs               = oq.toon.shout_kbs or 1 ;
     oq.toon.shout_caps              = oq.toon.shout_caps or 1 ;
@@ -25409,7 +25370,6 @@ function oq.attempt_group_recovery()
   oq.tab5_ar:SetChecked( (oq.toon.auto_role == 1) ) ;
   oq.tab5_cp:SetChecked( (oq.toon.class_portrait == 1) ) ;
   oq.tab5_autoinspect:SetChecked( (OQ_data.ok2autoinspect == 1) ) ;
-  oq.tab5_ss:SetChecked( (oq.toon.say_sapped == 1) ) ;
   oq.tab5_wp:SetChecked( (oq.toon.who_popped_lust == 1) ) ;
   oq.tab5_shoutkbs:SetChecked( (oq.toon.shout_kbs == 1) ) ;
   oq.tab5_shoutads:SetChecked( (OQ_data.show_premade_ads == 1) ) ;
