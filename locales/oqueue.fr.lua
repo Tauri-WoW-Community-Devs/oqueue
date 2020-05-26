@@ -262,7 +262,6 @@ OQ.LABEL_CHALLENGE    = "Défi" ;
 OQ.LABEL_MISC         = "Divers" ;
 OQ.LABEL_ROLEPLAY     = "Jeux de rôle" ;
 OQ.PATTERN_CAPS       = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE         = "Envoyez une donation !" ;
 OQ.MATCHUP            = "match disponible" ;
 OQ.NODIPFORYOU        = "Vous avez plus de %d amis B-NET. Aucun changement pour vous." ;
 OQ.GAINED             = "gagné" ;
@@ -407,34 +406,6 @@ OQ.LABEL_DUTCH        = "Hollandais (DU)" ;
 OQ.LABEL_SWEDISH      = "Suédois (SE)" ;
 OQ.LABEL_ARABIC       = "Arabe (AR)" ;
 
-OQ.CONTRIBUTION_DLG = { "",
-                        "Having fun with oQueue and public vent?",
-                        "Then drop by and say hi!",
-                        "",
-                        "for the latest on oQueue:",
-                        "beg.oq",
-                        "",
-                        "or drop by the forums:",
-                        "beg.vent",
-                        "",
-                        "Have fun and have a great night!",
-                        "",
-                        "- tiny",
-                      } ;
-OQ.CONTRIBUTION2_DLG = { "",
-                        "Having fun with oQueue and public vent?",
-                        "Then send us a beer!",
-                        "",
-                        "for tiny and oQueue:",
-                        "beg.oq",
-                        "",
-                        "for Rathamus and public vent:",
-                        "beg.vent",
-                        "",
-                        "Thanks!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Attention:",
                         "",

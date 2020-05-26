@@ -248,7 +248,6 @@ OQ.LABEL_RAID       = "banda" ;
 OQ.LABEL_SCENARIO   = "gesta" ;
 OQ.LABEL_CHALLENGE  = "desafios" ;
 OQ.PATTERN_CAPS     = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE       = "¡enviar birra!" ;
 OQ.MATCHUP          = "agrupar" ;
 OQ.NODIPFORYOU      = "Tienes mas de %d amigos battlenet. para usted no hay inmersión (dip)." ; 
 OQ.GAINED           = "ganado" ;
@@ -363,20 +362,6 @@ OQ.TT_FRIEND_REQUEST  = "añadir amigo" ;
 OQ.DEATHMATCH_BEGINS  = "¡El Encuentro a Muerte de JcJ del mundo ha comenzado!  ¡Ve al espinazo en Pandaria y defiende a tus vendedores JcJ!" ;
 OQ.WONTHEMATCH        = "ha ganado el encuentro!" ;
 
-OQ.CONTRIBUTION_DLG = { "¿Te estas divirtiendo con",
-            "oQueue y el ventrilo publico?",
-                        "¡Entonces envianos una cerveza!",
-                        "",
-                        "para tiny y oQueue:",
-                        "beg.oq",
-                        "",
-                        "para Rathamus y el ventrilo publico:",
-                        "beg.vent",
-                        "",
-                        "¡Gracias!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Aviso:",
                         "",

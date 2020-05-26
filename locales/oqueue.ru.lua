@@ -259,7 +259,6 @@ OQ.LABEL_QUESTERS     = "Групповые задания" ;
 OQ.LABEL_MISC         = "Разное" ;
 OQ.LABEL_ROLEPLAY     = "Ролевыя игры" ;
 OQ.PATTERN_CAPS       = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE         = "На пиво!" ;
 OQ.MATCHUP            = "Совпадают" ;
 OQ.NODIPFORYOU        = "У вас более %d b-net друзей." ;
 OQ.GAINED             = "Получено" ;
@@ -404,20 +403,6 @@ OQ.LABEL_SWEDISH      = "Шведский" ;
 OQ.LABEL_ARABIC       = "Арабский" ;
 OQ.LABEL_KOREAN       = "Корейский" ;
 
-OQ.CONTRIBUTION_DLG = { "",
-                        "Нравится oQueue и PublicVent?",
-                        "Тогда отправь нам пивка!",
-                        "",
-                        "для tiny и oQueue:",
-                        "beg.oq",
-                        "",
-                        "для Rathamus и PublicVent:",
-                        "beg.vent",
-                        "",
-                        "Спасибо!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Внимание:",
                         "",

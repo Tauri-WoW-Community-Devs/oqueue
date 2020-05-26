@@ -13304,7 +13304,6 @@ function oq.create_tab1_common( parent )
   oq.tab1._notes:SetTextColor( 0.9, 0.9, 0.9, 1 ) ;
 
   --[[ tag and version ]]--
-  oq.place_tag( parent ) ;
   OQFrameHeaderLogo:SetText( OQ.TITLE_LEFT .."".. OQUEUE_VERSION .."".. OQ_SPECIAL_TAG .."".. OQ.TITLE_RIGHT ) ;
 
   -- brb button
@@ -14226,9 +14225,6 @@ function oq.create_tab2()
   oq.tab2._filter = oq.combo_box( parent, x, y-4, 125, 25, oq.make_dropdown_premade_filter, OQ.LABEL_ALL ) ;
   oq.tab2._filter.__width = 150 ;
   
-  -- tag
-  oq.place_tag( parent ) ;
-  
   -- tooltips
   oq.tab2._findmesh_but.tt = OQ.TT_FINDMESH ;
 
@@ -14504,9 +14500,6 @@ function oq.create_tab3()
   oq.set_tab_order( oq.tab3_notes        , oq.tab3_pword ) ;
   oq.set_tab_order( oq.tab3_pword        , oq.tab3_raid_name ) ;
 
-  -- tag
-  oq.place_tag( OQTabPage3 ) ;
-  
   oq.tab3._resize = function(self)
     local cy = self:GetHeight() ;
     oq.move_y( self._tag              , cy-30 ) ;
@@ -14833,9 +14826,6 @@ function oq.create_tab_waitlist()
   -- add samples
   oq.tab7.waitlist = tbl.new() ;
 
-  -- tag
-  oq.place_tag( parent ) ;
-  
   parent._resize = function(self)
     local cy = self:GetHeight() ;
     oq.move_y( self._tag             , cy-30 ) ;
@@ -14881,9 +14871,6 @@ function oq.create_tab_banlist()
 
   -- add samples
   oq.tab6_banlist = tbl.new() ;
-
-  -- tag
-  oq.place_tag( parent ) ;
 
   parent._resize = function(self)
     local cy = self:GetHeight() ;
@@ -15051,52 +15038,6 @@ function oq.create_banbox( parent )
   f.html = msg ;
 
   parent._banned = f ;
-  return f ;
-end
-
-function oq.create_begbox( parent ) 
-  if (parent._beg) then
-    return parent._beg ;
-  end
-  local pcx = parent:GetWidth() ;
-  local pcy = parent:GetHeight() ;
-  local cx = floor(pcx/2) ;
-  local cy = floor(4*pcy/5) ;
-  local f = oq.panel( parent, "BegBox", floor((pcx - cx)/2), floor((pcy - cy)/2), cx, cy) ;
-  if (oq.__backdrop07 == nil) then
-    oq.__backdrop07 = { bgFile="Interface/Tooltips/UI-Tooltip-Background", 
-                        edgeFile="Interface/Tooltips/UI-Tooltip-Border", 
-                        tile=true, tileSize = 16, edgeSize = 16,
-                        insets = { left = 1, right = 1, top = 1, bottom = 1 }
-                      }
-  end
-  f:SetBackdrop( oq.__backdrop07 ) ;
-  f:SetBackdropColor( 0.2, 0.2, 0.2, 1.0 ) ;
-  f:SetAlpha( 1.0 ) ;
-  f.texture:SetTexture( "INTERFACE/PVP-Banner-Emblem-1" ) ;
-  f.texture:SetPoint( "TOPLEFT"    , f, "BOTTOMRIGHT", -130, 130 ) ;
-  f.texture:SetPoint( "BOTTOMRIGHT", f, "BOTTOMRIGHT", - 10,  10 ) ;
-  
-  oq.closebox( f, function(self) self:GetParent():GetParent():Hide() ; end ) ;
-
-  local x = 15 ;
-  local y = 20 ;
-  local i, v ;
-  for i,v in pairs(OQ.CONTRIBUTION_DLG) do
-    if (v ~= "beg.oq") and (v ~= "beg.vent") then
-      local t = oq.label( f, x, y, cx-2*15, 20, v, "CENTER", "LEFT" ) ;
-      t:SetFont(OQ.FONT, 16, "") ;
-    elseif (v == "beg.oq") then
-      f.beg_oq   = oq.editline( f, "oQueueBeg", x+10, y, cx-2*20, 24, 60 ) ;  
-      f.beg_oq:SetText( "https://solidice.com/oqueue/" ) ;
-    elseif (v == "beg.vent") then
-      f.beg_vent = oq.editline( f, "VentBeg", x+10, y, cx-2*20, 24, 60 ) ;  
-      f.beg_vent:SetText( "http://solidice.com/forums" ) ;
-    end
-    y = y + 24 ;
-  end
-
-  parent._beg = f ;
   return f ;
 end
 
@@ -15873,16 +15814,6 @@ function oq.bnet_down_shade()
   oq.shaded_dialog( oq.create_bnetdownbox( oq.create_ui_shade() ), true ) ;
 end
 
-function oq.contribute_shade()
-  -- cover entire oq ui with alpha screen to darken
-  -- display dialog with request for contributions for oqueue dev and public vent servers
-  -- should have dialogs to copy/paste from
-  -- will have links to contribution pages
-  -- solidice:   https://solidice.com/oqueue/contribute.html
-  -- public vent:  http://donate.publicvent.org/
-  oq.shaded_dialog( oq.create_begbox( oq.create_ui_shade() ), nil ) ;
-end
-
 function oq.pending_note_shade(self)
   oq.shaded_dialog( oq.create_pending_note( oq.create_ui_shade(), self:GetParent().token ), nil ) ;
 end
@@ -15947,20 +15878,6 @@ end
 
 function oq.required_update_shade()
   oq.shaded_dialog( oq.create_required_updatebox( oq.create_ui_shade(), oq._major, oq._minor, oq._rev ), true ) ;
-end
-
-function oq.place_tag( parent )
-  local txt = "|cFF000000".. OQ.CONTRIBUTE .. "|r" ;
-  local tag = oq.click_label( parent, 20, parent:GetHeight() - 30, 90, 18, txt, "CENTER", "CENTER" ) ;
-  local t = tag:CreateTexture(nil,"BACKGROUND") ;
-  t:SetAllPoints(tag) ;
-  t:SetDrawLayer("BACKGROUND") ;
-  tag.texture = t ;
-  tag.texture:SetTexture( "Interface\\Addons\\oqueue\\art\\but_gold_blank.tga" ) ;
-  tag:SetScript("OnClick", function(self) oq.contribute_shade() ; end ) ;
-  tag.label:SetFont(OQ.FONT, 12, "") ;
-  parent._tag = tag ;
-  return tag ;
 end
 
 function oq.create_score_tab_label( x, y, cx, cy, txt )
@@ -16346,7 +16263,6 @@ function oq.create_tab_score()
   y = y + cy + spacer ;
   oq.tab4._bg[ "DWG"  ] = oq.create_score_tab_label( x, y, cx, cy, oq.bg_name( OQ.DWG  ) ) ;
   
-  oq.place_tag( parent ) ;
   parent._resize = function(self)
     oq.theme_resize(self) ;
   end
@@ -16582,9 +16498,6 @@ function oq.create_tab_setup()
   oq.tab5._oq_timedrift:SetTextColor( 1,1,1 ) ;
   y = y - cy ; -- moving up
 
-  -- tag
-  oq.place_tag( parent ) ;
-  
   parent._resize = function(self)
     local h  = self:GetHeight() ;
     local y  = h - 37 ;

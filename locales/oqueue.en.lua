@@ -264,7 +264,6 @@ OQ.LABEL_CHALLENGE    = "challenge" ;
 OQ.LABEL_MISC         = "miscellaneous" ;
 OQ.LABEL_ROLEPLAY     = "roleplay" ;
 OQ.PATTERN_CAPS       = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE         = "send beer!" ;
 OQ.MATCHUP            = "match up" ;
 OQ.NODIPFORYOU        = "You have more then %d bnet friends.  no dip for you." ;
 OQ.GAINED             = "gained" ;
@@ -416,35 +415,6 @@ OQ.ARENA_RANKS = { [ 0 ] = "",
                    [ 3 ] = "duelist",
                    [ 4 ] = "gladiator"
                  } ;
-
-OQ.CONTRIBUTION_DLG = { "",
-                        "Having fun with oQueue and public vent?",
-                        "Then drop by and say hi!",
-                        "",
-                        "for the latest on oQueue:",
-                        "beg.oq",
-                        "",
-                        "or drop by the forums:",
-                        "beg.vent",
-                        "",
-                        "Have fun and have a great night!",
-                        "",
-                        "- tiny",
-                      } ;
-OQ.CONTRIBUTION2_DLG = { "",
-                        "Having fun with oQueue and public vent?",
-                        "Then send us a beer!",
-                        "",
-                        "for tiny and oQueue:",
-                        "beg.oq",
-                        "",
-                        "for Rathamus and public vent:",
-                        "beg.vent",
-                        "",
-                        "Thanks!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Warning:",
                         "",

@@ -258,7 +258,6 @@ OQ.LABEL_SCENARIO     = "scenario" ;
 OQ.LABEL_CHALLENGE    = "sfida" ;
 OQ.LABEL_MISC         = "misto" ;
 OQ.PATTERN_CAPS       = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE         = "invia birra!" ;
 OQ.MATCHUP            = "corrisponde" ;
 OQ.NODIPFORYOU        = "Hai più amici di b.net %d ." ;
 OQ.GAINED             = "ottenuto" ;
@@ -373,35 +372,6 @@ OQ.TT_FRIEND_REQUEST  = "richiesta d'amicizia" ;
 OQ.DEATHMATCH_BEGINS  = "Lo scontro di sangue PVP è iniziato!  Arrivate alla colonna vertebrale in Pandaria e difendete i vostri fornitori PVP!" ;
 OQ.WONTHEMATCH        = "Vinto lo scontro!" ;
 OQ.MSG_MISSINGTYPE    = "Perfavore seleziona il tipo di premade" ;
-
-OQ.CONTRIBUTION_DLG = { "",
-                        "Vi siete divertiti con oQueue e negli eventi pubblici?",
-                        "Allora cadi e dici ciao!",
-                        "",
-                        "Per le ultime su oQueue:",
-                        "beg.oq",
-                        "",
-                        "o vai nel forum:",
-                        "beg.vent",
-                        "",
-                        "Buon divertimento ed una gran nottata!",
-                        "",
-                        "- tiny",
-                      } ;
-OQ.CONTRIBUTION2_DLG = { "",
-                        "Vi siete divertiti con oQueue e negli eventi pubblici?",
-                        "Invia a loro una birra!",
-                        "",
-                        "per tiny e oQueue:",
-                        "beg.oq",
-                        "",
-                        "per Rathamus ed eventi pubblici:",
-                        "beg.vent",
-                        "",
-                        "Grazie!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Attenzione:",
                         "",

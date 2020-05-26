@@ -27,7 +27,7 @@ OQ.CREATE_BUTTON    = "crear premade" ;
 OQ.UPDATE_BUTTON    = "Actualizar premade" ;
 OQ.WAITLIST         = "Lista de Espera" ;
 OQ.HONOR_BUTTON     = "OQ premade" ;
-OQ.SETUP            = "Configuración" ;
+OQ.SETUP            = "Configuraciï¿½n" ;
 OQ.PLEASE_SELECT_BG = "Por favor, selecciona un campo de batalla" ;
 OQ.BAD_REALID       = "id real o battletag no valido.\n" ;
 OQ.QUEUE1_SELECTBG  = "<selecciona un campo de batalla>" ;
@@ -53,21 +53,21 @@ OQ.TT_WAITLIST      = "lista de espera" ;
 OQ.TT_RECORD        = "record (ganadas - perdidas)" ;
 OQ.TT_AVG_HONOR     =  "media honor/partida" ;
 OQ.TT_AVG_HKS       = "media muertes honor/partida" ;
-OQ.TT_AVG_GAME_LEN  = "media duración partida" ;
-OQ.TT_AVG_DOWNTIME  = "media duración muerte" ;
+OQ.TT_AVG_GAME_LEN  = "media duraciï¿½n partida" ;
+OQ.TT_AVG_DOWNTIME  = "media duraciï¿½n muerte" ;
 OQ.TT_RESIL         = "temple" ;
 OQ.TT_ILEVEL        = "nivel de objeto" ;
-OQ.TT_MAXHP         = "salud máxima" ;
+OQ.TT_MAXHP         = "salud mï¿½xima" ;
 OQ.TT_WINLOSS       = "ganada - perdidas" ;
 OQ.TT_HKS           = "total muertes por honor" ;
-OQ.TT_OQVERSION     = "versión" ;
+OQ.TT_OQVERSION     = "versiï¿½n" ;
 OQ.TT_TEARS         = "lloricas" ;
 OQ.TT_PVPPOWER      = "poder JcJ" ;
-OQ.TT_MMR           = "índice de CdB puntuado" ;
+OQ.TT_MMR           = "ï¿½ndice de CdB puntuado" ;
 OQ.JOIN_QUEUE       = "unirse a la cola" ;
 OQ.LEAVE_QUEUE      = "abandonar cola" ;
 OQ.LEAVE_QUEUE_BIG  = "ABANDONAR COLA" ;
-OQ.DAS_BOOT         = "¡¡ DAS BOOT !!" ; 
+OQ.DAS_BOOT         = "ï¿½ï¿½ DAS BOOT !!" ; 
 OQ.DISBAND_PREMADE  = "deshacer grupo premade" ;
 OQ.LEAVE_PREMADE    = "dejar el grupo de premade" ;
 OQ.RELOAD           = "recargar" ;
@@ -90,13 +90,13 @@ OQ.PREMADE_NAME     = "Nombre de la Premade" ;
 OQ.LEADERS_NAME     = "Nombre del Lider" ;
 OQ.REALID           = "ID Real o B-tag" ;
 OQ.REALID_MOP       = "Battle-tag" ;
-OQ.MIN_ILEVEL       = "Nivel de objeto mínimo" ;
-OQ.MIN_RESIL        = "Temple mínimo" ;
-OQ.MIN_MMR          = "Indice de CdB mínimo" ;
-OQ.BATTLEGROUNDS    = "Descripción" ;
+OQ.MIN_ILEVEL       = "Nivel de objeto mï¿½nimo" ;
+OQ.MIN_RESIL        = "Temple mï¿½nimo" ;
+OQ.MIN_MMR          = "Indice de CdB mï¿½nimo" ;
+OQ.BATTLEGROUNDS    = "Descripciï¿½n" ;
 OQ.ENFORCE_LEVELS   = "hacer cumplir el rango de niveles" ;
 OQ.NOTES            = "Notas" ;
-OQ.PASSWORD         = "Contraseña" ;
+OQ.PASSWORD         = "Contraseï¿½a" ;
 OQ.CREATEURPREMADE  = "Crear tu propia premade" ;
 OQ.LABEL_LEVEL      = "Nivel" ;
 OQ.LABEL_LEVELS     = "Niveles" ;
@@ -113,20 +113,20 @@ OQ.HDR_MASTERY      = "maestria" ;
 OQ.HDR_HIT          = "golpe" ;
 OQ.HDR_DATE         = "fecha" ;
 OQ.HDR_BTAG         = "battle.tag" ;
-OQ.HDR_REASON       = "razón" ;
+OQ.HDR_REASON       = "razï¿½n" ;
 OQ.RAFK_ENABLED     = "raus activado" ; 
 OQ.RAFK_DISABLED    = "raus desactivado" ;
-OQ.SETUP_HEADING    = "Configuración y varios comandos" ;
-OQ.SETUP_BTAG       = "Dirección de correo electronico de Battlenet" ;
+OQ.SETUP_HEADING    = "Configuraciï¿½n y varios comandos" ;
+OQ.SETUP_BTAG       = "Direcciï¿½n de correo electronico de Battlenet" ;
 OQ.SETUP_GODARK_LBL = "Indica a todos tus amigos de OQ que vas a ser invisible" ;
-OQ.SETUP_CAPCHK     = "Forzar comprobación de capacidad de OQ" ;
+OQ.SETUP_CAPCHK     = "Forzar comprobaciï¿½n de capacidad de OQ" ;
 OQ.SETUP_REMOQADDED = "Eliminar los amigos de B.net agregados por OQ" ;
 OQ.SETUP_REMOVEBTAG = "Eliminar battletag del tanteador" ;
 OQ.SETUP_ALTLIST    = "lista de personajes alternativos\nen esta cuenta battle.net:\n(solo para multi-boxers)" ;
 OQ.SETUP_AUTOROLE   = "Auto seleccionar rol" ;
 OQ.SETUP_CLASSPORTRAIT = "Usar retratos de clase" ;
 OQ.SETUP_SAYSAPPED  = "Anunciar aporreados (sapped)" ;
-OQ.SETUP_WHOPOPPED  = "¿Quien ha tirado Ansia?" ;
+OQ.SETUP_WHOPOPPED  = "ï¿½Quien ha tirado Ansia?" ;
 OQ.SETUP_GARBAGE    = "recolector de basura\n(intervalos de 30 seg)" ;
 OQ.SETUP_SHOUTKBS   = "Anunciar golpes mortales" ;
 OQ.SETUP_SHOUTCAPS  = "Anunciar objetivos de CdB" ;
@@ -134,7 +134,7 @@ OQ.SETUP_SHOUTADS   = "Anunciar premades" ;
 OQ.SETUP_AUTOACCEPT_MESH_REQ = "Autoaceptar peticiones\nbattletag de la malla" ;
 OQ.SETUP_ANNOUNCE_RAGEQUIT = "Anunciar 'rage quitters'" ;
 OQ.SETUP_OK2SUBMIT_BTAG    = "Enviar b-tag cada 4 dias" ;
-OQ.SETUP_ADD        = "añadir" ;
+OQ.SETUP_ADD        = "aï¿½adir" ;
 OQ.SETUP_MYCREW     = "mi equipo" ;
 OQ.SETUP_CLEAR      = "borrar" ;
 OQ.SETUP_COLORBLIND = "Soporte para daltonismo" ;
@@ -147,7 +147,7 @@ OQ.PPS_PROCESSED    = "pqts procesados/seg" ;
 OQ.MEM_USED         = "memoria utilizada (kB)" ;
 OQ.BANDWIDTH_UP     = "subida (kBps)" ;
 OQ.BANDWIDTH_DN     = "bajada (kBps)" ;
-OQ.OQSK_DTIME       = "variación de tiempo" ;
+OQ.OQSK_DTIME       = "variaciï¿½n de tiempo" ;
 OQ.SETUP_CHECKNOW   = "comprobar ahora" ;
 OQ.SETUP_GODARK     = "modo invisible" ;
 OQ.SETUP_REMOVENOW  = "eliminar ahora" ;
@@ -160,19 +160,19 @@ OQ.ENABLED          = "oQueue activado" ;
 OQ.THETIMEIS        = "la hora es %d (GMT)" ;
 OQ.RAGEQUITSOFAR    = " 'rage quit': %s despues de %d:%02d  (%d hasta ahora)" ;
 OQ.RAGEQUITTERS     = "%d 'rage quit' a lo largo de %d:%02d" ; 
-OQ.RAGELASTGAME     = "%d 'rage quit' en la ultima partida (cdb duró %d:%02d)" ;  
+OQ.RAGELASTGAME     = "%d 'rage quit' en la ultima partida (cdb durï¿½ %d:%02d)" ;  
 OQ.NORAGEQUITS      = "no estas en un campo de batalla" ;
 OQ.RAGEQUITS        = "%d 'rage quit' hasta ahora" ;
 OQ.MSG_PREMADENAME  = "por favor introduce el nombre de la premade" ;
 OQ.MSG_MISSINGNAME  = "por favor da un nombre a tu premade" ;
-OQ.MSG_REJECT       = "petición de entrada en lista de espera no aceptada.\nrazón: %s" ;
+OQ.MSG_REJECT       = "peticiï¿½n de entrada en lista de espera no aceptada.\nrazï¿½n: %s" ;
 OQ.MSG_CANNOTCREATE_TOOLOW = "No es posible crear la premade.  \nDebes ser nivel 10 o superior" ;
 OQ.MSG_NOTLFG       = "Por favor, no uses oQueue para realizar anuncios de Busqueda de Grupo.\nAlgunos jugadores pueden bloquearte de sus premades si lo haces." ;
 OQ.TAB_PREMADE      = "Premade" ;
 OQ.TAB_FINDPREMADE  = "Buscar Premade" ;
 OQ.TAB_CREATEPREMADE = "Crear Premade" ;
-OQ.TAB_THESCORE     = "Puntuación" ;
-OQ.TAB_SETUP        = "Configuración" ;
+OQ.TAB_THESCORE     = "Puntuaciï¿½n" ;
+OQ.TAB_SETUP        = "Configuraciï¿½n" ;
 OQ.TAB_BANLIST      = "Bloqueados" ;
 OQ.TAB_WAITLIST     = "Lista de Espera" ;
 OQ.TAB_WAITLISTN    = "Lista de Espera (%d)" ;
@@ -192,21 +192,21 @@ OQ.DLG_01           = "Por favor, introduce el nombre del personaje:" ;
 OQ.DLG_02           = "Entrar a la Batalla" ;
 OQ.DLG_03           = "Por favor da un nombre a tu premade:" ;
 OQ.DLG_04           = "Por favor introduce tu ID Real:" ;
-OQ.DLG_05           = "Contraseña:" ;
+OQ.DLG_05           = "Contraseï¿½a:" ;
 OQ.DLG_06           = "Por favor, introduce el id real o el nombre del nuevo lider de grupo:" ;
-OQ.DLG_07           = "\n¡¡ Disponible NUEVA VERSIÓN !!\n\noQueue  v%s  build  %d\n" ;
+OQ.DLG_07           = "\nï¿½ï¿½ Disponible NUEVA VERSIï¿½N !!\n\noQueue  v%s  build  %d\n" ;
 OQ.DLG_08           = "Por favor, deja tu grupo para unirte a la\nlista de espera o pide a tu lider de grupo\nque ponga en cola el grupo completo" ;
 OQ.DLG_09           = "Solo el lider del grupo puede crear una Premade OQ" ;
-OQ.DLG_10           = "La cola ha saltado.\n¿Cual es tu decisión? ";
-OQ.DLG_11           = "La cola ha saltado. Esperando a que el Lider de Banda tome una decisión\nPor favor, espera un momento." ;
-OQ.DLG_12           = "¿Seguro que quieres abandonar el grupo de banda?" ;
-OQ.DLG_13           = "El lider de la premade mira quién esta listo" ;
+OQ.DLG_10           = "La cola ha saltado.\nï¿½Cual es tu decisiï¿½n? ";
+OQ.DLG_11           = "La cola ha saltado. Esperando a que el Lider de Banda tome una decisiï¿½n\nPor favor, espera un momento." ;
+OQ.DLG_12           = "ï¿½Seguro que quieres abandonar el grupo de banda?" ;
+OQ.DLG_13           = "El lider de la premade mira quiï¿½n esta listo" ;
 OQ.DLG_14           = "El lider de la banda ha solicitado recargar" ;
 OQ.DLG_15           = "Bloqueando a: %s \nPor favor, introduce tu motivo:" ;
 OQ.DLG_16           = "Imposible seleccionar este tipo de premade.\nDemasiados miembros (max. %d)" ;
 OQ.DLG_17           = "Por favor introduce el battletag a bloquear:" ;
 OQ.DLG_18a          = "La version %d.%d.%d esta disponible" ;
-OQ.DLG_18b          = "--  Actualización Requerida  --" ;
+OQ.DLG_18b          = "--  Actualizaciï¿½n Requerida  --" ;
 OQ.DLG_19           = "Debes estar capacitado para tu propia premade" ;
 OQ.DLG_20           = "No se permiten grupos en este tipo de premade" ;
 OQ.DLG_21           = "Abandona tu premade antes de entrar en la lista de espera" ;
@@ -214,16 +214,16 @@ OQ.DLG_22           = "Disuelve tu premade antes de entrar en la lista de espera
 OQ.MENU_KICKGROUP   = "expulsar grupo" ;
 OQ.MENU_SETLEAD     = "establecer lider de grupo" ;
 OQ.HONOR_PTS        = "Puntos de Honor" ;
-OQ.NOBTAG_01        = " no se ha recibido la información de battletag a tiempo." ;
+OQ.NOBTAG_01        = " no se ha recibido la informaciï¿½n de battletag a tiempo." ;
 OQ.NOBTAG_02        = " por favor, intentalo de nuevo." ;
-OQ.MINIMAP_HIDDEN   = "(OQ) botón del minimapa oculto" ;
-OQ.MINIMAP_SHOWN    = "(OQ) botón del minimapa mostrado" ;
-OQ.FINDMESH_OK      = "tu conexión es correcta. Las premades se actualizaran en ciclos de 30 segundos" ;
-OQ.TIMEERROR_1      = "OQ: tu hora del sistema esta significativamente fuera de sincronización (%s)." ;
+OQ.MINIMAP_HIDDEN   = "(OQ) botï¿½n del minimapa oculto" ;
+OQ.MINIMAP_SHOWN    = "(OQ) botï¿½n del minimapa mostrado" ;
+OQ.FINDMESH_OK      = "tu conexiï¿½n es correcta. Las premades se actualizaran en ciclos de 30 segundos" ;
+OQ.TIMEERROR_1      = "OQ: tu hora del sistema esta significativamente fuera de sincronizaciï¿½n (%s)." ;
 OQ.TIMEERROR_2      = "OQ: por favor actualiza la hora y zona horaria de tu sistema." ;
-OQ.SYS_YOUARE_AFK    = "Ahora estás Ausente" ;
-OQ.SYS_YOUARENOT_AFK = "Ya no estás Ausente" ;
-OQ.ERROR_REGIONDATA = "Datos de región no cargados correctamente" ;
+OQ.SYS_YOUARE_AFK    = "Ahora estï¿½s Ausente" ;
+OQ.SYS_YOUARENOT_AFK = "Ya no estï¿½s Ausente" ;
+OQ.ERROR_REGIONDATA = "Datos de regiï¿½n no cargados correctamente" ;
 OQ.TT_LEAVEPREMADE  = "clic-izquierdo:  salir de lista de espera\nclic-derecho:  bloquear al lider de la premade" ;
 OQ.TT_FINDMESH      = "solicitar battletags del tanteador\npara conectarte a la malla" ;
 OQ.TT_SUBMIT2MESH   = "envia tu battletag al tanteador\npara ayudar a que crezca la malla" ;
@@ -248,17 +248,16 @@ OQ.LABEL_RAID       = "banda" ;
 OQ.LABEL_SCENARIO   = "gesta" ;
 OQ.LABEL_CHALLENGE  = "desafios" ;
 OQ.PATTERN_CAPS     = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ;
-OQ.CONTRIBUTE       = "¡enviar birra!" ;
 OQ.MATCHUP          = "agrupar" ;
-OQ.NODIPFORYOU      = "Tienes mas de %d amigos battlenet. para usted no hay inmersión (dip)." ; 
+OQ.NODIPFORYOU      = "Tienes mas de %d amigos battlenet. para usted no hay inmersiï¿½n (dip)." ; 
 OQ.GAINED           = "ganado" ;
 OQ.LOST             = "perdido" ;
 OQ.PERHOUR          = "por hora" ;
 OQ.NOW              = "ahora" ;
 OQ.WITH             = "con" ;
 OQ.RAID_TOES        = "Veranda de la Primavera Eterna";
-OQ.RAID_HOF         = "Corazón de Miedo" ;
-OQ.RAID_MV          = "Cámaras Mogu'shan" ;
+OQ.RAID_HOF         = "Corazï¿½n de Miedo" ;
+OQ.RAID_MV          = "Cï¿½maras Mogu'shan" ;
 OQ.RAID_TOT         = "Solio del Trueno" ;
 OQ.RAID_RA_DEN      = "Ra Den" ;
 OQ.RBG_HRANK_1      = "Explorador" ;
@@ -269,21 +268,21 @@ OQ.RBG_HRANK_5      = "Gran Capataz" ;
 OQ.RBG_HRANK_6      = "Guardia de Piedra" ;
 OQ.RBG_HRANK_7      = "Guardia de Sangre" ;
 OQ.RBG_HRANK_8      = "Legionario" ;
-OQ.RBG_HRANK_9      = "Centurión" ;
-OQ.RBG_HRANK_10     = "Campeón" ;
+OQ.RBG_HRANK_9      = "Centuriï¿½n" ;
+OQ.RBG_HRANK_10     = "Campeï¿½n" ;
 OQ.RBG_HRANK_11     = "General" ;
 OQ.RBG_HRANK_12     = "Gran General" ;
-OQ.RBG_HRANK_13     = "Señor de la Guerra" ;
-OQ.RBG_HRANK_14     = "Gran Señor de la Guerra" ;
+OQ.RBG_HRANK_13     = "Seï¿½or de la Guerra" ;
+OQ.RBG_HRANK_14     = "Gran Seï¿½or de la Guerra" ;
 OQ.RBG_ARANK_1      = "Soldado" ;
 OQ.RBG_ARANK_2      = "Cabo" ;
 OQ.RBG_ARANK_3      = "Sargento" ;
 OQ.RBG_ARANK_4      = "Sargento primero" ;
-OQ.RBG_ARANK_5      = "Alférez" ;
+OQ.RBG_ARANK_5      = "Alfï¿½rez" ;
 OQ.RBG_ARANK_6      = "Caballero" ;
 OQ.RBG_ARANK_7      = "Teniente caballero" ;
-OQ.RBG_ARANK_8      = "Capitán caballero" ;
-OQ.RBG_ARANK_9      = "Campeón caballero" ;
+OQ.RBG_ARANK_8      = "Capitï¿½n caballero" ;
+OQ.RBG_ARANK_9      = "Campeï¿½n caballero" ;
 OQ.RBG_ARANK_10     = "Teniente coronel" ;
 OQ.RBG_ARANK_11     = "Comandante" ;
 OQ.RBG_ARANK_12     = "Mariscal" ;
@@ -296,7 +295,7 @@ OQ.BATTLEMASTER     = "maestro de batalla" ;
 OQ.HERO             = "heroe" ;
 OQ.WARBRINGER       = "batallador" ;
 OQ.KHAN             = "khan" ;
-OQ.RANAWAY          = "desertó.  perdida registrada" ;
+OQ.RANAWAY          = "desertï¿½.  perdida registrada" ;
 OQ.TT_KARMA         = "karma"  ;
 OQ.UP               = "mas" ;
 OQ.DOWN             = "menos" ;
@@ -322,7 +321,7 @@ OQ.HORDE            = "Horda" ;
 OQ.ALLIANCE         = "Alianza" ;
 OQ.SETUP_TIMERWIDTH = "Ancho de los temporizadores" ;
 OQ.BG_BEGINS        = " empieza!" -- partial text of start msg
-OQ.BG_BEGUN         = " empezó!" -- partial text of start msg
+OQ.BG_BEGUN         = " empezï¿½!" -- partial text of start msg
 OQ.SETUP_SHOW_CONTROLLED = "Mostrar nodos controlados" ;
 OQ.MM_OPTION1       = "conmutar IU principal" ;
 OQ.MM_OPTION2       = "conmutar marquesina" ;
@@ -331,10 +330,10 @@ OQ.MM_OPTION4       = "conmutar IU de amenazas" ;
 OQ.MM_OPTION5       = "limpiar temporizadores" ;
 OQ.MM_OPTION6       = "mostrar tiempo de malla" ;
 OQ.MM_OPTION7       = "reparar IU" ;
-OQ.MM_OPTION8       = "¿donde estoy?" ;
+OQ.MM_OPTION8       = "ï¿½donde estoy?" ;
 OQ.MM_OPTION9       = "modo invisible" ;
-OQ.LABEL_QUESTING   = "misión" ;
-OQ.LABEL_QUESTERS   = "grupos de misión" ;
+OQ.LABEL_QUESTING   = "misiï¿½n" ;
+OQ.LABEL_QUESTERS   = "grupos de misiï¿½n" ;
 OQ.ACTIVE_LASTPERIOD= "# activos en los ultimos 7 dias" ;
 OQ.SCORE_NLEADERS   = "# lideres" ;
 OQ.SCORE_NGAMES     = "# partidas" ;
@@ -346,34 +345,20 @@ OQ.TT_CHALLENGES    = "lider: desafios" ;
 OQ.TT_LEADER_DKP    = "lider: dragon kill pts" ;
 OQ.TT_DKP           = "dragon kill pts" ;
 OQ.SCORE_DKP        = "# dragon kill pts" ;
-OQ.ERR_NODURATION   = "Duración desconocida de la instancia. Imposible calcular los cambios en las monedas" ;
+OQ.ERR_NODURATION   = "Duraciï¿½n desconocida de la instancia. Imposible calcular los cambios en las monedas" ;
 OQ.DRUNK            = "..hic!" ;
-OQ.MM_OPTION2a      = "conmutar recompensas" ; -- Literalmente "conmutar tablón de recompensas"
+OQ.MM_OPTION2a      = "conmutar recompensas" ; -- Literalmente "conmutar tablï¿½n de recompensas"
 OQ.ANNOUNCE_CONTRACTS = "Anunciar contratos" ;
 OQ.SETUP_SHOUTCONTRACTS = "Anunciar contratos" ;
-OQ.CONTRACT_ARRIVED   = "¡Acaba de llegar el contrato #%s! Objetivo:%s  Recompensa:|h%s" ;
+OQ.CONTRACT_ARRIVED   = "ï¿½Acaba de llegar el contrato #%s! Objetivo:%s  Recompensa:|h%s" ;
 OQ.CONTRACT_CLAIMED01 = "%s %s reclama el contrato #%s y gana %s" ;
 OQ.CONTRACT_CLAIMED02 = "%s reclama el contrato #%s y gana %s" ;
-OQ.TARGET_MARK        = "¡Has establecido como objetivo un objetivo con recompensa! ( contrato#%s )" ;
-OQ.BOUNTY_TARGET      = "¡Has matado un objetivo con recompensa! ( contrato#%s )" ;
+OQ.TARGET_MARK        = "ï¿½Has establecido como objetivo un objetivo con recompensa! ( contrato#%s )" ;
+OQ.BOUNTY_TARGET      = "ï¿½Has matado un objetivo con recompensa! ( contrato#%s )" ;
 OQ.FRIEND_REQUEST     = "%s-%s quiere ser tu amigo" ;
 OQ.ALREADY_FRIENDED   = "ya eres amigo de battle-net con %s" ;
-OQ.TT_FRIEND_REQUEST  = "añadir amigo" ;
+OQ.TT_FRIEND_REQUEST  = "aï¿½adir amigo" ;
 
-OQ.CONTRIBUTION_DLG = { "¿Te estas divirtiendo con",
-            "oQueue y el ventrilo publico?",
-                        "¡Entonces envianos una cerveza!",
-                        "",
-                        "para tiny y oQueue:",
-                        "beg.oq",
-                        "",
-                        "para Rathamus y el ventrilo publico:",
-                        "beg.vent",
-                        "",
-                        "¡Gracias!",
-                        "",
-                        "- tiny",
-                      } ;
 OQ.TIMEVARIANCE_DLG = { "",
                         "Aviso:",
                         "",
@@ -382,7 +367,7 @@ OQ.TIMEVARIANCE_DLG = { "",
                         "  corregirlo antes de que puedas",
                         "  crear una premade.",
                         "",
-                        "  variación de tiempo:  %s",
+                        "  variaciï¿½n de tiempo:  %s",
                         "",
                         "- tiny",
                       } ;
@@ -392,9 +377,9 @@ OQ.LFGNOTICE_DLG = { "",
                         "  No uses los nombres de las premades de",
                         "  oQueue para buscar grupos u otros tipos",
                         "  de anuncios personales. Hay bastante ",
-                        "  gente que bloqueará a cualquiera",
+                        "  gente que bloquearï¿½ a cualquiera",
                         "  usandolo de esta forma. Si eres",
-                        "  bloqueado, no podrás unirte a sus grupos.",
+                        "  bloqueado, no podrï¿½s unirte a sus grupos.",
                         "",
                         "- tiny",
                       } ;
@@ -411,7 +396,7 @@ OQ.BG_NAMES     = { [ "Campo de Batalla Aleatorio"  ] = { type_id = OQ.RND  },
                     [ "Valle de Alterac"            ] = { type_id = OQ.AV   },
                     [ "Minas Lonjaplata"            ] = { type_id = OQ.SSM  },
                     [ "Templo de Kotgomu"           ] = { type_id = OQ.TOK  },
-                    [ "Cañón del Céfiro"            ] = { type_id = OQ.DWG  },
+                    [ "Caï¿½ï¿½n del Cï¿½firo"            ] = { type_id = OQ.DWG  },
                     [ "Dragon Kill Points"          ] = { type_id = OQ.DKP  },
                     [ ""                            ] = { type_id = OQ.NONE },
                   } ;
@@ -422,15 +407,15 @@ OQ.BG_SHORT_NAME = { [ "Cuenca de Arathi"         ] = "CA",
                      [ "Ojo de la Tormenta"       ] = "OT",
                      [ "Isla de la Conquista"     ] = "IC",
                      [ "Playa de los Ancestros"   ] = "PA",
-                     [ "Bastión Martillo Salvaje" ] = "CG",
-                     [ "Bastión Faucedraco"       ] = "CG",
+                     [ "Bastiï¿½n Martillo Salvaje" ] = "CG",
+                     [ "Bastiï¿½n Faucedraco"       ] = "CG",
                      [ "Cumbres Gemelas"          ] = "CG",
-                     [ "Bastión Ala de Plata"     ] = "GGG",
+                     [ "Bastiï¿½n Ala de Plata"     ] = "GGG",
                      [ "Garganta Grito de Guerra" ] = "GGG",
                      [ "Serreria Grito de Guerra" ] = "GGG",
                      [ "Minas Lonjaplata"         ] = "ML",
                      [ "Templo de Kotgomu"        ] = "TdK",
-                     [ "Cañón del Céfiro"         ] = "CdC",
+                     [ "Caï¿½ï¿½n del Cï¿½firo"         ] = "CdC",
                      
                      [ OQ.AB                    ] = "CA",
                      [ OQ.AV                    ] = "VA",
@@ -471,11 +456,11 @@ OQ.BG_STAT_COLUMN = { [ "Bases Asaltadas"        ] = "Base Asaltada",
 
 OQ.COLORBLINDSHADER = { [ 0 ] = "Desactivado",
                         [ 1 ] = "Protanopia",
-                        [ 2 ] = "Protanomalía",
+                        [ 2 ] = "Protanomalï¿½a",
                         [ 3 ] = "Deuteranopia",
-                        [ 4 ] = "Deuteranomalía",
+                        [ 4 ] = "Deuteranomalï¿½a",
                         [ 5 ] = "Tritanopia",
-                        [ 6 ] = "Tritanomalía",
+                        [ 6 ] = "Tritanomalï¿½a",
                         [ 7 ] = "Acromatopsia",
                         [ 8 ] = "Acromatosis",
                       } ;
@@ -487,11 +472,11 @@ local DK    = { ["Sangre"]             = "Tank",
               } ; 
 local DRUID = { ["Equilibrio"]         = "Knockback",
                 ["Feral"]              = "Melee",
-                ["Restauración"]       = "Healer",
-                ["Guardián"]           = "Tank",
+                ["Restauraciï¿½n"]       = "Healer",
+                ["Guardiï¿½n"]           = "Tank",
               } ;
 local HUNTER = { ["Bestias"]           = "Knockback",
-                 ["Puntería"]          = "Ranged",
+                 ["Punterï¿½a"]          = "Ranged",
                  ["Supervivencia"]     = "Ranged",
                } ;
 local MAGE = {  ["Arcano"]             = "Knockback",
@@ -503,8 +488,8 @@ local MONK = {  ["Maestro cervecero"]  = "Tank",
                 ["Viajero del viento"] = "Melee",
              } ; 
 local PALADIN = { ["Sagrado"]          = "Healer",
-                  ["Protección"]       = "Tank",
-                  ["Reprensión"]       = "Melee",
+                  ["Protecciï¿½n"]       = "Tank",
+                  ["Reprensiï¿½n"]       = "Melee",
                 } ; 
 local PRIEST = { ["Disciplina"]        = "Healer",
                  ["Sagrado"]           = "Healer",
@@ -516,15 +501,15 @@ local ROGUE = { ["Asesinato"]          = "Melee",
               } ; 
 local SHAMAN = { ["Elemental"]         = "Knockback",
                  ["Mejora"]            = "Melee",
-                 ["Restauración"]      = "Healer",
+                 ["Restauraciï¿½n"]      = "Healer",
                } ; 
-local WARLOCK = { ["Aflicción"]        = "Knockback",
-                  ["Demonología"]      = "Knockback",
-                  ["Destrucción"]      = "Knockback",
+local WARLOCK = { ["Aflicciï¿½n"]        = "Knockback",
+                  ["Demonologï¿½a"]      = "Knockback",
+                  ["Destrucciï¿½n"]      = "Knockback",
                 } ; 
 local WARRIOR = { ["Armas"]            = "Melee",
                   ["Furia"]            = "Melee",
-                  ["Protección"]       = "Tank",
+                  ["Protecciï¿½n"]       = "Tank",
                 } ; 
 
 
@@ -546,8 +531,8 @@ OQ.BG_ROLES["WARRIOR"     ] = WARRIOR ;
 -- this table maps a defeat emote to the boss-id (it'd be better if it was mapped to the name, but names aren't necessarily localized)
 --
 OQ.DEFEAT_EMOTES = {} ;
-OQ.DEFEAT_EMOTES["El Sha del odio ha abandonado mi cuerpo... y el monasterio. Se los agradezco, forasteros. El Shadopan está en deuda con ustedes. Ahora queda mucho trabajo por hacer..."] = 56884 ; -- Taran Zhu
+OQ.DEFEAT_EMOTES["El Sha del odio ha abandonado mi cuerpo... y el monasterio. Se los agradezco, forasteros. El Shadopan estï¿½ en deuda con ustedes. Ahora queda mucho trabajo por hacer..."] = 56884 ; -- Taran Zhu
 OQ.DEFEAT_EMOTES["I am bested. Give me a moment and we will venture together to face the Sha."] = 60007 ; -- Master Snowdrift (Can't translate until we know why the emote doesn't work in esES)
 OQ.DEFEAT_EMOTES["Aun juntos... hemos fracasado..."] = 56747 ; -- Gu Cloudstrike
-OQ.DEFEAT_EMOTES["¡Imposible! ¡Nuestra fuerza no tiene rival en todo el imperio!"] = 61445 ; -- Haiyan the Unstoppable, Trial of the King
-OQ.DEFEAT_EMOTES["Se me ha caído la venda de los ojos... Perdónenme por dudar de ustedes…"] = 56732 ; -- Liu Flameheart
+OQ.DEFEAT_EMOTES["ï¿½Imposible! ï¿½Nuestra fuerza no tiene rival en todo el imperio!"] = 61445 ; -- Haiyan the Unstoppable, Trial of the King
+OQ.DEFEAT_EMOTES["Se me ha caï¿½do la venda de los ojos... Perdï¿½nenme por dudar de ustedesï¿½"] = 56732 ; -- Liu Flameheart

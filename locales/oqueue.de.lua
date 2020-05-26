@@ -53,7 +53,7 @@ OQ.TT_WAITLIST = "Warteschlange" ;
 OQ.TT_RECORD = "Rekord (Sieg - Niederlage)" ;
 OQ.TT_AVG_HONOR = "durchschnittliche Ehre/Spiel" ;
 OQ.TT_AVG_HKS = "durchschnittliche Ehrenhafte Siege/Spiel" ;
-OQ.TT_AVG_GAME_LEN = "durchschnittliche Spiellänge" ;
+OQ.TT_AVG_GAME_LEN = "durchschnittliche Spiellï¿½nge" ;
 OQ.TT_AVG_DOWNTIME = "durchschnittlich ungenutzte Zeit" ; --should be checked by someone else
 OQ.TT_RESIL = "Abh" ;
 OQ.TT_ILEVEL = "ilevel" ;
@@ -80,9 +80,9 @@ OQ.RELOAD = "Neu laden" ;
 OQ.ILL_BRB = "gleich wieder da" ;
 OQ.LUCKY_CHARMS = "Gluecksbringer" ;
 OQ.IAM_BACK = "Bin wieder da" ;
-OQ.ROLE_CHK = "Rollenüberprüfung" ;
+OQ.ROLE_CHK = "Rollenï¿½berprï¿½fung" ;
 OQ.READY_CHK = "Bereitschaftscheck" ;
-OQ.APPROACHING_CAP = "ANNÄHERNDES CAP" ; --should be checked by someone else
+OQ.APPROACHING_CAP = "ANNï¿½HERNDES CAP" ; --should be checked by someone else
 OQ.CAPPED = "CAPPED" ; --i can't translate this
 OQ.HDR_PREMADE_NAME = "Premade" ;
 OQ.HDR_LEADER = "Leiter" ;
@@ -140,7 +140,7 @@ OQ.SETUP_OK2SUBMIT_BTAG = "B-Tag alle 4 Tage senden" ;
 OQ.SETUP_ADD = "Hinzufuegen" ;
 OQ.SETUP_MYCREW = "Mein Team" ;
 OQ.SETUP_CLEAR = "Loeschen" ;
-OQ.SAPPED = "{Totenschädel} Sapped {Totenschädel}" ;
+OQ.SAPPED = "{Totenschï¿½del} Sapped {Totenschï¿½del}" ;
 OQ.BN_FRIENDS = "OQ enabled friends" ; --dunno
 OQ.LOCAL_OQ_USERS = "OQ enabled locals" ; --dunno
 OQ.PPS_SENT = "pkts sent/sec" ; --dunno
@@ -154,22 +154,22 @@ OQ.SETUP_CHECKNOW = "pruefe jetzt" ;
 OQ.SETUP_GODARK = "go dark" ; --dunno
 OQ.SETUP_REMOVENOW = "jetzt entfernen" ;
 OQ.STILL_IN_PREMADE = "Bitte verlasse deine aktuelle Premade bevor du eine neue erstellst" ;
-OQ.DD_PROMOTE = "zum Gruppenleiter befördern" ;
+OQ.DD_PROMOTE = "zum Gruppenleiter befï¿½rdern" ;
 OQ.DD_KICK = "Mitglied entfernen" ;
 OQ.DD_BAN = "Den battle.tag des Nutzers bannen" ;
 OQ.DISABLED = "oQueue deaktiviert" ;
 OQ.ENABLED = "oQueue aktiviert" ;
 OQ.THETIMEIS = "die Zeit ist %d (GMT)" ; --slightly problematic, if not viable for dst. german time is gmt+1/+2
 OQ.RAGEQUITSOFAR = " rage quit: %s nach %d:%02d (%d bis jetzt)" ;
-OQ.RAGEQUITTERS = "%d rage quit über %d:%02d" ;
+OQ.RAGEQUITTERS = "%d rage quit ï¿½ber %d:%02d" ;
 OQ.RAGELASTGAME = "%d rage quit letztes Spiel (bg ging %d:%02d lang)" ;
 OQ.NORAGEQUITS = "du bist in keinem Schlachtfeld" ;
 OQ.RAGEQUITS = "%d rage quit so far" ; --dunno
-OQ.MSG_PREMADENAME = "Bitte trage einen Namen für die Premade ein" ;
+OQ.MSG_PREMADENAME = "Bitte trage einen Namen fï¿½r die Premade ein" ;
 OQ.MSG_MISSINGNAME = "Bitte gib deiner Gruppe einen Namen" ;
 OQ.MSG_REJECT = "Warteschlange nicht angenommen.nGrund: %s" ;
 OQ.MSG_CANNOTCREATE_TOOLOW = "Premade kann nicht erstellt werden. nDu musst mindestens Level 10 sein" ;
-OQ.MSG_NOTLFG = "Bitte verwende OQueue nicht als LFG-Werbung. nEinige Spieler könnten dich sonst aus ihren Vorgefertigten Gruppen bannen" ;
+OQ.MSG_NOTLFG = "Bitte verwende OQueue nicht als LFG-Werbung. nEinige Spieler kï¿½nnten dich sonst aus ihren Vorgefertigten Gruppen bannen" ;
 OQ.TAB_PREMADE = "Premade" ;
 OQ.TAB_FINDPREMADE = "Premade finden" ;
 OQ.TAB_CREATEPREMADE = "Premade erstellen" ;
@@ -179,7 +179,7 @@ OQ.TAB_BANLIST = "Bannlist" ;
 OQ.TAB_WAITLIST = "Warteschlange" ;
 OQ.TAB_WAITLISTN = "Warteschlange (%d)" ;
 OQ.CONNECTIONS = "Verbindung %d - %d" ; --should be reviewed
-OQ.ANNOUNCE_PREMADES= "%d Premaden verfügbar" ;
+OQ.ANNOUNCE_PREMADES= "%d Premaden verfï¿½gbar" ;
 OQ.NEW_PREMADE = "(|cFF808080%d|r) |cFFC0C0C0%s|r : %s |cFFC0C0C0%s|r" ;
 OQ.PREMADE_NAMEUPD = "(|cFF808080%d|r) |cFFC0C0C0%s|r : %s |cFFC0C0C0%s|r" ;
 OQ.DLG_OK = "ok" ;
@@ -196,7 +196,7 @@ OQ.DLG_03 = "Bitte benenne deine Premade:" ;
 OQ.DLG_04 = "Bitte gib deine real-id ein:" ;
 OQ.DLG_05 = "Passwort:" ;
 OQ.DLG_06 = "Bitte gib die real-id oder den Namen des neuen Gruppenleiters ein:" ;
-OQ.DLG_07 = "nNEUE VERSION JETZT verfügbar !!nnoQueue v%s build %dn" ;
+OQ.DLG_07 = "nNEUE VERSION JETZT verfï¿½gbar !!nnoQueue v%s build %dn" ;
 OQ.DLG_08 = "Bitte verlasse deine Gruppe, um der Warteschlange beizutreten odernbitte deinen Leiter als ganze Gruppe beizutreten" ;
 OQ.DLG_09 = "Nur der Gruppenleiter kann eine OQ-Vorgefertigte-Gruppe erstellen" ;
 OQ.DLG_10 = "Die Warteschlange ist aufgegangen.nnWas willst du tun?" ;
@@ -207,9 +207,9 @@ OQ.DLG_14 = "Der Gruppenleiter hat ein Neuladen beatragt" ;
 OQ.DLG_15 = "Banne: %s nBitte gib deinen Grund ein:" ;
 OQ.DLG_16 = "Unable to select premade type.nToo many members (max. %d)" ; --dunno
 OQ.DLG_17 = "Bitte gib den zu bannenden battle-tag ein:" ;
-OQ.DLG_18a = "Version %d.%d.%d ist jetzt verfügbar" ;
-OQ.DLG_18b = "-- Update benötigt --" ;
-OQ.DLG_19 = "Du musst dich für deine eigene Gruppe qualifizieren" ;
+OQ.DLG_18a = "Version %d.%d.%d ist jetzt verfï¿½gbar" ;
+OQ.DLG_18b = "-- Update benï¿½tigt --" ;
+OQ.DLG_19 = "Du musst dich fï¿½r deine eigene Gruppe qualifizieren" ;
 OQ.MENU_KICKGROUP = "Gruppe kicken" ;
 OQ.MENU_SETLEAD = "Gruppenleiter einstellen" ;
 OQ.HONOR_PTS = "Ehrenpunkte" ;
@@ -242,21 +242,7 @@ OQ.LABEL_ARENA = "Arena" ;
 OQ.LABEL_DUNGEON = "Dungeon" ;
 OQ.LABEL_RAID = "Raid" ;
 OQ.LABEL_SCENARIO = "Szenario" ;
-OQ.PATTERN_CAPS = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ; --ÄÖÜ
-OQ.CONTRIBUTE = "send beer!" ;
-OQ.CONTRIBUTION_DLG = { "",
-"Bitte hilf der oQueue Community",
-"",
-"To support oQueue", --dunno
-"beg.oq", --dunno
-"",
-"To support public vent", --dunno and teamspeak is in germany more widespread
-"beg.vent",
-"",
-"Danke. Jedes bisschen hilft!",
-"",
-"- tiny", --dunno
-} ;
+OQ.PATTERN_CAPS = "[ABCDEFGHIJKLMNOPQRSTUVWXYZ]" ; --ï¿½ï¿½ï¿½
 OQ.TIMEVARIANCE_DLG = { "",
 "Warnung:",
 "",
@@ -283,7 +269,7 @@ OQ.LFGNOTICE_DLG = { "",
 } ;
 
 
-OQ.BG_NAMES = { [ "Zufälliges Schlachtfeld" ] = { type_id = OQ.RND },
+OQ.BG_NAMES = { [ "Zufï¿½lliges Schlachtfeld" ] = { type_id = OQ.RND },
 [ "Kriegshymnenschlucht" ] = { type_id = OQ.WSG },
 [ "Zwillingsgipfel" ] = { type_id = OQ.TP },
 [ "Die Schlacht um Gilneas" ] = { type_id = OQ.BFG },
@@ -354,13 +340,13 @@ local DRUID = {
 ["Gleichgewicht"]        = "Knockback",
 ["Wildheit"]             = "Melee",
 ["Wiederherstellung"]    = "Healer",
-["Wächter"]              = "Tank",
+["Wï¿½chter"]              = "Tank",
 }
 
 local HUNTER = {
 ["Tierherrschaft"]   = "Knockback",
 ["Treffsicherheit"]  = "Ranged",
-["Überleben"]        = "Ranged",
+["ï¿½berleben"]        = "Ranged",
 }
 
 local MAGE = {
@@ -372,7 +358,7 @@ local MAGE = {
 local MONK = {
 ["Braumeister"]     = "Tank",
 ["Nebelwirker"]     = "Healer",
-["Windläufer"]      = "Melee",
+["Windlï¿½ufer"]      = "Melee",
 }
 
 local PALADIN = {
@@ -390,19 +376,19 @@ local PRIEST = {
 local ROGUE = {
 ["Meucheln"]      = "Melee",
 ["Kampf"]         = "Melee",
-["Täuschung"]     = "Melee",
+["Tï¿½uschung"]     = "Melee",
 }
 
 local SHAMAN = {
 ["Elementar"]           = "Knockback",
-["Verstärkung"]         = "Melee",
+["Verstï¿½rkung"]         = "Melee",
 ["Wiederherstellung"]   = "Healer",
 }
 
 local WARLOCK = {
 ["Gebrechen"]     = "Knockback",
-["Dämonologie"]   = "Knockback",
-["Zerstörung"]    = "Knockback",
+["Dï¿½monologie"]   = "Knockback",
+["Zerstï¿½rung"]    = "Knockback",
 }
 
 local WARRIOR = {
