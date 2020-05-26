@@ -4998,10 +4998,6 @@ function oq.send_my_premade_info()
     return ;
   end
 
-  if (oq.premades == nil or #oq.premades <= 0) then
-    return;
-  end
-
   -- announce new raid on main channel
   local nMembers, avg_resil, avg_ilevel = oq.calc_raid_stats() ;
   local nWaiting = oq.n_waiting() ;
@@ -5401,7 +5397,8 @@ function oq.raid_create()
                            0, oq.raid.has_pword, oq.raid.is_realm_specific, oq.raid.type, oq.raid.subtype,
                            oq.raid.pdata, oq.raid.leader_xp, player_karma, oq.raid._preferences ) ;
 
-                           print(_reason);
+  -- print(_reason);
+
   -- update tab_1
   oq.update_tab1_common() ;
   oq.update_tab1_stats() ;
@@ -18370,7 +18367,7 @@ end
   
 function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ilevel, resil, mmr, enc_data, 
                                   bgs_, nMem, is_source, tm_, status_, nWait, has_pword, 
-                                  is_realm_specific, type_, subtype_, pdata_, leader_xp_, karma_, preferences_ )
+                                  is_realm_specific, type_, subtype_, pdata_, leader_xp_, karma_, preferences_ )  
   if (oq.toon.disabled) then
     return ;
   end
@@ -18404,9 +18401,9 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
   print(player_realid)
   
   if (oq._my_group == nil) and (lead_rid == player_realid) and ((my_group == 1) and (my_slot == 1) and (oq.raid.raid_token)) then
-    _ok2relay = nil ;
-    _reason = "bad msg" ;
-    return ;
+    -- _ok2relay = nil ;
+    -- _reason = "bad msg" ;
+    -- return ;
   end
 
   if (oq.is_banned( lead_rid )) then
