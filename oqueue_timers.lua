@@ -68,7 +68,7 @@ end
 
 function oq.timer_dump() 
   print( "--[ timers ]------" ) ;
-  local now = GetTime() ;
+  local now = GetTime();
   local i,v ;
   for i,v in pairs( oq.timers ) do
     if (v.one_shot) then

@@ -2226,6 +2226,10 @@ function oq.toggle_class_portraits()
 end
 
 function oq.render_tm( dt, force_hours )
+  if (dt == nil) then
+    return "xx:xx" ;
+  end
+  
   dt = abs(dt) ;
   if (dt >= 0) then
     local dsec, dmin, dhr, ddays, dyrs, dstr ;
@@ -2502,7 +2506,7 @@ function oq.dump_statistics()
   
   print( "  my_tears         : ".. tostring(oq.total_tears()) ) ;
 
-  if (OQ.REGION ~= "us") and (OQ.REGION ~= "eu") then
+  if (OQ.REGION ~= "us") and (OQ.REGION ~= "eu") and (OQ.REGION ~= "hu") then
     print( "  my_region        : ".. OQ.LILREDX_ICON .." |cFFFF8080invalid region(".. tostring(OQ.REGION) ..")|r" ) ;
   else
     print( "  my_region        : ".. tostring(OQ.REGION) ) ;
@@ -4994,6 +4998,10 @@ function oq.send_my_premade_info()
     return ;
   end
 
+  if (oq.premades == nil or #oq.premades <= 0) then
+    return;
+  end
+
   -- announce new raid on main channel
   local nMembers, avg_resil, avg_ilevel = oq.calc_raid_stats() ;
   local nWaiting = oq.n_waiting() ;
@@ -5714,7 +5722,6 @@ function oq.space_it( s )
 end
 
 function oq.realm_cooked(realm)
-  print(realm);
   if (realm == nil) or (realm == "-") or (realm == "nil") or (realm == "n/a") or (realm == "") then
     return 0 ;
   end
@@ -5730,7 +5737,7 @@ function oq.realm_cooked(realm)
   elseif (OQ.REALMNAMES_SPECIAL[ strlower( realm ) ] ~= nil) then
     r = OQ.REALMNAMES_SPECIAL[ strlower(realm) ] ;
   end
-  print(r);
+  
   if (OQ.SHORT_BGROUPS[ r ] == nil) then
     -- for some reason, realms like "Bleeding Hollow" will come from blizz as "BleedingHollow".. sometimes
     r = oq.space_it( r ) ; 
@@ -5963,7 +5970,7 @@ function oq.remove_one_mesh_node()
   local option = "silent" ;
   local i ;
   for i=ntotal,1,-1 do
-    tbl.fill( _f, GetNumFriends( i ) ) ;
+    tbl.fill( _f, GetFriendInfo( i ) ) ;
 
     local presenceID = _f[1] ;
     local givenName  = _f[2] ;
@@ -16721,7 +16728,7 @@ end
 
 function oq.get_battle_tag()
   if (player_realid) then
-    return player_realid ;
+    return player_realid;
   end
   if (oq.loaded == nil) then
     return nil ;
@@ -16861,7 +16868,7 @@ function oq.bnfriend_note( presenceId )
   end
   local noteText = select( 12, GetFriendInfo(presenceId)) ;
 --  pid, givenName, surname, toonName, toonID, client, isOnline, lastOnline, 
---  isAFK, isDND, messageText, noteText, isFriend, unknown = BNGetFriendInfoByID(presenceID) ;
+--  isAFK, isDND, messageText, noteText, isFriend, unknown = GetFriendInfo(presenceID) ;
   return noteText ;
 end
 
@@ -18368,7 +18375,9 @@ end
 function oq.recently_disbanded( raid_tok )
   oq._disbanded = oq._disbanded or tbl.new() ;
   oq._disbanded[raid_tok] = oq.utc_time() ;
-  oq._p8s[raid_tok] = nil ; -- clear out token
+  if (oq._p8s ~= nil) then
+    oq._p8s[raid_tok] = nil ; -- clear out token
+  end
 end
 
 local npremades = 0 ;
@@ -23310,7 +23319,7 @@ function oq.load_toon_info()
 end
 
 function oq.on_addon_loaded( name )
-  if (name == "oqueue") then
+  if (name == "oqueue" or name == "oQueue") then
     local retOK, rc = pcall( function() 
                                oq.load_oq_data() ;
                                oq.load_toon_info() ;
@@ -23331,7 +23340,8 @@ function oq.on_addon_loaded( name )
 end
 
 function oq.good_region_info()
-  if (string.sub(GetCVar("realmList"),1,2) == "hu") then
+  local realmlist_region = string.sub(GetCVar("realmList"),1,2);
+  if (realmlist_region == "us" or realmlist_region == "eu" or realmlist_region == "hu") then
     return true ;
   end
   return nil ;
@@ -25631,18 +25641,15 @@ function oq.ui_toggle()
     oq.ui:Show() ;
     _ui_open = true ;
     -- bnet down
---    if (BNConnected() == false) then
-  --    oq.bnet_down_shade() ;
-    --  return ;
-    --end
+   if (BNConnected() == false) then
+    oq.bnet_down_shade() ;
+    return ;
+  end
     -- check bad btag
-  --  if (oq.loaded == nil) then
-   --   oq.init_if_good_region() ;
-  --  end
-  --  if (oq.get_battle_tag() == nil) then
---oq.badtag_shade() ;
-  --    return ;
- --   end
+   if (oq.get_battle_tag() == nil) then
+    oq.badtag_shade() ;
+    return ;
+   end
     -- check if banned 
     if (oq._banned) then
       oq.banned_shade() ;
