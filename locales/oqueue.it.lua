@@ -686,21 +686,3 @@ L["WARNING:  Your battle.net friends list has %s friends."] = "ATTENZIONE: la tu
 L["WARNING:  You've exceeded the cap before the cap(%s)"] = "ATTENZIONE: Stai superando il cap(%s)." ;
 L["WARNING:  No mesh nodes available for removal.  Please trim your b.net friends list"] = "ATTENZIONE: Nessuna rete disponibile per rimuovere. Perfavore controlla la tua lista amici di b.net" ;
 L["Found oQ banned b.tag on your friends list.  removing: %s"] = "Trovato oQ b.tag bannato nella tua lista di amici. rimuovi %s" ;
-L["<html><body>"..
-  "<h2 align=\"left\">Where to get help</h2>".. 
-  "<br/>"..
-  "<h1 align=\"left\">main site</h1>".. 
-  "<p>solidice.com</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">vent support</h1>".. 
-  "<p>wow.publicvent.org : 4135  room 0</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">facebook group</h1>".. 
-  "<p>facebook.com/groups/oqueue</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">forums</h1>".. 
-  "<p>oq.publicvent.org/forums</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">twitter</h1>".. 
-  "<p>twitter.com/tinystomper</p>"..
-  "</body></html>"] = nil ;

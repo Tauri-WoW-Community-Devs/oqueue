@@ -10673,51 +10673,6 @@ function oq.set_karma_shield( karma )
   end
 end
 
-function oq.toggle_info_board(cb)
-  oq.help_shade() ;
-end
-
-function oq.create_info_board( parent )
-  local x = 28 ;
-  local y = 4 ;
-  local cx = 24 ;
-  local cy = 26 ;
-  local b = CreateFrame( "CheckButton", "OQInfoBoardButton", parent ) ;
-  b:SetFrameLevel( parent:GetFrameLevel() + 1 ) ;
-  b:RegisterForClicks('anyUp') ;
-  b:SetWidth( cx ) ;
-  b:SetHeight( cy ) ;
-  b:SetPoint( "TOPLEFT", x, y ) ;
-
-  local pt = b:CreateTexture( nil, "ARTWORK" )
-  pt:SetTexture( [[Interface\Common\help-i]] )
-  pt:SetAllPoints(b)
-  pt:SetTexCoord(13/64,50/64,13/64,49/64);
-  b:SetPushedTexture(pt)
-
-  -- outside frame
-  local ht = b:CreateTexture( nil, "BORDER" )
-  ht:SetTexture([[Interface\Minimap\MiniMap-TrackingBorder]])
-  ht:SetAllPoints(b)
-  ht:SetTexCoord(0/64,34/64,0/64,33/64);
-
-  local ct = b:CreateTexture()
-  ct:SetTexture([[Interface\Minimap\UI-Minimap-ZoomButton-Highlight]])
-  ct:SetAllPoints(b)
-  ct:SetBlendMode('ADD')
-  ct:SetAlpha(0.5) ;
-  ct:SetTexCoord(2/32,29/32,2/32,28/32);
-  b:SetHighlightTexture(ct)
-
-  local icon = b:CreateTexture( nil, "ARTWORK" )
-  icon:SetAllPoints(b)
-  icon:SetTexture( [[Interface\Common\help-i]] )
-  icon:SetTexCoord( 7/64,53/64, 7/64,52/64);
-
-  b:SetScript( "OnClick", oq.toggle_info_board ) ;
-  b:Show() ;
-end
-
 function oq.toggle_bounty_board()
   if (oq._bounty_board) and (oq._bounty_board:IsVisible()) then
     oq._bounty_board:Hide() ;
@@ -12277,46 +12232,6 @@ function oq.create_karma_button( parent )
   b:Show() ;
 end
 
-function oq.create_raffle_button( parent )
-  local x = floor(parent:GetWidth() - 100) ;
-  local y = 6 ;
-  local cx = 30 ;
-  local cy = 34 ;
-  local b = CreateFrame( "Button", "OQRaffleButton", parent ) ;
-  b:SetFrameLevel( parent:GetFrameLevel() + 1 ) ;
-  b:RegisterForClicks('anyUp') ;
-  b:SetWidth( cx ) ;
-  b:SetHeight( cy ) ;
-  b:SetPoint( "TOPLEFT", x, y ) ;
-
-  local pt = b:CreateTexture( nil, "ARTWORK" )
-  pt:SetTexture( "INTERFACE\\BUTTONS\\UI-GroupLoot-Dice-Down.png" )
-  pt:SetAllPoints(b)
-  b:SetPushedTexture(pt)
-
-  -- outside frame
---  local ht = b:CreateTexture( nil, "BORDER" )
---  ht:SetTexture([[Interface\Minimap\MiniMap-TrackingBorder]])
---  ht:SetAllPoints(b)
---  ht:SetTexCoord(0/64,34/64,0/64,33/64);
-
-  local ct = b:CreateTexture()
-  ct:SetTexture([[Interface\Minimap\UI-Minimap-ZoomButton-Highlight]])
-  ct:SetAllPoints(b)
-  ct:SetBlendMode('ADD')
-  ct:SetAlpha(0.5) ;
-  ct:SetTexCoord(2/32,29/32,2/32,28/32);
-  b:SetHighlightTexture(ct)
-
-  local icon = b:CreateTexture( nil, "ARTWORK" )
-  icon:SetAllPoints(b)
-  icon:SetTexture( "INTERFACE\\BUTTONS\\UI-GroupLoot-Dice-Up.png" )
-  b:SetNormalTexture( icon ) ;
-
-  b:SetScript( "OnClick", function(self,button) oq.href(self, "raffle", "raffle", button) ; oq.raffle_shade() ; end ) ;
-  b:Show() ;
-end
-
 function oq.onHyperlinkClick( self, link, text, button )
   local n = link:find( ":" ) or 0 ;
   local service = link:sub( 1, n - 1 ) ;
@@ -12889,42 +12804,6 @@ function oq.create_tab1_challenge( parent )
   oq.challenge_group = oq.create_challenge_group( parent, x, y, parent:GetWidth()-x*2, 250, label_cx, title, group_id ) ;
 end
 
-function oq.create_player_shortview( parent, x, y, cx, cy, g_id, slot ) 
-  oq._cnt = (oq._cnt or 0) + 1 ;
-  local f = oq.panel( parent, "OQShort".. tostring(oq._cnt), x, y, cx, cy) ;
-  if (oq.__backdrop05 == nil) then
-    oq.__backdrop05 = { bgFile="Interface/Tooltips/UI-Tooltip-Background", 
-                        edgeFile="Interface/Tooltips/UI-Tooltip-Border", 
-                        tile=true, tileSize = 16, edgeSize = 16,
-                        insets = { left = 1, right = 1, top = 1, bottom = 1 }
-                      }
-  end  
-  f:SetBackdrop( oq.__backdrop05 )
-  f:SetBackdropColor( 0.2, 0.2, 0.2, 1.0 ) ;
-  f:SetAlpha( 1.0 ) ;  
-  f:SetScript( "OnShow", function(self) oq.helpbox_prep(self.model) ; end ) ;
-  
-  local m = oq.CreateFrame( "PlayerModel", "OQShortModel", f ) ;
-  m.SetOrientation = function(self, distance, yaw, pitch)
-    if self:HasCustomCamera() then
-      self.distance, self.yaw, self.pitch = distance, yaw, pitch
-      local x = distance * cos(yaw) * cos(pitch)
-      local y = distance * sin(-yaw) * cos(pitch)
-      local z = distance * sin(-pitch)
-      self:SetCameraPosition(x, y, z)
-    end
-  end
-  m:SetPoint( "TOPLEFT"    , f, "TOPLEFT"    ,  -2, 2 ) ;
-  m:SetPoint( "BOTTOMRIGHT", f, "BOTTOMRIGHT",  -2, 2 ) ;
-  f.model = m ;
-  m.model_name = "Creature/Snowman/SnowMan.m2" ;
-  oq.helpbox_prep( m ) ;
-  
-  f.gid  = g_id ;
-  f.slot = slot ;
-  return f ;
-end
-
 function oq.create_tab1_ratedbgs( parent )
   local x, y, cx, cy, label_cx ;
 
@@ -12958,7 +12837,6 @@ function oq.create_tab1_ratedbgs( parent )
     oq.rbgs_group[i] = tbl.new() ;
     oq.rbgs_group[i].slots = tbl.new() ;
     for j=1,5 do
---      oq.create_player_shortview( parent, x, y, pcx, pcy, i, j ) ;
       oq.rbgs_group[i].slots[j]      = oq.create_dungeon_dot( parent, x, y, pcx, pcy ) ;
       oq.rbgs_group[i].slots[j].gid  = i ;
       oq.rbgs_group[i].slots[j].slot = j ;
@@ -15004,258 +14882,6 @@ function oq.create_bnetdownbox( parent )
   return f ;
 end
 
-function oq.helpbox_prep( m ) 
-  if (m == nil) then
-    return ;
-  end
-  m:Show() ;
-  m:SetModel( m.model_name ) ;
-  m:SetAlpha(1.0) ;
-  m:SetCustomCamera(1) ;
-  m:SetOrientation( 2.5, 0.0, 0.0 ) ;
-  local x, y, z = m:GetCameraPosition() ;
-  x = 1.5 ;
-  --y = 0.8 ;
-  z = 0.25 ;
-  m:SetCameraPosition( x, y, z ) ;
-end
-
-function oq.create_helpbox( parent )
-  if (parent._help) then
-    if (parent._help._resize) then
-      parent._help:_resize() ;
-    end
-    return parent._help ;
-  end
-
-  local pcx = parent:GetWidth() ;
-  local pcy = parent:GetHeight() ;
-  local cx = floor(pcx/2) ;
-  local cy = floor(4*pcy/5) ;
-  
-  local f = oq.panel( parent, "HelperBox", floor((pcx - cx)/2), floor((pcy - cy)/2), cx, cy) ;
-  if (oq.__backdrop08 == nil) then
-    oq.__backdrop08 = { bgFile="Interface/Tooltips/UI-Tooltip-Background", 
-                        edgeFile="Interface/Tooltips/UI-Tooltip-Border", 
-                        tile=true, tileSize = 16, edgeSize = 16,
-                        insets = { left = 1, right = 1, top = 1, bottom = 1 }
-                      }
-  end
-  f:SetBackdrop( oq.__backdrop08 ) ;
-  f:SetBackdropColor( 0.2, 0.2, 0.2, 1.0 ) ;
-  f:SetAlpha( 1.0 ) ;  
-  f:SetScript( "OnShow", function(self) oq.helpbox_prep(self.model) ; end ) ;
-  
-  oq.closebox( f, function(self) self:GetParent():GetParent():Hide() ; end ) ;  
-
-  local m = oq.CreateFrame( "PlayerModel", "OQHelper", f ) ;
-  m.SetOrientation = function(self, distance, yaw, pitch)
-    if self:HasCustomCamera() then
-      self.distance, self.yaw, self.pitch = distance, yaw, pitch
-      local x = distance * cos(yaw) * cos(pitch)
-      local y = distance * sin(-yaw) * cos(pitch)
-      local z = distance * sin(-pitch)
-      self:SetCameraPosition(x, y, z)
-      self:SetCameraDistance(distance) ;
-    end
-  end
-  m:SetAlpha(1) ;
-  m:SetCustomCamera(1) ;
-  m:SetOrientation( 1.5, 0, 0 ) ;
-  f.model = m ;
-  m.model_name = "Creature/Snowman/SnowMan.m2" ;
-  oq.helpbox_prep( m ) ;
-  
-  m:SetPoint( "TOPLEFT"    , f, "BOTTOMRIGHT", -200, 200 ) ;
-  m:SetPoint( "BOTTOMRIGHT", f, "BOTTOMRIGHT",  -10,  10 ) ;
-  
-  x = 20 ;
-  y = -20 ;
-  local msg = oq.CreateFrame( "SimpleHTML", "OQHelpPoster", f ) ;
-  msg:SetPoint( "TOPLEFT"    , x, y ) ;
-  msg:SetFont( "Fonts\\FRIZQT__.TTF", 12 ) ;
-  msg:SetWidth ( cx - 2*x ) ;
-  msg:SetHeight( cy - 2*y ) ;
-  msg:SetFont        ( "Fonts\\FRIZQT__.TTF", 14 ) ;
-  msg:SetTextColor   ( 136/256, 221/256, 221/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'p', "Fonts\\FRIZQT__.TTF", 14 ) ;
-  msg:SetTextColor   ( 'p', 225/256, 225/256, 225/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h1', "Fonts\\FRIZQT__.TTF", 16 ) ;
-  msg:SetTextColor   ( 'h1', 136/256, 221/256, 221/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h2', "Fonts\\MORPHEUS.ttf", 36 ) ;
-  msg:SetShadowColor ( 'h2', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h2', 1, -1 ) ;
-  msg:SetTextColor   ( 'h2', 179/256, 225/256, 225/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h3', "Fonts\\FRIZQT__.ttf", 10 ) ;
-  msg:SetShadowColor ( 'h3', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h3', 0, 0 ) ;
-  msg:SetTextColor   ( 'h3', 136/256, 221/256, 221/256, 0.8 ) ;
-
-  msg:SetText( L["<html><body>"..
-               "<h2 align=\"left\">Where to get help</h2>".. 
-               "<br/>"..
-               "<h1 align=\"left\">main site</h1>".. 
-               "<p><a href=\"main\">solidice.com</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">vent support</h1>".. 
-               "<p>wow.publicvent.org : 4135  room 0</p>"..
-               "<br/>"..
-               "<h1 align=\"left\">facebook group</h1>".. 
-               "<p><a href=\"fb\">facebook.com/groups/oqueue</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">forums</h1>".. 
-               "<p><a href=\"forums\">solidice.com/forums</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">twitter</h1>".. 
-               "<p><a href=\"twitter\">twitter.com/tinystomper</a></p>"..
-               "</body></html>"] ) ;
-  msg:Show() ;
-  msg:SetScript("OnHyperLinkClick", oq.href ) ;
-  f.html = msg ;
-  
-  f.hint_but = oq.button( f, x   , f:GetHeight() - 45, 50, 25, L["hints" ], function(self) self:GetParent():Hide() ; oq.hint_shade() ; end ) ;
-  f.raff_but = oq.button( f, x+50, f:GetHeight() - 45, 50, 25, L["raffle"], function(self) self:GetParent():Hide() ; oq.raffle_shade() ; end ) ;
-  f._resize = function(self)
-    local parent = self:GetParent() ;
-    local pcx = parent:GetWidth() ;
-    local pcy = parent:GetHeight() ;
-    local cx = floor(pcx/2) ;
-    local cy = floor(4*pcy/5) ;
-    
-    self:SetHeight( cy ) ;
-    oq.move_y( self.raff_but, cy - 45 ) ;
-    oq.move_y( self.hint_but, cy - 45 ) ;
-    self.html:SetHeight( cy - 40 ) ;
-  end
-  
-  parent._help = f ;
-  return f ;
-end
-
-function oq.create_hintbox( parent )
-  if (parent._hint) then
-    if (parent._hint._resize) then
-      parent._hint:_resize() ;
-    end
-    return parent._hint ;
-  end
-
-  local pcx = parent:GetWidth() ;
-  local pcy = parent:GetHeight() ;
-  local cx = floor(pcx/2) ;
-  local cy = floor(4*pcy/5) ;
-  
-  local f = oq.panel( parent, "HintBox", floor((pcx - cx)/2), floor((pcy - cy)/2), cx, cy) ;
-  if (oq.__backdrop08 == nil) then
-    oq.__backdrop08 = { bgFile="Interface/Tooltips/UI-Tooltip-Background", 
-                        edgeFile="Interface/Tooltips/UI-Tooltip-Border", 
-                        tile=true, tileSize = 16, edgeSize = 16,
-                        insets = { left = 1, right = 1, top = 1, bottom = 1 }
-                      }
-  end
-  f:SetWidth ( cx ) ;
-  f:SetHeight( cy ) ;
-  f:SetBackdrop( oq.__backdrop08 ) ;
-  f:SetBackdropColor( 0.2, 0.2, 0.2, 1.0 ) ;
-  f:SetAlpha( 1.0 ) ;  
-  f:SetScript( "OnShow", function(self) oq.helpbox_prep(self.model) ; end ) ;
-  
-  oq.closebox( f, function(self) self:GetParent():GetParent():Hide() ; end ) ;  
-
-  local m = oq.CreateFrame( "PlayerModel", "OQHelper", f ) ;
-  m.SetOrientation = function(self, distance, yaw, pitch)
-    if self:HasCustomCamera() then
-      self.distance, self.yaw, self.pitch = distance, yaw, pitch
-      local x = distance * cos(yaw) * cos(pitch)
-      local y = distance * sin(-yaw) * cos(pitch)
-      local z = distance * sin(-pitch)
-      self:SetCameraPosition(x, y, z)
-      self:SetCameraDistance(distance) ;
-    end
-  end
-  m:SetAlpha(1) ;
-  m:SetCustomCamera(1) ;
-  m:SetOrientation( 1.5, 0, 0 ) ;
-  f.model = m ;
-  m.model_name = "Creature/Snowman/SnowMan.m2" ;
-  oq.helpbox_prep( m ) ;
-  
-  m:SetPoint( "TOPLEFT"    , f, "BOTTOMRIGHT", -200, 200 ) ;
-  m:SetPoint( "BOTTOMRIGHT", f, "BOTTOMRIGHT",  -10,  10 ) ;
-  
-  x = 20 ;
-  y = -20 ;
-  local msg = oq.CreateFrame( "SimpleHTML", "OQHintPoster", f ) ;
-  msg:SetPoint( "TOPLEFT"    , x, y ) ;
-  msg:SetFont( "Fonts\\FRIZQT__.TTF", 12 ) ;
-  msg:SetWidth ( cx - 2*x ) ;
-  msg:SetHeight( cy - 2*y ) ;
-  msg:SetFont        ( "Fonts\\FRIZQT__.TTF", 14 ) ;
-  msg:SetTextColor   ( 136/256, 221/256, 221/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'p', "Fonts\\FRIZQT__.TTF", 14 ) ;
-  msg:SetTextColor   ( 'p', 225/256, 225/256, 225/256, 0.9 ) ;
-  
-  msg:SetFont        ( 'h1', "Fonts\\FRIZQT__.TTF", 16 ) ;
-  msg:SetTextColor   ( 'h1', 136/256, 221/256, 221/256, 0.9 ) ;
-  
-  msg:SetFont        ( 'h2', "Fonts\\MORPHEUS.ttf", 36 ) ;
-  msg:SetShadowColor ( 'h2', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h2', 1, -1 ) ;
-  msg:SetTextColor   ( 'h2', 179/256, 225/256, 225/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h3', "Fonts\\FRIZQT__.ttf", 25 ) ;
-  msg:SetShadowColor ( 'h3', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h3', 0, 0 ) ;
-  msg:SetTextColor   ( 'h3', 136/256, 221/256, 221/256, 0.8 ) ;
-
-  msg:SetText( L["<html><body>"..
-               "<h2 align=\"left\">Here are some hints</h2>".. 
-               "<br/>"..
-               "<h1 align=\"left\">ctrl+left click</h1>".. 
-               "<p><a href=\"main\">solidice.com</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">vent support</h1>".. 
-               "<p>wow.publicvent.org : 4135  room 0</p>"..
-               "<br/>"..
-               "<h1 align=\"left\">facebook group</h1>".. 
-               "<p><a href=\"fb\">facebook.com/groups/oqueue</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">forums</h1>".. 
-               "<p><a href=\"forums\">solidice.com/forums</a></p>"..
-               "<br/>"..
-               "<h1 align=\"left\">twitter</h1>".. 
-               "<p><a href=\"twitter\">twitter.com/tinystomper</a></p>"..
-               "</body></html>"] ) ;
-  msg:Show() ;
-  msg:SetScript("OnHyperLinkClick", oq.href ) ;
-  f.html = msg ;
-  
-  f.next_but = oq.button( f, x    , f:GetHeight() - 45, 45, 25, L["next"], function(self) oq.hint_next(self:GetParent()) ; end ) ;
-  f.prev_but = oq.button( f, x+ 50, f:GetHeight() - 45, 45, 25, L["prev"], function(self) oq.hint_prev(self:GetParent()) ; end ) ;
-  f.help_but = oq.button( f, x+100, f:GetHeight() - 45, 45, 25, L["help"], function(self) self:GetParent():Hide() ; oq.help_shade() ; end ) ;
-  f._resize = function(self)
-    local parent = self:GetParent() ;
-    local pcx = parent:GetWidth() ;
-    local pcy = parent:GetHeight() ;
-    local cx = floor(pcx/2) ;
-    local cy = floor(4*pcy/5) ;
-    
-    self:SetHeight( cy ) ;
-    oq.move_y( self.next_but, cy - 45 ) ;
-    oq.move_y( self.prev_but, cy - 45 ) ;
-    oq.move_y( self.help_but, cy - 45 ) ;
-    self.html:SetHeight( cy - 40 ) ;
-  end
-  oq.hint_page( f, 1 ) ;
-  parent._hint = f ;
-  return f ;
-end
-
 function oq.on_pending_note( raid_token, btag, txt, token )
   if (raid_token == nil) or (oq.raid.raid_token ~= raid_token) or (not oq.iam_raid_leader()) then
     return ;
@@ -15411,145 +15037,6 @@ function oq.href( self, link, text, button )
   end
 end
 
-function oq.create_rafflebox( parent )
-  if (parent._raffle) then
-    if (parent._raffle._resize) then
-      parent._raffle:_resize() ;
-    end
-    return parent._raffle ;
-  end
-
-  local pcx = parent:GetWidth() ;
-  local pcy = parent:GetHeight() ;
-  local cx = floor(pcx/2) ;
-  local cy = floor(4*pcy/5) ;
-  
-  local f = oq.panel( parent, "RaffleBox", floor((pcx - cx)/2), floor((pcy - cy)/2), cx, cy) ;
-  if (oq.__backdrop08 == nil) then
-    oq.__backdrop08 = { bgFile="Interface/Tooltips/UI-Tooltip-Background", 
-                        edgeFile="Interface/Tooltips/UI-Tooltip-Border", 
-                        tile=true, tileSize = 16, edgeSize = 16,
-                        insets = { left = 1, right = 1, top = 1, bottom = 1 }
-                      }
-  end
-  f:SetWidth ( cx ) ;
-  f:SetHeight( cy ) ;
-  f:SetBackdrop( oq.__backdrop08 ) ;
-  f:SetBackdropColor( 0.2, 0.2, 0.2, 1.0 ) ;
-  f:SetAlpha( 1.0 ) ;  
-  f:SetScript( "OnShow", function(self) end ) ;
-  
-  oq.closebox( f, function(self) self:GetParent():GetParent():Hide() ; end ) ;  
-
-  local m = oq.CreateFrame( "PlayerModel", "OQRaffleBarker", f ) ;
-  m.SetOrientation = function(self, distance, yaw, pitch) 
-    if self:HasCustomCamera() then
-      self.distance, self.yaw, self.pitch = distance, yaw, pitch
-      local x = distance * cos(yaw) * cos(pitch)
-      local y = distance * sin(-yaw) * cos(pitch)
-      local z = distance * sin(-pitch)
-      self:SetCameraPosition(x, y, z)
-      self:SetCameraDistance(distance) ;
-    end
-  end
-  function m:LoadModel(file)
-    self:SetModel(file) ;
-    self:SetCustomCamera(1) ;
-    self:SetCameraDistance(1) ;
-    local x, y, z = self:GetCameraPosition() ;
-    self:SetCameraTarget(0, y, z) ;
-    self._distance = 2 * sqrt(x * x + y * y + z * z) ;
-    self._yaw = -atan(y / x) ;
-    self._pitch = -atan(z / x) ;
-    self:SetOrientation(self._distance, self._yaw, self._pitch) ;
-  end
-  function m:SetOrientation(distance, yaw, pitch)
-    if self:HasCustomCamera() then
-      self.distance, self.yaw, self.pitch = distance, yaw, pitch ;
-      local x = distance * cos(yaw) * cos(pitch) ;
-      local y = distance * sin(-yaw) * cos(pitch) ;
-      local z = distance * sin(-pitch) ;
-      self:SetCameraPosition(x, y, z) ;
-    end
-  end  
-  m:SetPoint('LEFT') ;
-  m:SetSize( 128, 128 ) ;
-  f.model = m ;
-  m.model_name = "Creature/Waterspiritsmall/waterspiritsmalllesser.m2" ;
-  m:LoadModel( m.model_name ) ;
-  m:SetAnimation(0) ; -- standing
-  
---  m:SetDisplayInfo(39737) ; -- Shu <Ancient Spirit of Water>
-  m:SetDisplayInfo(39738) ; -- Spirit of Water - Ice
-  
-  m:SetOrientation(0.5, 0, -10 ) ;
-  m:SetPoint("TOPLEFT"    , m:GetParent(), "BOTTOMRIGHT", -250, 250) ;
-  m:SetPoint("BOTTOMRIGHT", m:GetParent(), "BOTTOMRIGHT",  0,  20) ;
-  
-  x = 20 ;
-  y = -20 ;
-  local msg = oq.CreateFrame( "SimpleHTML", "OQRafflePoster", f ) ;
-  msg:SetPoint( "TOPLEFT"    , x, y ) ;
-  msg:SetFont( "Fonts\\FRIZQT__.TTF", 12 ) ;
-  msg:SetWidth ( cx - 2*x ) ;
-  msg:SetHeight( cy - 2*y ) ;
-  msg:SetFont        ( "Fonts\\FRIZQT__.TTF", 14 ) ;
-  msg:SetTextColor   ( 136/256, 221/256, 221/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'p', "Fonts\\FRIZQT__.TTF", 12 ) ;
-  msg:SetTextColor   ( 'p', 225/256, 225/256, 225/256, 0.95 ) ;
-  
-  msg:SetFont        ( 'h1', "Fonts\\FRIZQT__.TTF", 16 ) ;
-  msg:SetTextColor   ( 'h1', 136/256, 221/256, 221/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h2', "Fonts\\MORPHEUS.ttf", 36 ) ;
-  msg:SetShadowColor ( 'h2', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h2', 1, -1 ) ;
-  msg:SetTextColor   ( 'h2', 179/256, 225/256, 225/256, 0.8 ) ;
-  
-  msg:SetFont        ( 'h3', "Fonts\\FRIZQT__.ttf", 10 ) ;
-  msg:SetShadowColor ( 'h3', 0, 0, 0, 1 ) ;
-  msg:SetShadowOffset( 'h3', 0, 0 ) ;
-  msg:SetTextColor   ( 'h3', 136/256, 221/256, 221/256, 0.8 ) ;
-
-  msg:SetText( L["<html><body>"..
-               "<h2 align=\"left\">Tiny's play2play raffles</h2>".. 
-               "<br/>"..
-               "<p>Register on solidice.com, claim your toons, and gain points towards raffle tickets as you kill bosses, win pet battles, arenas, and battlegrounds.  "..
-               "You even get raffle points by completing quests.  The more you do in-game, the more tickets you earn. </p> "..
-               "<br/>"..
-               "<p>7-day raffles are for pets, mounts, and TCG items.  30-day raffles will be for bigger items, if we get enough people playing.</p> "..
-               "<br/>"..
-               "<p>7-day raffles have a cap of 20 tickets"..
-               "<br/>"..
-               "<br/>"..
-               "30-day raffles have a cap of 60 </p> "..
-               "<br/>"..
-               "<br/>"..
-               "<br/>"..
-               "<h1 align=\"left\">site</h1>".. 
-               "<p><a href=\"raffle\">solidice.com/raffles</a></p>"..
-               "</body></html>"] ) ;
-  msg:Show() ;
-  msg:SetScript("OnHyperLinkClick", oq.href ) ;
-  f.html = msg ;
-  
-  f.help_but = oq.button( f, x, f:GetHeight() - 45, 45, 25, L["help"], function(self) self:GetParent():Hide() ; oq.help_shade() ; end ) ;
-  f._resize = function(self)
-    local parent = self:GetParent() ;
-    local pcx = parent:GetWidth() ;
-    local pcy = parent:GetHeight() ;
-    local cx = floor(pcx/2) ;
-    local cy = floor(4*pcy/5) ;
-    
-    self:SetHeight( cy ) ;
-    oq.move_y( self.help_but, cy - 45 ) ;
-    self.html:SetHeight( cy - 40 ) ;
-  end
-  parent._raffle = f ;
-  return f ;
-end
-
 function oq.create_required_updatebox( parent, major, minor, rev ) 
   if (parent._requiredupdate) then
     return parent._requiredupdate ;
@@ -15700,11 +15187,6 @@ function oq.pending_note_shade(self)
   oq.shaded_dialog( oq.create_pending_note( oq.create_ui_shade(), self:GetParent().token ), nil ) ;
 end
 
-function oq.help_shade()
-  oq.shaded_dialog( oq.create_helpbox( oq.create_ui_shade() ), nil ) ;
-  OQ_data._helper_intro_shown = oq.utc_time() ;
-end
-
 function oq.hint_next(f) 
   -- next page of hints; should wrap back to first page
   oq.hint_page( f, (f._hint_page or 1) + 1 ) ;
@@ -15751,11 +15233,6 @@ function oq.reminder_due( t )
     return true ;
   end
   return nil ;
-end
-
-function oq.raffle_shade()
-  oq.shaded_dialog( oq.create_rafflebox( oq.create_ui_shade() ), nil ) ;
-  OQ_data._raffle_intro_shown = oq.utc_time() ;
 end
 
 function oq.required_update_shade()
@@ -16402,12 +15879,10 @@ function oq.create_main_ui()
   oq.karma_shield = oq.create_karma_shield( OQMainFrame ) ;
   oq.set_karma_shield( 0 ) ;
 
-  oq.info_button   = oq.create_info_board   ( OQMainFrame ) ; -- 28
   oq.bounty_button = oq.create_bounty_board ( OQMainFrame ) ; -- 56 
   oq.log_button    = oq.create_log_button   ( OQMainFrame ) ; -- 84
   oq.karma_button  = oq.create_karma_button ( OQMainFrame ) ; -- 112
   oq.filter_button = oq.create_filter_button( OQMainFrame ) ; -- 140
-  oq.raffle_button = oq.create_raffle_button( OQMainFrame ) ; -- cx - 100 
   
   ------------------------------------------------------------------------
   --  tab 1: current premade
@@ -24874,14 +24349,10 @@ function oq.on_init( now )
   oq.timer_oneshot(  7, oq.ping_the_world              ) ;
   oq.timer_oneshot( 10, oq.bump_scorekeeper            ) ;
   
-  if oq.reminder_due( OQ_data._helper_intro_shown ) then
-    oq.timer_oneshot( 3, oq.ui_toggle                  ) ; -- open ui w/ helper shade the first time to greet the user
-  elseif (OQ_data._hint_intro_shown == nil) then
+  if (OQ_data._hint_intro_shown == nil) then
     OQ_data._height = OQ.MIN_FRAME_HEIGHT ; -- users from 1.8.3 have some weirdness on first load; forcing the issue
     oq.frame_resize() ;
     oq.timer_oneshot( 3, oq.ui_toggle                  ) ; -- open ui w/ hint shade the first time to greet the user
-  elseif oq.reminder_due( OQ_data._raffle_intro_shown ) then
-    oq.timer_oneshot( 3, oq.ui_toggle                  ) ; -- open ui w/ raffle shade 
   end
   
   if (InspectFrame == nil) then
@@ -25316,13 +24787,8 @@ function oq.ui_toggle()
       oq.oq_on() ;
     end
     local now = oq.utc_time() ;
-    if oq.reminder_due( OQ_data._helper_intro_shown ) then
-      oq.req_karma( "player" ) ;
-      oq.help_shade() ;
-    elseif oq.reminder_due( OQ_data._hint_intro_shown ) then
+    if oq.reminder_due( OQ_data._hint_intro_shown ) then
       oq.hint_shade() ;
-    elseif oq.reminder_due( OQ_data._raffle_intro_shown ) then
-      oq.raffle_shade() ;
     end
   end
 end

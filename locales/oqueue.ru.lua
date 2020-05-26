@@ -1142,24 +1142,6 @@ L["WARNING:  Your battle.net friends list has %s friends."] = "ВНИМАНИЕ:
 L["WARNING:  You've exceeded the cap before the cap(%s)"] = "ВНИМАНИЕ: Вы превысили максимально возможное кол-во(%s)." ;
 L["WARNING:  No mesh nodes available for removal.  Please trim your b.net friends list"] = "Нет доступных узлов связи для удаления. Проверьте список друзей Battle.net." ;
 L["Found oQ banned b.tag on your friends list.  removing: %s"] = "В вашем списке друзей найден заблокированный Battle Tag. Удаление: %s" ;
-L["<html><body>"..
-  "<h2 align=\"left\">where to get help</h2>".. 
-  "<br/>"..
-  "<h1 align=\"left\">main site</h1>".. 
-  "<p>solidice.com</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">vent support</h1>".. 
-  "<p>wow.publicvent.org : 4135  room 0</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">facebook group</h1>".. 
-  "<p>facebook.com/groups/oqueue</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">forums</h1>".. 
-  "<p>oq.publicvent.org/forums</p>"..
-  "<br/>"..
-  "<h1 align=\"left\">twitter</h1>".. 
-  "<p>twitter.com/tinystomper</p>"..
-  "</body></html>"] = nil ;
   
 L["loot.freeforall"     ] = "free for all" ;
 L["loot.roundrobin"     ] = "round robin" ;
@@ -1221,8 +1203,4 @@ OQ.HINTS = { [ 1] = L["</p><br/><h3 align=\"center\">|cffE9EB15Don't Panic|r</h3
              [25] = L["some folks have tried to claim it's bannable to queue with a full 25 for LFR.<br/><br/>this is completely false.<br/><br/>oQueue usage is perfectly fine with Blizzard and within all aspects of the EULA and TOS."],
              [26] = L["gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear"],
              [27] = L["you'll never hit a home run, if you don't step up to the plate"],
-             [28] = L["register on solidice.com and claim your toons to gain raffle tickets while you play.<br/><br/>almost everything in-game will gain points towards your raffle ticket cap.<br/><br/>you can put a max of 20 tickets into the 7-day raffles.  a max of 50 into the 30-day raffles. "],
-             [29] = L["use icebox to install oQueue and other addons.<br/><br/>quick and simple.<br/><br/>it's advanced features are very useful!"],
-             [30] = L["you make your own luck"],
-             [31] = L["in life, you're either the pigeon or the statue"],
            } ;
