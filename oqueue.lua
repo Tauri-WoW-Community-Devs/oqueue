@@ -18397,9 +18397,6 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
     return ;
   end
 
-  print(lead_rid)
-  print(player_realid)
-  
   if (oq._my_group == nil) and (lead_rid == player_realid) and ((my_group == 1) and (my_slot == 1) and (oq.raid.raid_token)) then
     -- _ok2relay = nil ;
     -- _reason = "bad msg" ;
@@ -18450,8 +18447,6 @@ function oq.process_premade_info( raid_tok, raid_name, faction, level_range, ile
     end
     -- data is newer then what i have.. replace
     local is_update = nil ;
-  
-    print(raid_name, premade.name);
   
     if ((raid_name) and (premade.name ~= raid_name)) then
       is_update = 1 ;
@@ -26038,19 +26033,15 @@ function OQ_ResizeMouse_up( f )
   p.__resizing = nil ;
 end
 
-
-
-
-
-function oq.debug(msg, ...)
-  if type(msg) == "table" then
-    for k, v in pairs(msg) do
-        print("KEY")
-        print(k)
-        oq.debug(v)
-    end
-  else
-    print("VAL")
-    print(msg)
-  end
-end
+-- function oq.debug(msg, ...)
+--   if type(msg) == "table" then
+--     for k, v in pairs(msg) do
+--         print("KEY")
+--         print(k)
+--         oq.debug(v)
+--     end
+--   else
+--     print("VAL")
+--     print(msg)
+--   end
+-- end
