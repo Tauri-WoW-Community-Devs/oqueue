@@ -1964,7 +1964,6 @@ function oq.toon_init( t )
   t.last_tm         = 0 ;
   t.auto_role       = 1 ;
   t.class_portrait  = 1 ;
-  t.shout_caps      = 1 ;
   t.shout_ragequits = 1 ;
   t.reports         = tbl.new() ;
 end
@@ -3396,11 +3395,6 @@ function oq.flag_watcher()
           local str = stat_name ..":  ".. name ;
           if (OQ.BG_STAT_COLUMN[ stat_name ] ~= nil) then
             str = OQ.BG_STAT_COLUMN[stat_name] ..":  ".. name ;
-          end
-          -- dump for individual OQ player to see
-          --
-          if (oq.toon.shout_caps == 1) then
-            print( OQ.DIAMOND_ICON .." ".. str ) ;
           end
         end
         _flags[name][statndx] = stat ;
@@ -16284,9 +16278,7 @@ function oq.create_tab_setup()
   y = y + cy ;
   oq.tab5_autoinspect = oq.checkbox( parent, x, y,  23, cy, 200, OQ.AUTO_INSPECT, (OQ_data.ok2autoinspect == 1), 
                function(self) oq.toggle_autoinspect( self ) ; end ) ;
-  y  = y + cy ;
-  oq.tab5_shoutcaps = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTCAPS, (oq.toon.shout_caps == 1), 
-               function(self) oq.toggle_shout_caps( self ) ; end ) ;
+
   y  = y + cy ;
   oq.tab5_shoutads = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOUTADS, (OQ_data.show_premade_ads == 1), 
                function(self) oq.toggle_premade_ads( self ) ; end ) ;
@@ -23450,14 +23442,6 @@ function oq.toggle_auto_role( cb )
   end
 end
 
-function oq.toggle_shout_caps( cb )
-  if (cb:GetChecked()) then
-    oq.toon.shout_caps = 1 ;
-  else
-    oq.toon.shout_caps = 0 ;
-  end
-end
-
 function oq.toggle_ragequits( cb ) 
   if (cb:GetChecked()) then 
     oq.toon.shout_ragequits = 1 ; 
@@ -25098,7 +25082,6 @@ function oq.on_logout()
   -- hang onto group data if still in an OQ_group (may come back)
   local disabled = oq.toon.disabled ;
   
-  oq.toon.shout_caps        = oq.toon.shout_caps or 0 ;
   oq.toon.shout_ragequits   = oq.toon.shout_ragequits or 1 ;
   OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 0 ;
   OQ_data.show_premade_ads  = OQ_data.show_premade_ads or 0 ;
@@ -25150,7 +25133,6 @@ function oq.attempt_group_recovery()
   
   if (oq.toon) then
     oq.toon.class_portrait          = oq.toon.class_portrait or 1 ;
-    oq.toon.shout_caps              = oq.toon.shout_caps or 1 ;
     oq.toon.shout_ragequits         = oq.toon.shout_ragequits or 1 ;
     OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 1 ; 
     OQ_data.ok2autoinspect          = OQ_data.ok2autoinspect or 1 ;
@@ -25293,7 +25275,6 @@ function oq.attempt_group_recovery()
   oq.tab5_autoinspect:SetChecked( (OQ_data.ok2autoinspect == 1) ) ;
   oq.tab5_shoutads:SetChecked( (OQ_data.show_premade_ads == 1) ) ;
   oq.tab5_shoutcontracts:SetChecked( (OQ_data.show_contract_ads == 1) ) ;
-  oq.tab5_shoutcaps:SetChecked( (oq.toon.shout_caps == 1) ) ;
   oq.tab5_ragequits:SetChecked( (oq.toon.shout_ragequits == 1) ) ;
   oq.tab5_autoaccept_mesh_request:SetChecked( (OQ_data.autoaccept_mesh_request == 1) ) ;
   oq.tab5_autojoin_oqgeneral:SetChecked( (OQ_data.auto_join_oqgeneral == 1) ) ;

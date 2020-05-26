@@ -131,7 +131,6 @@ OQ.SETUP_ALTLIST      = "Список альтов на b-net аккаунте:\
 OQ.SETUP_AUTOROLE     = "Автовыставление роли" ;
 OQ.SETUP_CLASSPORTRAIT = "Использовать иконки классов" ;
 OQ.SETUP_GARBAGE      = "Собирать мусор (интервал 30 сек)" ;
-OQ.SETUP_SHOUTCAPS    = "Оповещать о целях поля боя" ;
 OQ.SETUP_SHOUTADS     = "Объявить премейды" ;
 OQ.SETUP_AUTOACCEPT_MESH_REQ = "Автоподтверждение запросов связей b-tag" ;
 OQ.SETUP_ANNOUNCE_RAGEQUIT   = "Оповещать о покинувших премейд" ;
