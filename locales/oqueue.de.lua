@@ -67,7 +67,6 @@ OQ.TT_MMR = "rbg Wertung" ;
 OQ.AUTO_INSPECT       = "Auto inspect (Strg + linke Maus)" ;
 OQ.ANNOUNCE_CONTRACTS = "Sage Verträge an" ;
 OQ.SETUP_SHOUTCONTRACTS = "Sage Verträge an" ;
-OQ.SETUP_COLORBLIND   = "Farben Blind Support" ;
 OQ.SETUP_TIMERWIDTH   = "Timer breite" ;
 
 OQ.JOIN_QUEUE = "Warteschlange beitreten" ;

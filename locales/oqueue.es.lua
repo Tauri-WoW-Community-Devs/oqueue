@@ -137,7 +137,6 @@ OQ.SETUP_OK2SUBMIT_BTAG    = "Enviar b-tag cada 4 dias" ;
 OQ.SETUP_ADD        = "añadir" ;
 OQ.SETUP_MYCREW     = "mi equipo" ;
 OQ.SETUP_CLEAR      = "borrar" ;
-OQ.SETUP_COLORBLIND = "Soporte para daltonismo" ;
 OQ.SAPPED           = "{rt8}  Sapped  {rt8}" ;
 OQ.BN_FRIENDS       = "Amigos OQ activos" ;
 OQ.LOCAL_OQ_USERS   = "Locales OQ activos" ;
@@ -456,17 +455,6 @@ OQ.BG_STAT_COLUMN = { [ "Bases Asaltadas"        ] = "Base Asaltada",
                       [ "Torres Asaltadas"       ] = "Torre Asaltada",
                       [ "Torres Defendidas"      ] = "Torre Defendida",
               } ;
-
-OQ.COLORBLINDSHADER = { [ 0 ] = "Desactivado",
-                        [ 1 ] = "Protanopia",
-                        [ 2 ] = "Protanomal?a",
-                        [ 3 ] = "Deuteranopia",
-                        [ 4 ] = "Deuteranomal?a",
-                        [ 5 ] = "Tritanopia",
-                        [ 6 ] = "Tritanomal?a",
-                        [ 7 ] = "Acromatopsia",
-                        [ 8 ] = "Acromatosis",
-                      } ;
 
 -- Class talent specs
 local DK    = { ["Sangre"]             = "Tank",

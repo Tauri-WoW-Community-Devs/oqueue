@@ -149,7 +149,6 @@ OQ.SETUP_SHOW_GEARHILIGHT    = "Montrer gearscore en surbrillance" ;
 OQ.SETUP_ADD          = "Ajouter" ;
 OQ.SETUP_MYCREW       = "Mon équipage" ;
 OQ.SETUP_CLEAR        = "Retirer" ;
-OQ.SETUP_COLORBLIND   = "Support Daltonien" ;
 OQ.SAPPED             = "{rt8}  Sappé  {rt8}" ;
 OQ.BN_FRIENDS         = "OQ enabled friends" ;
 OQ.LOCAL_OQ_USERS     = "OQ enabled locals" ;
@@ -500,17 +499,6 @@ OQ.BG_STAT_COLUMN = { [ "Bases Assaulted"       ] = "Bases Attaqu�es",
                       [ "Towers Assaulted"      ] = "Tour Attaquée",
                       [ "Towers Defended"       ] = "Tour Défendue",
                     } ;
-
-OQ.COLORBLINDSHADER = { [ 0 ] = "Désactivé",
-                        [ 1 ] = "Protanopia",
-                        [ 2 ] = "Protanomaly",
-                        [ 3 ] = "Deuteranopia",
-                        [ 4 ] = "Deuteranomaly",
-                        [ 5 ] = "Tritanopia",
-                        [ 6 ] = "Tritanomaly",
-                        [ 7 ] = "Achromatopsia",
-                        [ 8 ] = "Achromatomaly",
-                      } ;
 
 OQ.TRANSLATED_BY["frFR"] = "Alathèa (Medivh, EU)" ;
 

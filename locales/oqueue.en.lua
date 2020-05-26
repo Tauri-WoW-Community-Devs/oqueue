@@ -146,7 +146,6 @@ OQ.SETUP_LOOT_ACCEPTANCE     = "Notify on loot method change" ;
 OQ.SETUP_ADD          = "add" ;
 OQ.SETUP_MYCREW       = "my crew" ;
 OQ.SETUP_CLEAR        = "clear" ;
-OQ.SETUP_COLORBLIND   = "Color Blind Support" ;
 OQ.SAPPED             = "{rt8}  Sapped  {rt8}" ;
 OQ.BN_FRIENDS         = "OQ enabled friends" ;
 OQ.LOCAL_OQ_USERS     = "OQ enabled locals" ;
@@ -509,17 +508,6 @@ OQ.BG_STAT_COLUMN = { [ "Bases Assaulted"       ] = "Base Assaulted",
                       [ "Towers Assaulted"      ] = "Tower Assaulted",
                       [ "Towers Defended"       ] = "Tower Defended",
                     } ;
-
-OQ.COLORBLINDSHADER = { [ 0 ] = "disabled",
-                        [ 1 ] = "Protanopia",
-                        [ 2 ] = "Protanomaly",
-                        [ 3 ] = "Deuteranopia",
-                        [ 4 ] = "Deuteranomaly",
-                        [ 5 ] = "Tritanopia",
-                        [ 6 ] = "Tritanomaly",
-                        [ 7 ] = "Achromatopsia",
-                        [ 8 ] = "Achromatomaly",
-                      } ;
 
 OQ.TRANSLATED_BY = {} ;
 

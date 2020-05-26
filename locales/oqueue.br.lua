@@ -136,7 +136,6 @@ OQ.SETUP_OK2SUBMIT_BTAG    = "Enviar b-tag a cada 4 dias" ;
 OQ.SETUP_ADD        = "adicionar" ;
 OQ.SETUP_MYCREW     = "minha equipe" ;
 OQ.SETUP_CLEAR      = "limpar" ;
-OQ.SETUP_COLORBLIND = "Suporte para daltônicos" ;
 OQ.SAPPED           = "{rt8}  Levei Sap  {rt8}" ;
 OQ.BN_FRIENDS       = "Amigos com oQ" ;
 OQ.LOCAL_OQ_USERS   = "Locais com oQ" ;

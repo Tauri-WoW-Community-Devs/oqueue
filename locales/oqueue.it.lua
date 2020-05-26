@@ -146,7 +146,6 @@ OQ.SETUP_AUTOHIDE_FRIENDREQS = "Nascondi in automatico le richieste degli amici"
 OQ.SETUP_ADD          = "aggiungi" ;
 OQ.SETUP_MYCREW       = "la mia squadra" ;
 OQ.SETUP_CLEAR        = "pulito" ;
-OQ.SETUP_COLORBLIND   = "Supporto colori" ;
 OQ.SAPPED             = "{rt8}  Tramortito  {rt8}" ;
 OQ.BN_FRIENDS         = "OQ abilita amici" ;
 OQ.LOCAL_OQ_USERS     = "OQ abilita locali" ;
@@ -466,17 +465,6 @@ OQ.BG_STAT_COLUMN = { [ "Base Attaccata"       ] = "Base Attaccata",
                       [ "Torre allalita"      ] = "Torre allalita",
                       [ "Torre Difesa"       ] = "Torre Difesa",
                     } ;
-
-OQ.COLORBLINDSHADER = { [ 0 ] = "disabilitato",
-                        [ 1 ] = "Protanopia",
-                        [ 2 ] = "Protanomaly",
-                        [ 3 ] = "Deuteranopia",
-                        [ 4 ] = "Deuteranomaly",
-                        [ 5 ] = "Tritanopia",
-                        [ 6 ] = "Tritanomaly",
-                        [ 7 ] = "Achromatopsia",
-                        [ 8 ] = "Achromatomaly",
-                      } ;
 
 OQ.TRANSLATED_BY = {} ;
 

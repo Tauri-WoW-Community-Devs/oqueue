@@ -347,7 +347,6 @@ function oq.hook_options()
   oq.options[ "j2tw"        ] = oq.j2tw_now ;
   oq.options[ "bnclear"     ] = oq.bn_clear ; 
   oq.options[ "brb"         ] = oq.brb ;
-  oq.options[ "cb"          ] = oq.color_blind_mode ;
   oq.options[ "check"       ] = oq.ping_the_world ;
   oq.options[ "clear"       ] = oq.cmdline_clear ;
   oq.options[ "cp"          ] = oq.toggle_class_portraits ;
@@ -1651,40 +1650,6 @@ function oq.reposition_ui()
     oq._log:SetPoint( "TOPLEFT", UIParent, "TOPLEFT", x, -325 ) ;
     oq._log:_save_position() ;
   end
-end
-
-function oq.restore_color_blind_setting()
-  ConsoleExec( "colorblindshader ".. tostring( OQ_data.colorblindshader or 0 ) ) ;
-  if (oq.tab5_colorblindshader ~= nil) then
-    oq.tab5_colorblindshader._edit:SetText( OQ.COLORBLINDSHADER[OQ_data.colorblindshader or 0] ) ;
-  end
-end
-
-function oq.color_blind_mode( opt )
---  if (not OQColorBlindShader:IsVisible()) then
-  if (not oq.tab5_colorblindshader:IsVisible()) then
-    return nil ;
-  end
-  if (OQ_data.colorblindshader == nil) then
-    OQ_data.colorblindshader = 0 ;
-  end
-  if (opt ~= nil) and (opt == "?") then
-    print( "OQ: color-blind-shader: ".. OQ.COLORBLINDSHADER[ OQ_data.colorblindshader ] ) ;
-    return nil ;
-  end
-  if (opt ~= nil) and (opt == "next") then
-    OQ_data.colorblindshader = (OQ_data.colorblindshader + 1) % 9 ;
-  elseif (opt == nil) or (type(tonumber(opt)) ~= "number") then
-    OQ_data.colorblindshader = 0 ;
-  else
-    OQ_data.colorblindshader = (tonumber(opt) % 9) ;
-  end
-  ConsoleExec( "colorblindshader ".. tostring( OQ_data.colorblindshader ) ) ;
-  
-  if (oq.tab5_colorblindshader ~= nil) then
-    oq.tab5_colorblindshader._edit:SetText( OQ.COLORBLINDSHADER[OQ_data.colorblindshader or 0] ) ;
-  end
-  return 1 ;
 end
 
 function oq.frame_resize()
@@ -16262,34 +16227,6 @@ function oq.create_tab_score()
 
 end
 
---
--- https://sea.battle.net/support/en/article/color-blind-mode-improvements-in-patch-4-3
---
-OQ.colorblind_types = { { text = OQ.COLORBLINDSHADER[0], arg1 = 0 },
-                        { text = OQ.COLORBLINDSHADER[1], arg1 = 1 },
-                        { text = OQ.COLORBLINDSHADER[2], arg1 = 2 },
-                        { text = OQ.COLORBLINDSHADER[3], arg1 = 3 },
-                        { text = OQ.COLORBLINDSHADER[4], arg1 = 4 },
-                        { text = OQ.COLORBLINDSHADER[5], arg1 = 5 },
-                        { text = OQ.COLORBLINDSHADER[6], arg1 = 6 },
-                        { text = OQ.COLORBLINDSHADER[7], arg1 = 7 },
-                        { text = OQ.COLORBLINDSHADER[8], arg1 = 8 },
-                      } ;
-function oq.make_colorblind_dropdown()
-  local m = oq.menu_create() ;
-  local i, v ;
-  for i,v in pairs(OQ.colorblind_types) do
-    oq.menu_add( v.text, v.arg1, v.text, nil, 
-                 function(cb_edit,arg1,arg2) 
-                   if (oq.color_blind_mode( arg1 )) then
-                     cb_edit:SetText( arg2 ) ;
-                   end
-                 end 
-               ) ;
-  end
-  return m ;  
-end
-
 function oq.create_tab_setup() 
   local x, y, cx, cy, x2 ;
   local parent = OQTabPage5 ;
@@ -16315,8 +16252,6 @@ function oq.create_tab_setup()
   oq.label( parent, x, y, 200, cy, OQ.SETUP_REMOQADDED ) ; 
   y = y + cy ;
   oq.label( parent, x, y, 200, cy, OQ.SETUP_REMOVEBTAG ) ; 
-  y = y + cy ;
-  oq.label( parent, x, y, 200, cy, OQ.SETUP_COLORBLIND ) ;
   y = y + cy ;
   oq.label( parent, x, y, 200, cy, OQ.SETUP_TIMERWIDTH ) ;
 
@@ -16435,11 +16370,7 @@ function oq.create_tab_setup()
   oq.tab5_pullbtag_but.string:SetFont(OQ.FONT, 10, "") ;
 
   y = y + cy ;
-  
-  oq.tab5_colorblindshader = oq.combo_box( parent, x, y, 117, 24, oq.make_colorblind_dropdown, OQ.COLORBLINDSHADER[0] ) ;
-  oq.button( parent, x+145, y+1, 22, cy, "+", function() oq.color_blind_mode( "next" ) ; end )
-  
-  y = y + cy ;
+
   local slider = oq.CreateFrame('Slider', 'oQSliderBar', parent, 'OptionsSliderTemplate') ;
   oq.setpos( slider, x-5, y, cx-2, cy ) ;
   slider:SetMinMaxValues( 75, 375 ) ;
@@ -25330,7 +25261,6 @@ function oq.attempt_group_recovery()
     tbl.copy( OQ_data.scores, oq.scores ) ;
     oq.update_scores() ;
   end
-  oq.color_blind_mode( OQ_data.colorblindshader ) ;
   OQ_data._premade_type = OQ.TYPE_NONE ;
   
   if (oq.toon) then
@@ -25491,8 +25421,6 @@ function oq.attempt_group_recovery()
   oq.tab5_autohide_friendreqs:SetChecked( (OQ_data.autohide_friendreqs == 1) ) ;
   oq.tab5_show_gearhilite:SetChecked( (OQ_data.show_gearhilight == 1) ) ;
   oq.loot_acceptance_cb:SetChecked( (OQ_data.loot_acceptance == 1) ) ;
-  
-  oq.restore_color_blind_setting() ;
   
   oq._filter._text = OQ_data._filter_text or "" ;
   oq.set_voip_filter( OQ_data._voip_filter ) ;
