@@ -1,6 +1,6 @@
 ﻿local addonName, OQ = ...
 
-if (string.sub(GetCVar('realmList'), 1, 2) == 'hu') then
+if (string.sub(GetCVar('realmList'), 1, 2) ~= 'hu') then
     return
 end
 
