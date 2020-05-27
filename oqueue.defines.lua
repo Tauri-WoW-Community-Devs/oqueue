@@ -129,6 +129,7 @@ OQ.TYPE_ROLEPLAY = 'P'
 
 OQ.VOIP_DOLBYAXON = 'D'
 OQ.VOIP_MUMBLE = 'M'
+OQ.VOIP_DISCORD = 'DC'
 OQ.VOIP_NOVOICE = '0'
 OQ.VOIP_RAIDCALL = 'R'
 OQ.VOIP_RAZOR = 'r'
@@ -143,6 +144,7 @@ OQ.VOIP_ICON = {
     [OQ.VOIP_SKYPE] = 'Interface\\Addons\\oqueue\\art\\voip_skype.tga',
     [OQ.VOIP_TEAMSPEAK] = 'Interface\\Addons\\oqueue\\art\\voip_teamspeak.tga',
     [OQ.VOIP_DOLBYAXON] = 'Interface\\Addons\\oqueue\\art\\voip_axon.tga',
+    [OQ.VOIP_DISCORD] = 'Interface\\Addons\\oqueue\\art\\discord.tga',
     [OQ.VOIP_RAIDCALL] = 'Interface\\Addons\\oqueue\\art\\voip_raidcall.tga',
     [OQ.VOIP_RAZOR] = 'Interface\\Addons\\oqueue\\art\\voip_razor.tga',
     [OQ.VOIP_MUMBLE] = 'Interface\\Addons\\oqueue\\art\\voip_mumble.tga',
