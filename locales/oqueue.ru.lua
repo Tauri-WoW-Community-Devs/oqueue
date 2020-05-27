@@ -139,7 +139,6 @@ OQ.SETUP_AUTOHIDE_FRIENDREQS = "Скрывать запросы предложе
 OQ.SETUP_ADD          = "Добавить" ;
 OQ.SETUP_MYCREW       = "Моя команда" ;
 OQ.SETUP_CLEAR        = "Очистить" ;
-OQ.SETUP_SHOW_GEARHILIGHT    = "Подсвечивать экипировку" ;
 OQ.BN_FRIENDS         = "Друзья oQ" ;
 OQ.LOCAL_OQ_USERS     = "Локальные oQ пользователи" ;
 OQ.TIME_DRIFT         = "Время дрейфа" ;

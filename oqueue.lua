@@ -15729,9 +15729,7 @@ function oq.create_tab_setup()
   y  = y + cy ;
   oq.tab5_autohide_friendreqs = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_AUTOHIDE_FRIENDREQS, (OQ_data.autohide_friendreqs == 1), 
                function(self) oq.toggle_autohide_friendreqs( self ) ; end ) ;
-  y  = y + cy ;
-  oq.tab5_show_gearhilite = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_SHOW_GEARHILIGHT, (OQ_data.show_gearhilight == 1), 
-               function(self) oq.toggle_show_gearhilight( self ) ; end ) ;
+
   y  = y + cy ;
   oq.loot_acceptance_cb = oq.checkbox( parent, x, y,  23, cy, 200, OQ.SETUP_LOOT_ACCEPTANCE, (OQ_data.loot_acceptance == 1), 
                function(self) oq.toggle_loot_acceptance( self ) ; end ) ;
@@ -22925,17 +22923,6 @@ function oq.toggle_autohide_friendreqs( cb )
   end
 end
 
-function oq.toggle_show_gearhilight( cb )
-  if (cb:GetChecked()) then 
-    OQ_data.show_gearhilight = 1 ; 
-  else 
-    OQ_data.show_gearhilight = 0 ; 
-  end
-  
-  oq.paperdoll_update( PaperDollFrame, "player" ) ;
-  oq.paperdoll_update( InspectFrame  , "target" ) ;
-end
-
 function oq.toggle_loot_acceptance( cb )
   if (cb:GetChecked()) then 
     OQ_data.loot_acceptance = 1 ; 
@@ -23893,11 +23880,7 @@ function oq.paperdoll_update( frame, target )
       end
       count = count + 1 ;
     end
-    if (OQ_data.show_gearhilight == 1) then
-      p._pvp:Show() ;
-    else
-      p._pvp:Hide() ;
-    end
+    p._pvp:Hide() ;
     if (iid ~= nil) and (iid ~= 0) then
       if (ilevel == nil) or (ilevel == 0) then
         ilevel = select( 4, GetItemInfo(iid)) ;
@@ -24663,7 +24646,6 @@ function oq.attempt_group_recovery()
   
   OQ_data.auto_join_oqgeneral      = OQ_data.auto_join_oqgeneral or 1 ;
   OQ_data.autohide_friendreqs      = OQ_data.autohide_friendreqs or 1 ;
-  OQ_data.show_gearhilight         = OQ_data.show_gearhilight    or 1 ;
   OQ_data.premade_filter_qualified = OQ_data.premade_filter_qualified or 0 ;
   OQ_data.loot_acceptance          = OQ_data.loot_acceptance or 1 ;
   
@@ -24691,7 +24673,6 @@ function oq.attempt_group_recovery()
   oq.tab5_autoaccept_mesh_request:SetChecked( (OQ_data.autoaccept_mesh_request == 1) ) ;
   oq.tab5_autojoin_oqgeneral:SetChecked( (OQ_data.auto_join_oqgeneral == 1) ) ;
   oq.tab5_autohide_friendreqs:SetChecked( (OQ_data.autohide_friendreqs == 1) ) ;
-  oq.tab5_show_gearhilite:SetChecked( (OQ_data.show_gearhilight == 1) ) ;
   oq.loot_acceptance_cb:SetChecked( (OQ_data.loot_acceptance == 1) ) ;
   
   oq._filter._text = OQ_data._filter_text or "" ;

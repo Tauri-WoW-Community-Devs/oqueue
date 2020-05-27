@@ -140,7 +140,6 @@ OQ.SETUP_AUTOACCEPT_MESH_REQ = "Accepter automatiquement les requêtes réseaux 
 OQ.SETUP_OK2SUBMIT_BTAG      = "Suggérer B-TAG tous les 4 jours" ;
 OQ.SETUP_AUTOJOIN_OQGENERAL  = "Joindre automatiquement le canal oqgeneral" ;
 OQ.SETUP_AUTOHIDE_FRIENDREQS = "Cacher automatiquement les requêtes amies" ;
-OQ.SETUP_SHOW_GEARHILIGHT    = "Montrer gearscore en surbrillance" ;
 OQ.SETUP_ADD          = "Ajouter" ;
 OQ.SETUP_MYCREW       = "Mon équipage" ;
 OQ.SETUP_CLEAR        = "Retirer" ;

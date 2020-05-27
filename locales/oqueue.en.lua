@@ -136,7 +136,6 @@ OQ.SETUP_AUTOACCEPT_MESH_REQ = "Auto accept b-tag mesh requests" ;
 OQ.SETUP_OK2SUBMIT_BTAG      = "Submit b-tag every 4 days" ;
 OQ.SETUP_AUTOJOIN_OQGENERAL  = "Auto join oqgeneral channel" ;
 OQ.SETUP_AUTOHIDE_FRIENDREQS = "Auto hide friend requests" ;
-OQ.SETUP_SHOW_GEARHILIGHT    = "Show gear highlight" ;
 OQ.SETUP_LOOT_ACCEPTANCE     = "Notify on loot method change" ;
 OQ.SETUP_ADD          = "add" ;
 OQ.SETUP_MYCREW       = "my crew" ;
