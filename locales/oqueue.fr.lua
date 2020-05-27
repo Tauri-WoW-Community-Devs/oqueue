@@ -13,7 +13,7 @@ local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["frFR"] = "Shamallo" ;
 OQ.TRANSLATED_BY["frFR"] = "Alathèa (Medivh, EU)" ;
-if ( GetLocale() ~= "frFR" ) then
+if (GetLocale() ~= "frFR") then
   return ;
 end
 local L = OQ._T ; -- for literal string translations
@@ -355,8 +355,8 @@ OQ.SETUP_SHOUTCONTRACTS = "Annoncer contracts" ;
 OQ.CONTRACT_ARRIVED   = " Contract #%s just arrived!  Target: %s  Reward: |h%s" ;
 OQ.CONTRACT_CLAIMED01 = "%s %s claimed contract #%s and won %s" ;
 OQ.CONTRACT_CLAIMED02 = "%s claimed contract #%s and won %s" ;
-OQ.TARGET_MARK        = "You've targeted a bounty target! ( contract#%s )" ;
-OQ.BOUNTY_TARGET      = "You've killed a bounty target! ( contract#%s )" ;
+OQ.TARGET_MARK        = "You've targeted a bounty target! (contract#%s)" ;
+OQ.BOUNTY_TARGET      = "You've killed a bounty target! (contract#%s)" ;
 OQ.DEATHMATCH_SCORE   = "Score!" ;
 OQ.FRIEND_REQUEST     = "%s-%s veut devenir votre ami" ;
 OQ.ALREADY_FRIENDED   = "Vous êtes déja ami battle-net avec %s" ;

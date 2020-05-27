@@ -14,10 +14,10 @@ OQ._T = {} ; -- used for literal string conversations
 local function defaultFunc(L, key)
  -- If this function was called, we have no localization for this key.
  -- We could complain loudly to allow localizers to see the error of their ways, 
- -- but, for now, just return the key as its own localization. This allows you to—avoid writing the default localization out explicitly.
+ -- but, for now, just return the key as its own localization. This allows you toï¿½avoid writing the default localization out explicitly.
  return key;
 end
-setmetatable(OQ._T, {__index=defaultFunc}) ;
+setmetatable(OQ._T, {__index=defaultFunc});
 local L = OQ._T ;
 
 OQ.FONT = "Fonts\\FRIZQT__.TTF" ;
@@ -530,7 +530,7 @@ OQ.QUEUE_STATUS = { ["none"   ] = "0",
 -- to be passed to SetTexture on queue pops
 -- index is a rough scale from the leader
 -- ie: member pops 350ms after leader, using 250ms breaks, this would rate the user a '1' 
---     scale = floor( diff / time_break )
+--     scale = floor(diff / time_break)
 --
 OQ.QUEUE_POPS = { [  0 ] =  4, -- green #1
                   [  1 ] =  7, -- green #2

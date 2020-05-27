@@ -10,7 +10,7 @@
               no code in this file may be used in other works without expressed permission  
 ]]--
 local addonName, OQ = ... ;
-local oq = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq = OQ:mod(); -- thank goodness i stumbled across this trick
 
 local ALLIANCE_WIN = "Interface/Icons/INV_BannerPVP_02.blp" ;
 local HORDE_WIN = "Interface/Icons/INV_BannerPVP_01.blp" ;
@@ -101,12 +101,12 @@ local function get_score()
   if (AlwaysUpFrame1Text == nil) or (AlwaysUpFrame2Text == nil) then
     return 0,0 ;
   end
-  local line1 = AlwaysUpFrame1Text:GetText() ;
-  local line2 = AlwaysUpFrame2Text:GetText() ;
+  local line1 = AlwaysUpFrame1Text:GetText();
+  local line2 = AlwaysUpFrame2Text:GetText();
   if (line1 == nil) or (line2 == nil) then
     return 0,0 ;
   end
-  return line1:match( "Resources: (%d+)" ), line2:match( "Resources: (%d+)" ) ;
+  return line1:match("Resources: (%d+)"), line2:match("Resources: (%d+)");
 end
 
 local function get_basecount()
@@ -141,7 +141,7 @@ local graveyards = { { x = 0.693, y = 0.677, name = "Horde LZ" },
                    } ;
 local GRAVEYARD_RANGE  = 0.01 ;
 local NODE_RANGE       = 0.025 ;
-local function get_location_name( x, y, location, radius )
+local function get_location_name(x, y, location, radius)
   local i, v ;
   for i,v in pairs(location) do
     if (x > (v.x - radius)) and (x < (v.x + radius)) and 
@@ -153,12 +153,12 @@ local function get_location_name( x, y, location, radius )
 end
 
 local function ab_get_current_loc()
-  local x, y = GetPlayerMapPosition("player") ; 
-  local loc = get_location_name( x, y, graveyards, NODE_RANGE ) ;
+  local x, y = GetPlayerMapPosition("player"); 
+  local loc = get_location_name(x, y, graveyards, NODE_RANGE);
   if (loc == nil) then
-    loc = get_location_name( x, y, flags, NODE_RANGE ) or "" ;
+    loc = get_location_name(x, y, flags, NODE_RANGE) or "" ;
   end
-  print( "location: Arathi Basin @ ".. floor(x*1000)/1000 .." , ".. floor(y*1000)/1000 .."    ".. loc ) ;
+  print("location: Arathi Basin @ ".. floor(x*1000)/1000 .." , ".. floor(y*1000)/1000 .."    ".. loc);
 end
 
 local function utimer_init_AB()
@@ -194,24 +194,24 @@ local function check_ressers()
   node_count = {} ;
   local i, v ;
   for i=1,GetNumGroupMembers() do
-    local name = GetUnitName( "raid".. i, true ) ;
-    local hp = UnitHealth( "raid".. i ) ;
+    local name = GetUnitName("raid".. i, true);
+    local hp = UnitHealth("raid".. i);
     if (units[name] ~= nil) and (units[name] <= 1) and (hp > 1) then
       -- ressed 
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, graveyards, GRAVEYARD_RANGE ) ;
-      oq.utimer_reset_cycle( loc ) ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, graveyards, GRAVEYARD_RANGE);
+      oq.utimer_reset_cycle(loc);
     elseif (units[name] ~= nil) and (units[name] <= 1) then
       -- dead, waiting to res.  which graveyard?
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, graveyards, GRAVEYARD_RANGE ) ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, graveyards, GRAVEYARD_RANGE);
       if (loc) then
         dead_count[ loc ] = (dead_count[loc] or 0) + 1 ;
       end
     else
       -- alive, which node?
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, flags, NODE_RANGE ) ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, flags, NODE_RANGE);
       if (loc) then
         node_count[ loc ] = (node_count[loc] or 0) + 1 ;
       end
@@ -239,42 +239,42 @@ local function ab_utimer_check()
     return ;
   end
   
-  utimer_init_AB() ;
+  utimer_init_AB();
   
   local i ;
   for i=1, GetNumMapLandmarks(), 1 do
-    local name, _, textureIndex = GetMapLandmarkInfo(i) ;
+    local name, _, textureIndex = GetMapLandmarkInfo(i);
     if name and textureIndex then
       local _type  = poi  [ textureIndex ] ;
       local _state = state[ textureIndex ] ;
       if _type and _state and (textureIndex ~= objectives[_type]) then
-        oq.utimer_stop( name ) ;
+        oq.utimer_stop(name);
         if (_state == 1) then
           -- alliance controlled
-          oq.utimer_stop( name, 1 ) ; -- stop capping timer
+          oq.utimer_stop(name, 1); -- stop capping timer
           if (oq._player_faction == "A") then
-            oq.utimer_start( name, "alliance", textureIndex, 30, 3 ) ; -- graveyard timer
+            oq.utimer_start(name, "alliance", textureIndex, 30, 3); -- graveyard timer
           else
-            oq.utimer_start( name, "alliance", textureIndex, 30, 4, true ) ; -- enemy node
+            oq.utimer_start(name, "alliance", textureIndex, 30, 4, true); -- enemy node
           end
         elseif (_state == 2) then
           -- horde controlled
-          oq.utimer_stop( name, 1 ) ; -- stop capping timer
+          oq.utimer_stop(name, 1); -- stop capping timer
           if (oq._player_faction == "H") then
-            oq.utimer_start( name, "horde", textureIndex, 30, 3 ) ; -- graveyard timer
+            oq.utimer_start(name, "horde", textureIndex, 30, 3); -- graveyard timer
           else
-            oq.utimer_start( name, "horde", textureIndex, 30, 4, true ) ; -- enemy node
+            oq.utimer_start(name, "horde", textureIndex, 30, 4, true); -- enemy node
           end
         elseif (_state == 3) then
           -- alliance capping
-          oq.utimer_stop( name, 3 ) ; -- stop node timer
-          oq.utimer_stop( name, 4 ) ; -- enemy timer
-          oq.utimer_start( name, "alliance", textureIndex, 1*60, 1 ) ;
+          oq.utimer_stop(name, 3); -- stop node timer
+          oq.utimer_stop(name, 4); -- enemy timer
+          oq.utimer_start(name, "alliance", textureIndex, 1*60, 1);
         elseif (_state == 4) then
           -- horde capping
-          oq.utimer_stop( name, 3 ) ; -- stop node timer
-          oq.utimer_stop( name, 4 ) ; -- stop enemy timer
-          oq.utimer_start( name, "horde", textureIndex, 1*60, 1 ) ;
+          oq.utimer_stop(name, 3); -- stop node timer
+          oq.utimer_stop(name, 4); -- stop enemy timer
+          oq.utimer_start(name, "horde", textureIndex, 1*60, 1);
         end
         objectives[_type] = textureIndex ;
       end
@@ -282,40 +282,40 @@ local function ab_utimer_check()
   end  
 
   if (oq.utimer_find("Alliance LZ") == nil) and (oq._player_faction == "A") then
-    oq.utimer_start( "Alliance LZ", "alliance", 15, 30, 3 ) ;
+    oq.utimer_start("Alliance LZ", "alliance", 15, 30, 3);
   end
   if (oq.utimer_find("Horde LZ") == nil) and (oq._player_faction == "H") then
-    oq.utimer_start( "Horde LZ", "horde", 13, 30, 3 ) ;
+    oq.utimer_start("Horde LZ", "horde", 13, 30, 3);
   end
           
-  check_ressers() ;
+  check_ressers();
 
-  local a, h = get_score() ;
-  local now  = GetTime() ;
-  local ab, hb = get_basecount() ;
+  local a, h = get_score();
+  local now  = GetTime();
+  local ab, hb = get_basecount();
   if (ab == scores["alliance"]) and (hb == scores["horde"]) then
     -- bases hasn't changed, no need to recalc time
-    oq.utimer_shuffle() ;
+    oq.utimer_shuffle();
     return ;
   end
-  local tm_a = floor((1600 - a) / ResPerSec[ab]) ;
-  local tm_h = floor((1600 - h) / ResPerSec[hb]) ;
+  local tm_a = floor((1600 - a) / ResPerSec[ab]);
+  local tm_h = floor((1600 - h) / ResPerSec[hb]);
   if (tm_a > tm_h) then 
     -- horde winning
-    oq.utimer_stop( "Alliance wins", 2 ) ;
-    local t = oq.utimer_find("Horde wins") ;
+    oq.utimer_stop("Alliance wins", 2);
+    local t = oq.utimer_find("Horde wins");
     if (t == nil) then
-      oq.utimer_start( "Horde wins", "horde", HORDE_WIN, tm_h, 2 ) ;
+      oq.utimer_start("Horde wins", "horde", HORDE_WIN, tm_h, 2);
     else
       t._end   = now + tm_h ;
       t._count = nil ;
     end
   else
     -- alliance winning
-    oq.utimer_stop( "Horde wins", 2 ) ;
-    local t = oq.utimer_find("Alliance wins") ;
+    oq.utimer_stop("Horde wins", 2);
+    local t = oq.utimer_find("Alliance wins");
     if (t == nil) then
-      oq.utimer_start( "Alliance wins", "alliance", ALLIANCE_WIN, tm_a, 2 ) ;
+      oq.utimer_start("Alliance wins", "alliance", ALLIANCE_WIN, tm_a, 2);
     else
       t._end   = now + tm_a ;
       t._count = nil ;
@@ -324,7 +324,7 @@ local function ab_utimer_check()
   scores["horde"   ] = hb ;
   scores["alliance"] = ab ;
   scores["tm"      ] = now ;
-  oq.utimer_shuffle() ;
+  oq.utimer_shuffle();
 end
 
 local function ab_shuffle()
@@ -341,13 +341,13 @@ local function ab_shuffle()
   for i,v in pairs(oq._utimers) do
     if (v._start ~= 0) then
       if     (v._type == 1) then
-        table.insert(oq._utimer_items, i) ;
+        table.insert(oq._utimer_items, i);
       elseif (v._type == 2) then
-        table.insert(oq._utimer_items, i) ;
+        table.insert(oq._utimer_items, i);
       elseif (v._type == 3) then
-        table.insert(oq._utimer_gys, i) ;
+        table.insert(oq._utimer_gys, i);
       elseif (v._type == 4) then
-        table.insert(oq._utimer_controlled, i) ;
+        table.insert(oq._utimer_controlled, i);
       end
     end
   end  
@@ -357,9 +357,9 @@ local function ab_shuffle()
     y = y + cy ;
   end
   n = 0 ;
-  table.sort(oq._utimer_items, oq.utimer_compare) ;  
+  table.sort(oq._utimer_items, oq.utimer_compare);  
   for i,v in pairs(oq._utimer_items) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
     n = n + 1 ;
   end
@@ -369,9 +369,9 @@ local function ab_shuffle()
     y = y + cy ;
   end
   n = 0 ;
-  table.sort(oq._utimer_controlled, oq.utimer_compare_alpha) ;  
+  table.sort(oq._utimer_controlled, oq.utimer_compare_alpha);  
   for i,v in pairs(oq._utimer_controlled) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
     n = n + 1 ;
   end
@@ -380,51 +380,51 @@ local function ab_shuffle()
   if (n > 0) then
     y = y + cy ;
   end
-  table.sort(oq._utimer_gys, oq.utimer_compare_alpha) ;  
+  table.sort(oq._utimer_gys, oq.utimer_compare_alpha);  
   for i,v in pairs(oq._utimer_gys) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
   end
 end
 
 local function ab_test_1()
-print( "ab test 1" ) ;
+print("ab test 1");
 
   -- test from horde side
   local t ;
-  oq.utimer_stop_all() ; -- clear out existing timers
-  t = oq.utimer_start( "Lumber Mill", "horde"   , 24, 1*60, 1 ) ; -- horde capping lumbermill
+  oq.utimer_stop_all(); -- clear out existing timers
+  t = oq.utimer_start("Lumber Mill", "horde"   , 24, 1*60, 1); -- horde capping lumbermill
   t._count = 4 ; -- 4 assaulting
-  t = oq.utimer_start( "Blacksmith" , "horde"   , 29, 1*60, 1 ) ; -- horde capping blacksmith
-  t = oq.utimer_start( "Stables"    , "horde"   , 40, 1*60, 3 ) ; -- horde controlled stables - friendly
+  t = oq.utimer_start("Blacksmith" , "horde"   , 29, 1*60, 1); -- horde capping blacksmith
+  t = oq.utimer_start("Stables"    , "horde"   , 40, 1*60, 3); -- horde controlled stables - friendly
   t._count = 1 ; -- 1 guard
   t._dead  = 2 ; -- 2 ressers
-  t = oq.utimer_start( "Farm"       , "alliance", 32, 1*60, 1 ) ; -- alliance capping farm
-  t = oq.utimer_start( "Gold Mine"  , "alliance", 18, 1*60, 4 ) ; -- alliance controlled mine - enemy
+  t = oq.utimer_start("Farm"       , "alliance", 32, 1*60, 1); -- alliance capping farm
+  t = oq.utimer_start("Gold Mine"  , "alliance", 18, 1*60, 4); -- alliance controlled mine - enemy
   t._count = 3 ; -- 3 assaulting
   t._notime = true ;
-  t = oq.utimer_start( "Horde wins" , "horde"   , HORDE_WIN, 3*60, 2 ) ; -- horde winning in 3 min
+  t = oq.utimer_start("Horde wins" , "horde"   , HORDE_WIN, 3*60, 2); -- horde winning in 3 min
   
-  t = oq.utimer_start( "Horde LZ"   , "horde"   , 13, 30, 3 ) ; -- horde lz - friendly
+  t = oq.utimer_start("Horde LZ"   , "horde"   , 13, 30, 3); -- horde lz - friendly
 end
 
 local function ab_test_2()
-print( "ab test 2" ) ;
+print("ab test 2");
   -- test from horde side, alliance winning
   local t ;
-  oq.utimer_stop_all() ; -- clear out existing timers
-  t = oq.utimer_start( "Lumber Mill", "horde"   , 24, 1*60, 1 ) ; -- horde capping lumbermill
+  oq.utimer_stop_all(); -- clear out existing timers
+  t = oq.utimer_start("Lumber Mill", "horde"   , 24, 1*60, 1); -- horde capping lumbermill
   t._count = 4 ; -- 4 assaulting
-  t = oq.utimer_start( "Blacksmith" , "horde"   , 29, 1*60, 1 ) ; -- horde capping blacksmith
-  t = oq.utimer_start( "Farm"       , "alliance", 32, 1*60, 1 ) ; -- alliance capping farm
-  t = oq.utimer_start( "Stables"    , "alliance", 40, 1*60, 4 ) ; -- alliance controlled stables - enemy
+  t = oq.utimer_start("Blacksmith" , "horde"   , 29, 1*60, 1); -- horde capping blacksmith
+  t = oq.utimer_start("Farm"       , "alliance", 32, 1*60, 1); -- alliance capping farm
+  t = oq.utimer_start("Stables"    , "alliance", 40, 1*60, 4); -- alliance controlled stables - enemy
   t._count = 3 ; -- 3 attackers
-  t = oq.utimer_start( "Gold Mine"  , "alliance", 18, 1*60, 4 ) ; -- alliance controlled mine - enemy
+  t = oq.utimer_start("Gold Mine"  , "alliance", 18, 1*60, 4); -- alliance controlled mine - enemy
   t._count = 3 ; -- 3 assaulting
   t._notime = true ;
-  t = oq.utimer_start( "Alliance wins", "alliance", ALLIANCE_WIN, 3*60, 2 ) ; -- horde winning in 3 min
+  t = oq.utimer_start("Alliance wins", "alliance", ALLIANCE_WIN, 3*60, 2); -- horde winning in 3 min
   
-  t = oq.utimer_start( "Horde LZ"   , "horde"   , 13, 30, 3 ) ; -- horde lz - friendly
+  t = oq.utimer_start("Horde LZ"   , "horde"   , 13, 30, 3); -- horde lz - friendly
   t._dead = 2 ; -- 2 ressers
 end
 
@@ -432,11 +432,11 @@ local function ab_start()
   -- ab started
 end
 
-local function ab_test( arg1 )
+local function ab_test(arg1)
   if (arg1 == nil) or (arg1 == "1") then
-    ab_test_1() ;
+    ab_test_1();
   elseif (arg1 == "2") then
-    ab_test_2() ;
+    ab_test_2();
   end
 end
 
@@ -448,7 +448,7 @@ local function ab_close()
   for i,v in pairs(scores) do
     scores[i] = 0 ;
   end
-  oq.utimer_stop_all() ;
+  oq.utimer_stop_all();
 end
 
 -- hook 

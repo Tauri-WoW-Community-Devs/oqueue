@@ -10,7 +10,7 @@
               no code in this file may be used in other works without expressed permission  
 ]]--
 local addonName, OQ = ... ;
-local oq = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq = OQ:mod(); -- thank goodness i stumbled across this trick
 
 local ALLIANCE_WIN = "Interface/Icons/INV_BannerPVP_02.blp" ;
 local HORDE_WIN = "Interface/Icons/INV_BannerPVP_01.blp" ;
@@ -31,7 +31,7 @@ local graveyards = { { x = 0.580, y = 0.742, name = "Horde" },
                    } ;
 local GRAVEYARD_RANGE  = 0.02 ;
 local NODE_RANGE       = 0.08 ;
-local function get_location_name( x, y, location, radius )
+local function get_location_name(x, y, location, radius)
   for i,v in pairs(location) do
     if (x > (v.x - radius)) and (x < (v.x + radius)) and 
        (y > (v.y - radius)) and (y < (v.y + radius)) then
@@ -45,16 +45,16 @@ local function get_score()
   if (AlwaysUpFrame2Text == nil) or (AlwaysUpFrame3Text == nil) then
     return 0,0 ;
   end
-  local line2 = AlwaysUpFrame2Text:GetText() ;
-  local line3 = AlwaysUpFrame3Text:GetText() ;
+  local line2 = AlwaysUpFrame2Text:GetText();
+  local line3 = AlwaysUpFrame3Text:GetText();
   if (line2 == nil) or (line3 == nil) then
     return 0,0 ;
   end
   if (AlwaysUpFrame1Text ~= nil) then
-    local line1 = AlwaysUpFrame1Text:GetText() ;
+    local line1 = AlwaysUpFrame1Text:GetText();
     if (line1 ~= nil) then
-      local tm = line1:match( "Remaining: (%d+)" ) ;  
-      local dt = _wsg_expire_tm - GetTime() ;
+      local tm = line1:match("Remaining: (%d+)");  
+      local dt = _wsg_expire_tm - GetTime();
       tm = tonumber(tm) * 60 ;
       -- reset time if off by more then 120 seconds
       if (abs(dt - tm) > 120) then
@@ -62,16 +62,16 @@ local function get_score()
       end
     end
   end
-  return tonumber(line2:match( "%d+" )), tonumber(line3:match( "%d+" )) ;
+  return tonumber(line2:match("%d+")), tonumber(line3:match("%d+"));
 end
 
 local function wsg_get_current_loc()
-  local x, y = GetPlayerMapPosition("player") ; 
-  local loc = get_location_name( x, y, graveyards, NODE_RANGE ) ;
+  local x, y = GetPlayerMapPosition("player"); 
+  local loc = get_location_name(x, y, graveyards, NODE_RANGE);
   if (loc == nil) then
-    loc = get_location_name( x, y, flags, NODE_RANGE ) or "" ;
+    loc = get_location_name(x, y, flags, NODE_RANGE) or "" ;
   end
-  print( "location: Warsong Gulch @ ".. floor(x*1000)/1000 .." , ".. floor(y*1000)/1000 .."    ".. loc ) ;
+  print("location: Warsong Gulch @ ".. floor(x*1000)/1000 .." , ".. floor(y*1000)/1000 .."    ".. loc);
 end
 
 local function wsg_utimer_init()
@@ -79,22 +79,22 @@ local function wsg_utimer_init()
     return ;
   end
   
-  oq.utimer_start( "Alliance"          , "alliance", 15, 30, 3 ) ; -- alliance graveyard timer
-  oq.utimer_start( "Horde"             , "horde"   , 13, 30, 3 ) ; -- horde graveyard timer
-  oq.utimer_start( "Alliance flag room", "alliance", 43, 30, 4, true ) ; -- alliance flag room
-  oq.utimer_start( "Horde flag room"   , "horde"   , 44, 30, 4, true ) ; -- horde flag room
+  oq.utimer_start("Alliance"          , "alliance", 15, 30, 3); -- alliance graveyard timer
+  oq.utimer_start("Horde"             , "horde"   , 13, 30, 3); -- horde graveyard timer
+  oq.utimer_start("Alliance flag room", "alliance", 43, 30, 4, true); -- alliance flag room
+  oq.utimer_start("Horde flag room"   , "horde"   , 44, 30, 4, true); -- horde flag room
   
   units = {} ;
   scores["horde"   ] = 0 ;
   scores["alliance"] = 0 ;
-  scores["tm"      ] = GetTime() ;
+  scores["tm"      ] = GetTime();
   _wsg_init = 1 ;
   _wsg_expire_tm = GetTime() + 20 * 60 ; -- 20 min games
 end
 
 local function wsg_graveyard_timers_reset()
-  oq.utimer_reset_cycle( "Horde" ) ;
-  oq.utimer_reset_cycle( "Alliance" ) ;
+  oq.utimer_reset_cycle("Horde");
+  oq.utimer_reset_cycle("Alliance");
 end
 
 local dead_count = {} ;
@@ -104,26 +104,26 @@ local function check_ressers()
   dead_count = {} ;
   node_count = {} ;
   for i=1,GetNumGroupMembers() do
-    local name = GetUnitName( "raid".. i, true ) ;
-    local hp = UnitHealth( "raid".. i ) ;
+    local name = GetUnitName("raid".. i, true);
+    local hp = UnitHealth("raid".. i);
     if (units[name] ~= nil) and (units[name] <= 1) and (hp > 1) then
       -- ressed 
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, graveyards, GRAVEYARD_RANGE ) ;
-      wsg_graveyard_timers_reset() ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, graveyards, GRAVEYARD_RANGE);
+      wsg_graveyard_timers_reset();
     elseif (units[name] ~= nil) and (units[name] <= 1) then
       -- dead, waiting to res.  which graveyard?
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, graveyards, GRAVEYARD_RANGE ) ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, graveyards, GRAVEYARD_RANGE);
       if (loc) then
         dead_count[ loc ] = (dead_count[loc] or 0) + 1 ;
       end
     else
       -- alive, which node?
-      local x, y = GetPlayerMapPosition( "raid" .. i ) ;
-      local loc = get_location_name( x, y, flags, NODE_RANGE ) ;
+      local x, y = GetPlayerMapPosition("raid" .. i);
+      local loc = get_location_name(x, y, flags, NODE_RANGE);
       if (loc == nil) then
-        loc = get_location_name( x, y, graveyards, NODE_RANGE ) ;
+        loc = get_location_name(x, y, graveyards, NODE_RANGE);
       end
       if (loc) then
         node_count[ loc ] = (node_count[loc] or 0) + 1 ;
@@ -152,17 +152,17 @@ local function wsg_utimer_check()
     return ;
   end
   
-  wsg_utimer_init() ;
-  check_ressers() ;
+  wsg_utimer_init();
+  check_ressers();
 
-  local ab, hb = get_score() ;
+  local ab, hb = get_score();
   if (ab == scores["alliance"]) and (hb == scores["horde"]) then
     -- flag count hasn't changed, no need to recalc time
-    oq.utimer_shuffle() ;
+    oq.utimer_shuffle();
     return ;
   end
   -- something changed.  need to update win timer
-  local now  = GetTime() ;
+  local now  = GetTime();
   local game_over = _wsg_expire_tm - now ;
   local tm_a = game_over ;
   local tm_h = 0 ;
@@ -188,10 +188,10 @@ local function wsg_utimer_check()
   
   if (tm_h > 0) then 
     -- horde winning
-    oq.utimer_stop( "Alliance wins", 2 ) ;
-    local t = oq.utimer_find("Horde wins") ;
+    oq.utimer_stop("Alliance wins", 2);
+    local t = oq.utimer_find("Horde wins");
     if (t == nil) then
-      oq.utimer_start( "Horde wins", "horde", HORDE_WIN, tm_h, 2 ) ;
+      oq.utimer_start("Horde wins", "horde", HORDE_WIN, tm_h, 2);
     else
       t._end = now + tm_h ;
     end
@@ -200,10 +200,10 @@ local function wsg_utimer_check()
     end
   else
     -- alliance winning
-    oq.utimer_stop( "Horde wins", 2 ) ;
-    local t = oq.utimer_find("Alliance wins") ;
+    oq.utimer_stop("Horde wins", 2);
+    local t = oq.utimer_find("Alliance wins");
     if (t == nil) then
-      oq.utimer_start( "Alliance wins", "alliance", ALLIANCE_WIN, tm_a, 2 ) ;
+      oq.utimer_start("Alliance wins", "alliance", ALLIANCE_WIN, tm_a, 2);
     else
       t._end = now + tm_a ;
     end
@@ -214,17 +214,17 @@ local function wsg_utimer_check()
   scores["horde"   ] = hb ;
   scores["alliance"] = ab ;
   scores["tm"      ] = now ;
-  oq.utimer_shuffle() ;
+  oq.utimer_shuffle();
 end
 
 local function wsg_start()
   -- reset graveyard timers
-  oq.utimer_reset_cycle( "Horde" ) ;
-  oq.utimer_reset_cycle( "Alliance" ) ;
+  oq.utimer_reset_cycle("Horde");
+  oq.utimer_reset_cycle("Alliance");
   
   scores["horde"   ] = 0 ;
   scores["alliance"] = 0 ;
-  scores["tm"      ] = GetTime() ;
+  scores["tm"      ] = GetTime();
   _wsg_expire_tm = GetTime() + 20 * 60 ; -- 20 min games
 end
 
@@ -240,13 +240,13 @@ local function wsg_shuffle()
   for i,v in pairs(oq._utimers) do
     if (v._start ~= 0) then
       if     (v._type == 1) then
-        table.insert(oq._utimer_items, i) ;
+        table.insert(oq._utimer_items, i);
       elseif (v._type == 2) then
-        table.insert(oq._utimer_items, i) ;
+        table.insert(oq._utimer_items, i);
       elseif (v._type == 3) then
-        table.insert(oq._utimer_gys, i) ;
+        table.insert(oq._utimer_gys, i);
       elseif (v._type == 4) then
-        table.insert(oq._utimer_controlled, i) ;
+        table.insert(oq._utimer_controlled, i);
       end
     end
   end  
@@ -256,9 +256,9 @@ local function wsg_shuffle()
     y = y + cy ;
   end
   n = 0 ;
-  table.sort(oq._utimer_items, oq.utimer_compare) ;  
+  table.sort(oq._utimer_items, oq.utimer_compare);  
   for i,v in pairs(oq._utimer_items) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
     n = n + 1 ;
   end
@@ -268,9 +268,9 @@ local function wsg_shuffle()
     y = y + cy ;
   end
   n = 0 ;
-  table.sort(oq._utimer_controlled, oq.utimer_compare_alpha) ;  
+  table.sort(oq._utimer_controlled, oq.utimer_compare_alpha);  
   for i,v in pairs(oq._utimer_controlled) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
     n = n + 1 ;
   end
@@ -279,9 +279,9 @@ local function wsg_shuffle()
   if (n > 0) then
     y = y + cy ;
   end
-  table.sort(oq._utimer_gys, oq.utimer_compare_alpha) ;  
+  table.sort(oq._utimer_gys, oq.utimer_compare_alpha);  
   for i,v in pairs(oq._utimer_gys) do
-    oq.setpos( oq._utimers[v], x, y, cx, cy ) ;
+    oq.setpos(oq._utimers[v], x, y, cx, cy);
     y = y + cy ;
   end
 end
@@ -289,12 +289,12 @@ end
 local function wsg_close()
   _wsg_init = nil ;
   _wsg_expire_tm = 0 ;
-  oq.utimer_stop_all() ;
+  oq.utimer_stop_all();
 end
 
-local function wsg_test( arg1 )
-  wsg_close() ; -- clear init and timers
-  wsg_utimer_init() ;
+local function wsg_test(arg1)
+  wsg_close(); -- clear init and timers
+  wsg_utimer_init();
 end
 
 -- hook 

@@ -10,7 +10,7 @@
               no code in this file may be used in other works without expressed permission  
 ]]--
 local addonName, OQ = ... ;
-local oq  = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq  = OQ:mod(); -- thank goodness i stumbled across this trick
 local tbl = OQ.table ;
 local _ ; -- throw away (was getting taint warning; what happened blizz?)
 
@@ -22,7 +22,7 @@ function OQPacket:new()
   o._source = nil ;
   o._sender = nil ;
   o._pkt    = nil ;
-  setmetatable(o, { __index = OQPacket }) ;
+  setmetatable(o, { __index = OQPacket });
   return o ;
 end
 
@@ -36,11 +36,11 @@ function OQPacket:cleanup()
   end
 end
 
-function OQPacket:parse( source, sender, str )
+function OQPacket:parse(source, sender, str)
   self._source = source ;
   self._sender = sender ;
   self._pkt    = str ;
-  tbl.fill_match( self._vars, str, "," ) ;
+  tbl.fill_match(self._vars, str, ",");
 end
 
 function OQPacket:msg_id()
@@ -49,7 +49,7 @@ end
 
 function OQPacket:msg_type()
   if (self._vars[3]) then
-    return self._vars[3]:sub(1,1) ;
+    return self._vars[3]:sub(1,1);
   end
   return 'X' ;
 end

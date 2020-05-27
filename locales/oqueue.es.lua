@@ -12,7 +12,7 @@
 local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["esES"] = "NeoSaro" ;
-if ( GetLocale() ~= "esES" ) then
+if (GetLocale() ~= "esES") then
   return ;
 end
 local L = OQ._T ; -- for literal string translations
@@ -341,8 +341,8 @@ OQ.SETUP_SHOUTCONTRACTS = "Anunciar contratos" ;
 OQ.CONTRACT_ARRIVED   = "¡Acaba de llegar el contrato #%s! Objetivo:%s  Recompensa:|h%s" ;
 OQ.CONTRACT_CLAIMED01 = "%s %s reclama el contrato #%s y gana %s" ;
 OQ.CONTRACT_CLAIMED02 = "%s reclama el contrato #%s y gana %s" ;
-OQ.TARGET_MARK        = "¡Has establecido como objetivo un objetivo con recompensa! ( contrato#%s )" ;
-OQ.BOUNTY_TARGET      = "¡Has matado un objetivo con recompensa! ( contrato#%s )" ;
+OQ.TARGET_MARK        = "¡Has establecido como objetivo un objetivo con recompensa! (contrato#%s)" ;
+OQ.BOUNTY_TARGET      = "¡Has matado un objetivo con recompensa! (contrato#%s)" ;
 OQ.DEATHMATCH_SCORE   = "¡Punto!" ;
 OQ.FRIEND_REQUEST     = "%s-%s quiere ser tu amigo" ;
 OQ.ALREADY_FRIENDED   = "ya eres amigo de battle-net con %s" ;

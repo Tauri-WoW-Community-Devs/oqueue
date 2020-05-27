@@ -12,7 +12,7 @@
 local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["itIT"] = "B1G3M" ;
-if ( GetLocale() ~= "itIT" ) then
+if (GetLocale() ~= "itIT") then
   return ;
 end
 local L = OQ._T ; -- for literal string translations
@@ -351,8 +351,8 @@ OQ.SETUP_SHOUTCONTRACTS = "Annuncia contratti" ;
 OQ.CONTRACT_ARRIVED   = " Contratto #%s appena arrivato!  Bersaglio: %s  Ricompensa: |h%s" ;
 OQ.CONTRACT_CLAIMED01 = "%s %s contratto rivendicato #%s e vince %s" ;
 OQ.CONTRACT_CLAIMED02 = "%s contratto rivendicato #%s e vince %s" ;
-OQ.TARGET_MARK        = "Hai in bersaglio un obiettivo di taglie! ( contratto#%s )" ;
-OQ.BOUNTY_TARGET      = "Hai ucciso il bersaglio obiettivo! ( contract#%s )" ;
+OQ.TARGET_MARK        = "Hai in bersaglio un obiettivo di taglie! (contratto#%s)" ;
+OQ.BOUNTY_TARGET      = "Hai ucciso il bersaglio obiettivo! (contract#%s)" ;
 OQ.DEATHMATCH_SCORE   = "Punteggio!" ;
 OQ.FRIEND_REQUEST     = "%s-%s vuole diventare tuo amico" ;
 OQ.ALREADY_FRIENDED   = "sei già amico battle-net con %s" ;

@@ -12,7 +12,7 @@
 local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["ptBR"] = "Aceg" ;
-if ( GetLocale() ~= "ptBR" ) then
+if (GetLocale() ~= "ptBR") then
   return ;
 end
 local L = OQ._T ; -- for literal string translations

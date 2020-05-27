@@ -12,7 +12,7 @@
 local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["ruRU"] = "Efzet (Сибил, Azuregos EU)" ;
-if ( GetLocale() ~= "ruRU" ) then
+if (GetLocale() ~= "ruRU") then
   return ;
 end
 local L = OQ._T ;
@@ -350,8 +350,8 @@ OQ.SETUP_SHOUTCONTRACTS = "Оповещать контракты" ;
 OQ.CONTRACT_ARRIVED   = "Контракт #%s только что появился!  Цель: %s  Награда: |h%s" ;
 OQ.CONTRACT_CLAIMED01 = "%s %s закрыл(а) контракт #%s и выиграл(а) %s" ;
 OQ.CONTRACT_CLAIMED02 = "%s закрыл(а) контракт #%s и выиграл(а) %s" ;
-OQ.TARGET_MARK        = "Вы выбрали главную цель! ( контракт#%s )" ;
-OQ.BOUNTY_TARGET      = "Вы убили главную цель! ( контракт#%s )" ;
+OQ.TARGET_MARK        = "Вы выбрали главную цель! (контракт#%s)" ;
+OQ.BOUNTY_TARGET      = "Вы убили главную цель! (контракт#%s)" ;
 OQ.DEATHMATCH_SCORE   = "Счет!" ;
 OQ.FRIEND_REQUEST     = "%s-%s хочет стать вашим другом" ;
 OQ.ALREADY_FRIENDED   = "Вы уже являетесь b-net другом с %s" ;

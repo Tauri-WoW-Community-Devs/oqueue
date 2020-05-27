@@ -12,7 +12,7 @@
 local addonName, OQ = ... ;
 
 OQ.TRANSLATED_BY["deDE"] = "Realm69" ;
-if ( GetLocale() ~= "deDE" ) then
+if (GetLocale() ~= "deDE") then
   return ;
 end
 local L = OQ._T ; -- for literal string translations

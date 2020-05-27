@@ -68,13 +68,13 @@
 				</Anchors>
 				<Scripts>
 					<OnMouseDown>
-						OQ_ResizeMouse_down( self ) ;
+						OQ_ResizeMouse_down(self);
 					</OnMouseDown>
 					<OnLoad>
 						self:GetNormalTexture():SetVertexColor(0.6, 0.6, 0.6)
 					</OnLoad>
 					<OnMouseUp>
-						OQ_ResizeMouse_up( self ) ;
+						OQ_ResizeMouse_up(self);
 					</OnMouseUp>
 					<OnHide>
 						self:GetParent():StopMovingOrSizing()
@@ -234,7 +234,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 1);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Show();
                        OQTabPage2:Hide();
                        OQTabPage3:Hide();
@@ -257,7 +257,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 2);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Show();
                        OQTabPage3:Hide();
@@ -280,7 +280,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 3);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Hide();
                        OQTabPage3:Show();
@@ -304,7 +304,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 4);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Hide();
                        OQTabPage3:Hide();
@@ -328,7 +328,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 5);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Hide();
                        OQTabPage3:Hide();
@@ -351,7 +351,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 6);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Hide();
                        OQTabPage3:Hide();
@@ -374,7 +374,7 @@
                <Scripts>
                    <OnClick>
                        PanelTemplates_SetTab(OQMainFrame, 7);
-                       OQ_hide_menu_popup() ;
+                       OQ_hide_menu_popup();
                        OQTabPage1:Hide();
                        OQTabPage2:Hide();
                        OQTabPage3:Hide();
@@ -393,7 +393,7 @@
                tinsert(UISpecialFrames, self:GetName());
                PanelTemplates_SetNumTabs(OQMainFrame, 7);
                PanelTemplates_SetTab(OQMainFrame, 2);
-               OQ_onLoad(self) ;
+               OQ_onLoad(self);
            </OnLoad>
        </Scripts>
 </Frame>

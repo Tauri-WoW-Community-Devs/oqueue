@@ -10,13 +10,13 @@
               no code in this file may be used in other works without expressed permission  
 ]]--
 local addonName, OQ = ... ;
-local oq = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq = OQ:mod(); -- thank goodness i stumbled across this trick
 local _ ; -- throw away (was getting taint warning; what happened blizz?)
 
 --------------------------------------------------------------------------
 -- class portrait to replace normal portrait
 --------------------------------------------------------------------------
-function OQ_ClassPortrait( self ) 
+function OQ_ClassPortrait(self) 
   if (oq == nil) or (oq.toon == nil) or (oq.toon.class_portrait == 0) then
     if (self.portrait ~= nil) then
       self.portrait:SetTexCoord(0,1,0,1)
@@ -36,5 +36,5 @@ function OQ_ClassPortrait( self )
   end
 end
 
-hooksecurefunc("UnitFramePortrait_Update",OQ_ClassPortrait ) ;
+hooksecurefunc("UnitFramePortrait_Update",OQ_ClassPortrait );
 

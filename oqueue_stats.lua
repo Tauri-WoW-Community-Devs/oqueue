@@ -13,7 +13,7 @@
               (would've been nice to know sooner)
 ]]--
 local addonName, OQ = ... ;
-local oq = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq = OQ:mod(); -- thank goodness i stumbled across this trick
 local _ ; -- throw away (was getting taint warning; what happened blizz?)
 local tbl = OQ.table ;
 
@@ -21,14 +21,14 @@ local tbl = OQ.table ;
 --  packet stats
 --------------------------------------------------------------------------
 PacketStatistics = {} ;
-function PacketStatistics:new( max_cnt ) 
-   local o = tbl.new() ;
+function PacketStatistics:new(max_cnt) 
+   local o = tbl.new();
    o._cnt = 0 ;
    o._max = max_cnt ;
-   o.array = tbl.new() ;
+   o.array = tbl.new();
    local i ;
    for i=1,max_cnt do
-      o.array[i] = tbl.new() ;
+      o.array[i] = tbl.new();
       o.array[i]._x = nil ;
       o.array[i]._tm = nil ;
    end
@@ -36,7 +36,7 @@ function PacketStatistics:new( max_cnt )
    o._aps  = 0 ;
    o._dt   = 0 ;
    o._mean = 0 ;
-   setmetatable(o, { __index = PacketStatistics }) ;
+   setmetatable(o, { __index = PacketStatistics });
    return o ;
 end
 
@@ -107,44 +107,44 @@ function PacketStatistics:reset()
 end 
 
 function PacketStatistics:inc()
-  self:push( self._cnt ) ;
+  self:push(self._cnt);
   self._cnt = self._cnt + 1 ;
 end
 
 -- no-op  recording nothing
 --
 function PacketStatistics:noop()
-  self:push( self._cnt ) ;
+  self:push(self._cnt);
 end
 
-function PacketStatistics:push( x, use_mean ) 
+function PacketStatistics:push(x, use_mean) 
   local i ;
   for i=self._max,2,-1 do
     self.array[i]._x  = self.array[i-1]._x  ;
     self.array[i]._tm = self.array[i-1]._tm ;
   end
   self.array[1]._x  = x ;
-  self.array[1]._tm = GetTime() ;
+  self.array[1]._tm = GetTime();
   if (use_mean) then
-   self:mean() ;
+   self:mean();
   else
-   self:avg() ;
+   self:avg();
   end
 end
 
-oq.pkt_sent      = PacketStatistics:new(50) ; 
-oq.pkt_recv      = PacketStatistics:new(50) ; 
-oq.pkt_processed = PacketStatistics:new(50) ; 
-oq.pkt_drift     = PacketStatistics:new( 5) ; 
+oq.pkt_sent      = PacketStatistics:new(50); 
+oq.pkt_recv      = PacketStatistics:new(50); 
+oq.pkt_processed = PacketStatistics:new(50); 
+oq.pkt_drift     = PacketStatistics:new( 5); 
 
 --------------------------------------------------------------------------
 --  general stats
 --------------------------------------------------------------------------
 
-oq.stats = tbl.new() ;
+oq.stats = tbl.new();
 
 -- Get the mean value of a table
-function oq.stats.mean( t )
+function oq.stats.mean(t)
   local sum = 0 ;
   local count= 0 ;
   local k, v ;
@@ -155,16 +155,16 @@ function oq.stats.mean( t )
       count = count + 1 ;
     end
   end
-  return (sum / count) ;
+  return (sum / count);
 end
 
 -- Get the mode of a table.  Returns a table of values.
 -- Works on anything (not just numbers).
-function oq.stats.mode( t )
-  local counts = tbl.new() ;
+function oq.stats.mode(t)
+  local counts = tbl.new();
   local k, v ;
 
-  for k, v in pairs( t ) do
+  for k, v in pairs(t) do
     if counts[v] == nil then
       counts[v] = 1 ;
     else
@@ -173,36 +173,36 @@ function oq.stats.mode( t )
   end
 
   local biggestCount = 0 ;
-  for k, v  in pairs( counts ) do
+  for k, v  in pairs(counts) do
     if (v > biggestCount) then
       biggestCount = v
     end
   end
 
-  local temp = tbl.new() ;
-  for k,v in pairs( counts ) do
+  local temp = tbl.new();
+  for k,v in pairs(counts) do
     if v == biggestCount then
-      table.insert( temp, k )
+      table.insert(temp, k)
     end
   end
   
-  tbl.delete( counts ) ;
+  tbl.delete(counts);
   return temp
 end
 
 -- Get the median of a table.
-function oq.stats.median( t, skip_zero )
-  local temp= tbl.new() ;
+function oq.stats.median(t, skip_zero)
+  local temp= tbl.new();
   local k, v ;
 
   -- deep copy table so that when we sort it, the original is unchanged
   -- also weed out any non numbers
   for k,v in pairs(t) do
     if (type(v) == 'number') and ((skip_zero == nil) or (v > 0)) then
-      table.insert( temp, v ) ;
+      table.insert(temp, v);
     end
   end
-  table.sort( temp ) ;
+  table.sort(temp);
 
   -- If we have an even number of table elements or odd.
   local median = 0 ;
@@ -216,13 +216,13 @@ function oq.stats.median( t, skip_zero )
       median = temp[math.ceil(n/2)] ;
     end
   end
-  tbl.delete( temp ) ;
+  tbl.delete(temp);
   return median ;
 end    
 
 -- Get the standard deviation of a table
-function oq.stats.standardDeviation( t )
-  local m = oq.stats.mean( t ) ;
+function oq.stats.standardDeviation(t)
+  local m = oq.stats.mean(t);
   local vm ;
   local sum = 0 ;
   local count = 0 ;
@@ -240,14 +240,14 @@ function oq.stats.standardDeviation( t )
 end
 
 -- Get the max and min for a table
-function oq.stats.maxmin( t )
+function oq.stats.maxmin(t)
   local max = -math.huge
   local min = math.huge
   local k, v ;
-  for k,v in pairs( t ) do
+  for k,v in pairs(t) do
     if type(v) == 'number' then
-      max = math.max( max, v )
-      min = math.min( min, v )
+      max = math.max(max, v)
+      min = math.min(min, v)
     end
   end
   return max, min

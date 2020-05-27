@@ -11,16 +11,16 @@
 ]]--
 local addonName, OQ = ... ;
 local L = OQ._T ; -- for literal string translations
-local oq = OQ:mod() ; -- thank goodness i stumbled across this trick
+local oq = OQ:mod(); -- thank goodness i stumbled across this trick
 local _ ; -- throw away (was getting taint warning; what happened blizz?)
 
 function oq.chat_filter(self, event, msg, author, ...)
-  if (oq.is_oqueue_msg( msg )) then
+  if (oq.is_oqueue_msg(msg)) then
     -- make sure 'author' is bn.enabled
     return true ;
   end
   
-  local now = GetTime() ;
+  local now = GetTime();
   if ((msg == L["You aren't in a party."]) and (now < oq._error_ignore_tm)) then 
     -- ignore message
 --    return true ;   
@@ -28,7 +28,7 @@ function oq.chat_filter(self, event, msg, author, ...)
 
   -- hide error msg if scorekeeper is temporarily offline or being ignored
   if (msg:find( "No player named '".. OQ.SK_NAME .."' is currently playing") ~= nil) or
-     ((msg:find( OQ.SK_NAME) ~= nil) and (msg:find( "is no longer being ignored" ) ~= nil)) then 
+     ((msg:find(OQ.SK_NAME) ~= nil) and (msg:find( "is no longer being ignored") ~= nil)) then 
     -- ignore message
     return true ;   
   end
@@ -37,8 +37,8 @@ function oq.chat_filter(self, event, msg, author, ...)
   if (oq._last_afkmsg == nil) then
     oq._last_afkmsg = 0 ;
   end
-  if ((msg:find( OQ.SYS_YOUARE_AFK ) ~= nil) or
-     (msg:find( OQ.SYS_YOUARENOT_AFK ) ~= nil)) then
+  if ((msg:find(OQ.SYS_YOUARE_AFK) ~= nil) or
+     (msg:find(OQ.SYS_YOUARENOT_AFK) ~= nil)) then
     if ((now - oq._last_afkmsg) < 15) then
       -- remove msg
       oq._last_afkmsg = now ;
@@ -48,7 +48,7 @@ function oq.chat_filter(self, event, msg, author, ...)
   end
   
   -- b-net spam 
-  if (msg:find( "is not online" ) ~= nil) then
+  if (msg:find("is not online") ~= nil) then
     return true ;
   end
 --   return false, msg, author, ...

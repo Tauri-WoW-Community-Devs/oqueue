@@ -20,28 +20,28 @@ function tbl.clear(t, deep)
       local k ;
       for k in pairs(t) do 
         if (type(t[k]) == "table") then
-          tbl.delete( tbl.clear( t[k], deep ) ) ;    -- clear sub tables and be able to reclaim
+          tbl.delete(tbl.clear( t[k], deep) );    -- clear sub tables and be able to reclaim
         end
         t[k] = nil ;
       end
     else
-      wipe(t) ;
+      wipe(t);
     end
   end
   return t ;
 end
 
-function tbl.copy( src, dest, clear_first )
+function tbl.copy(src, dest, clear_first)
   if (dest == nil) then
-    dest = tbl.new() ;
+    dest = tbl.new();
   end
   if (clear_first) then
-    tbl.clear( dest, true ) ;
+    tbl.clear(dest, true);
   end
   local i, v ;
   for i,v in pairs(src) do
     if (type(v) == "table") then
-      dest[i] = tbl.copy( v, dest[i] ) ;
+      dest[i] = tbl.copy(v, dest[i]);
     else
       dest[i] = v ;
     end
@@ -51,55 +51,55 @@ end
 
 function tbl.delete(t, deep)
   if (t) and (type(t) == "table") then
-    tbl.clear(t, deep) ;
+    tbl.clear(t, deep);
     if (tbl._watchlist == nil) then
-      tbl._watchlist = tbl.new() ;
+      tbl._watchlist = tbl.new();
     end
     if (tbl._watchlist[t]) then
-      print( debugstack() ) ;
-      print( L["**warning:  returning watched table  "].. tostring(t) ) ;
+      print(debugstack());
+      print(L["**warning:  returning watched table  "].. tostring(t));
     end
     tbl.__inuse[t] = nil ;
-    tbl.push( tbl.__pool, t ) ;  
+    tbl.push(tbl.__pool, t);  
   end
   return nil ;
 end
 
-function tbl.dump( t, s ) 
+function tbl.dump(t, s) 
    local i,v ;
    for i,v in pairs(t) do
       if (type(v) == "table") then
-         tbl.dump( v, (s or "") .. "-" ) ;
+         tbl.dump(v, (s or "") .. "-");
       else
-         print( (s or "") .." ".. tostring(i) ..": ".. tostring(v) ) ;
+         print((s or "") .." ".. tostring(i) ..": ".. tostring(v));
       end      
    end   
 end
 
-function tbl.fill( t, ... )
+function tbl.fill(t, ...)
   if (t) then
     if (tbl._watchlist[t]) then
-      print( debugstack() ) ;
-      print( L["**warning:  watched table found  "].. tostring(t) ) ;
+      print(debugstack());
+      print(L["**warning:  watched table found  "].. tostring(t));
     end
-    tbl.clear(t) ;
+    tbl.clear(t);
     local i ;
     for i = 1,select('#', ... ) do
-      t[i] = select(i, ...) ;
+      t[i] = select(i, ...);
     end
   end
 end
 
-function tbl.fill_match( t, str, ch )
-  tbl.clear(t, true) ;
+function tbl.fill_match(t, str, ch)
+  tbl.clear(t, true);
   if (str == nil) then return ; end   
   local n  = 0 ;
   local p1 = 0 ;
   local p2 = 1 ; 
   while (p2 ~= nil) do
-    p2 = str:find( ch, p1, true ) ;
+    p2 = str:find(ch, p1, true);
     n = n + 1;
-    t[n] = str:sub( p1, (p2 or 0)-1  ) ;
+    t[n] = str:sub(p1, (p2 or 0)-1);
     if (p2) then
       p1 = p2+1 ;
     end      
@@ -120,7 +120,7 @@ function tbl.find_keybyvalue(t, v)
 end
 
 function tbl.init() 
-  tbl._watchlist = tbl.new() ;
+  tbl._watchlist = tbl.new();
 end
 
 function tbl.new()
@@ -130,7 +130,7 @@ function tbl.new()
   if (tbl.__inuse == nil) then
     tbl.__inuse = {} ;
   end
-  local ndx = tbl.next(tbl.__pool) ;
+  local ndx = tbl.next(tbl.__pool);
   local t = nil ;
   if (ndx) then
     t = tbl.__pool[ndx] ;
@@ -140,8 +140,8 @@ function tbl.new()
     tbl._count = (tbl._count or 0) + 1 ;
   end
   if (tbl.__inuse[t]) then
-    print( debugstack() ) ;
-    print( "**warning:  re-issued active table:  ".. tostring(t) ) ;
+    print(debugstack());
+    print("**warning:  re-issued active table:  ".. tostring(t));
   end
 
   tbl.__inuse[t] = 1 ;
@@ -179,25 +179,25 @@ function tbl.size(t)
   return n ;
 end
 
-function tbl.watch( t )
+function tbl.watch(t)
   tbl._watchlist[t] = 1 ;
 end
 
-function tbl.unwatch( t )
+function tbl.unwatch(t)
   tbl._watchlist[t] = nil ;
 end
 
-function tbl.__genOrderedIndex( t, orderedIndex )
+function tbl.__genOrderedIndex(t, orderedIndex)
   if (orderedIndex == nil) then
-    orderedIndex = tbl.new() ;
+    orderedIndex = tbl.new();
   else
-    tbl.clear(orderedIndex) ;
+    tbl.clear(orderedIndex);
   end
   local key ;
   for key in pairs(t) do
-    table.insert( orderedIndex, key )
+    table.insert(orderedIndex, key)
   end
-  table.sort( orderedIndex )
+  table.sort(orderedIndex)
   return orderedIndex
 end
 
@@ -208,7 +208,7 @@ function tbl.orderedNext(t, state)
 
   if state == nil then
     -- the first time, generate the index
-    t.__orderedIndex = tbl.__genOrderedIndex( t, t.__orderedIndex )
+    t.__orderedIndex = tbl.__genOrderedIndex(t, t.__orderedIndex)
     local key = t.__orderedIndex[1]
     return key, t[key]
   end
@@ -226,21 +226,21 @@ function tbl.orderedNext(t, state)
   end
 
   -- no more value to return, cleanup
-  t.__orderedIndex = tbl.delete( t.__orderedIndex ) ;
+  t.__orderedIndex = tbl.delete(t.__orderedIndex);
   return
 end
 
-function tbl.__genOrderedValue( t, orderedIndex )
+function tbl.__genOrderedValue(t, orderedIndex)
   if (orderedIndex == nil) then
-    orderedIndex = tbl.new() ;
+    orderedIndex = tbl.new();
   else
-    tbl.clear(orderedIndex) ;
+    tbl.clear(orderedIndex);
   end
   local key, value ;
   for key, value in pairs(t) do
-    table.insert( orderedIndex, value )
+    table.insert(orderedIndex, value)
   end
-  table.sort( orderedIndex )
+  table.sort(orderedIndex)
   return orderedIndex
 end
 
@@ -252,14 +252,14 @@ function tbl.orderedByValueNext(t, state)
   local i, n ;
   if state == nil then
     -- the first time, generate the index
-    t.__orderedIndex = tbl.__genOrderedValue( t, t.__orderedIndex )
-    key = tbl.find_keybyvalue( t, t.__orderedIndex[1] ) ;
+    t.__orderedIndex = tbl.__genOrderedValue(t, t.__orderedIndex)
+    key = tbl.find_keybyvalue(t, t.__orderedIndex[1]);
     return key, t.__orderedIndex[1] ;
   end
   -- fetch the next value
   for i = 1,table.getn(t.__orderedIndex) do
     if t.__orderedIndex[i] == t[state] then
-      key = tbl.find_keybyvalue( t, t.__orderedIndex[i+1] ) ;
+      key = tbl.find_keybyvalue(t, t.__orderedIndex[i+1]);
       n = i+1 ;
     end
   end
@@ -269,7 +269,7 @@ function tbl.orderedByValueNext(t, state)
   end
 
   -- no more value to return, cleanup
-  t.__orderedIndex = tbl.delete( t.__orderedIndex ) ;
+  t.__orderedIndex = tbl.delete(t.__orderedIndex);
   return
 end
 

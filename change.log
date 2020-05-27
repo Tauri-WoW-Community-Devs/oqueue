@@ -618,7 +618,7 @@ v1.3.0  BUGFIX: global 'oq.pkt_recv' didn't exist (how?); put check to avoid nil
         UPD: changed how the number of premade types were counted; more accurate now 
         UPD: tweaked game duration calcs
         UPD: changed order of pvp achieve icons.  now: bm, khan, conq, bloodthirsty, warbringer, hero, (glad|duelist|rival), arena master
-        add: you are now blocked from banning yourself ( >.< )
+        add: you are now blocked from banning yourself (>.<)
 
 v1.2.9   ** HARD RESTART REQUIRED **  (new files)
          BUGFIX: arena ranks weren't showing on tooltips in group
@@ -795,12 +795,12 @@ v1.0.5   BUGFIX: realm-ids between group members fixed (amazing what a little sl
 
 v1.0.4   BUGFIX: 2 word realms weren't being resolved properly
          BUGFIX: fixed realm name (Aggra (PortuguÃªs))
-         BUGFIX: fixed realm name (La Croisade ƒÃ©carlate)
+         BUGFIX: fixed realm name (La Croisade ï¿½Ã©carlate)
          UPD: eu-scorekeeper glitched and needed a new battle.tag        
 
 v1.0.3   BUGFIX: realm name '-'
          BUGFIX: disbanding / leaving premade
-         BUGFIX: fixed realm name (Aggra(Português))
+         BUGFIX: fixed realm name (Aggra(Portuguï¿½s))
 
 v1.0.2   protocol change: mandatory update
          BUGFIX: fixed some of the EU realm names in realms.eu.lua
@@ -961,7 +961,7 @@ v0.9z.75 BIGFIX: upon OQ lead swap, new leader name will now replace exiting nam
 
 v0.9z.74 add: remembers minimap button location
 
-v0.9z.73 BUGFIX: fixed glyph '_' global bug ( http://www.mmo-champion.com/threads/1192031-Addon-errors-when-trying-to-switch-glyphs-or-talents )
+v0.9z.73 BUGFIX: fixed glyph '_' global bug (http://www.mmo-champion.com/threads/1192031-Addon-errors-when-trying-to-switch-glyphs-or-talents)
          BUGFIX: free-for-all wasn't tripping due to old msg; fixed
          add: garbage-collect toggle on the setup tab (forces garbage collection every 5 seconds)
          add: 'promote-to-group-lead" now available
@@ -974,7 +974,7 @@ v0.9z.72 BUGFIX: killing blow now fixed (threw an exception before)
 v0.9z.71 UPD: preformance enhancments 
          UPD: changed parenting on the find-premade tab; hoping to fix unclick-able button bug
 
-v0.9z.70 UPD: removed debug text (  >.<  )
+v0.9z.70 UPD: removed debug text (>.<)
 
 v0.9z.68 UPD: enabled the receipt of scorekeeper response while in BG
          UPD: added verification for valid class/spec in bg-spy
