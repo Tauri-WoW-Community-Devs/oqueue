@@ -10,7 +10,7 @@ OQ.SK_NAME = 'Maczuga'
 OQ.SK_REALM = '[EN] Evermoon'
 OQ.DEFAULT_PREMADE_TEXT = ''
 
-OQ.BGROUP_ICON = {['Tauri Cross Realm'] = 'Interface\\Icons\\Spell_Shadow_Misery'}
+OQ.BGROUP_ICON = {['Tauri Cross Realm'] = 'Interface\\Icons\\achievement_character_tauren_male'}
 
 OQ.REALMNAMES_SPECIAL = {}
 
