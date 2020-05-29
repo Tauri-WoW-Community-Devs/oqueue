@@ -694,9 +694,6 @@ L['Chelon'] = nil
 L['Spectral Pirate'] = nil
 
 --
-L[' Battle.net is currently down.'] = 'Battle.net è al momento non disponibile'
-L[' oQueue will not function properly until Battle.net is restored.'] =
-    'oQueue non funzionerà affinchè Battle.net rifunzionerà'
 L[' Please set your battle-tag before using oQueue.'] = 'Perfavore imposta il tuo battle-tag prima di usare oQueue'
 L[' Your battle-tag can only be set via your WoW account page.'] =
     "Il tuo battle-tag può essere impostato solo sulla pagina dell'account di WoW"

@@ -1188,9 +1188,6 @@ OQ.lieutenants = {
 }
 
 --
-L[' Battle.net is currently down.'] = 'Battle.net временно недоступен.'
-L[' oQueue will not function properly until Battle.net is restored.'] =
-    'oQueue не будет функционировать, пока Battle.net не восстановит работу.'
 L[' Please set your battle-tag before using oQueue.'] =
     'Пожалуйста, создайте Battle Tag прежде чем использовать oQueue.'
 L[' Your battle-tag can only be set via your WoW account page.'] =

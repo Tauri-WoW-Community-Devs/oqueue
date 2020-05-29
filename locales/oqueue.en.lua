@@ -1205,8 +1205,6 @@ OQ.lieutenants = {
     --                   [L[""]] = L[""],
 }
 --
-L[' Battle.net is currently down.'] = nil
-L[' oQueue will not function properly until Battle.net is restored.'] = nil
 L[' Please set your battle-tag before using oQueue.'] = nil
 L[' Your battle-tag can only be set via your WoW account page.'] = nil
 L["NOTICE:  You've exceeded the cap before the cap(%s).  removed: %s"] = nil
