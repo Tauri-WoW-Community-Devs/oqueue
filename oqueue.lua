@@ -675,7 +675,7 @@ function oq.create_loot_rule_contract()
 
     f.accept = function(self)
         local instance, instanceType = IsInInstance()
-        if (instanceType ~= L['none']) then
+        if (instanceType ~= L['None']) then
         -- don't send out affirmative, only negative
         --                 SendChatMessage(string.format( "%s: %s", L["I accept loot method"], L["loot.".. self._method]), instanceType, nil );
         end
@@ -685,7 +685,7 @@ function oq.create_loot_rule_contract()
 
     f.donot_accept = function(self)
         local instance, instanceType = IsInInstance()
-        if (instanceType ~= L['none']) then
+        if (instanceType ~= L['None']) then
             oq.SendChatMessage(
                 string.format('%s: %s', L['Loot method unacceptable'], L['loot.' .. self._method]),
                 instanceType
@@ -699,7 +699,7 @@ function oq.create_loot_rule_contract()
 
     f.reject_and_leave = function(self)
         local instance, instanceType = IsInInstance()
-        if (instanceType ~= L['none']) then
+        if (instanceType ~= L['None']) then
             oq.SendChatMessage(
                 string.format('%s: %s', L["I'm leaving due to loot method"], L['loot.' .. self._method]),
                 instanceType
@@ -13657,7 +13657,7 @@ function oq.create_tab1_common(parent)
 
     -- raid notes
     y = y + 35
-    oq.tab1._notes_label = oq.label(parent, x, y, 100, 20, L['notes:'])
+    oq.tab1._notes_label = oq.label(parent, x, y, 100, 20, L['Notes:'])
     oq.tab1._notes = oq.label(parent, x, y + 12, 285, cy * 2 - 10, '')
     oq.tab1._notes:SetNonSpaceWrap(true)
     oq.tab1._notes_label:SetTextColor(0.7, 0.7, 0.7, 1)
@@ -15149,7 +15149,7 @@ function oq.create_tab3()
         y + 1 * cy + 10,
         50,
         cy + 4,
-        L['all'],
+        L['All'],
         10,
         function(self)
             oq.tab3_class_all()
@@ -15162,7 +15162,7 @@ function oq.create_tab3()
         y + 2 * cy + 15,
         50,
         cy + 4,
-        L['none'],
+        L['None'],
         10,
         function(self)
             oq.tab3_class_none()
@@ -16896,28 +16896,30 @@ function oq.create_tab_setup()
     )
     x = 20
     y = 30
+    cx = 200
     cy = 25
     local t = oq.label(parent, x, y, 400, 30, OQ.SETUP_HEADING)
     t:SetFont(OQ.FONT, 14, '')
     t:SetTextColor(1.0, 1.0, 1.0, 1)
 
     y = 65
-    x = 40
-    oq.label(parent, x, y, 200, cy, OQ.REALID_MOP)
-    y = y + cy + 6
+    x = 20
+    oq.label(parent, x, y, cx, cy, OQ.REALID_MOP)
 
-    oq.label(parent, x, y, 200, cy, OQ.SETUP_REMOVEBTAG)
     y = y + cy
-    oq.label(parent, x, y, 200, cy, OQ.SETUP_TIMERWIDTH)
+    oq.label(parent, x, y, cx, cy, OQ.SETUP_REMOVEBTAG)
+
+    y = y + cy
+    oq.label(parent, x, y, cx, cy, OQ.SETUP_TIMERWIDTH)
 
     --
     -- alt list
     --
+    
+    y = y + cy * 2
+    oq.label(parent, x, y, cx, cy * 2, OQ.SETUP_ALTLIST)
+
     x = 250
-    y = y + 2 * cy
-    cx = 200
-    cy = 25
-    oq.label(parent, 40, y, 225, cy * 2, OQ.SETUP_ALTLIST)
     local f = oq.CreateFrame('Frame', 'OQTabPage5List', parent)
     if (oq.__backdrop10 == nil) then
         oq.__backdrop10 = {
@@ -16931,7 +16933,7 @@ function oq.create_tab_setup()
     end
     f:SetBackdrop(oq.__backdrop10)
     f:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
-    oq.setpos(f, 0, 0, 175, 150)
+    oq.setpos(f, x, y, 175, 150)
     oq.tab5._list = f
 
     f = oq.CreateFrame('ScrollFrame', 'OQTabPage5ListScrollBar', OQTabPage5, 'FauxScrollFrameTemplate')

@@ -317,7 +317,7 @@
                </Scripts>
            </Button>
 
-           <Button name="$parentTab5" inherits="CharacterFrameTabButtonTemplate" id="5" text= "Setup" >
+           <Button name="$parentTab5" inherits="CharacterFrameTabButtonTemplate" id="5" text="Settings">
                <Anchors>
                    <Anchor point="LEFT" relativeTo="$parentTab4" relativePoint="RIGHT">
                        <Offset>
