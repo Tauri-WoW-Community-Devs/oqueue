@@ -2821,14 +2821,14 @@ function oq.channel_say(chan_name, msg)
 end
 
 function oq.join_oq_general()
-    if (oq._banned) or (OQ_data.auto_join_oqgeneral == 0) or (oq._inside_instance) or (oq._oqgeneral_initialized == nil) then
+    if (oq._banned) or (oq._inside_instance) or (oq._oqgeneral_initialized == nil) then
         return
     end
     oq.channel_join(OQ_REALM_CHANNEL)
 end
 
 function oq.oqgeneral_join()
-    if (oq._banned) or (OQ_data.auto_join_oqgeneral == 0) or (oq._oqgeneral_initialized == nil) then
+    if (oq._banned) or (oq._oqgeneral_initialized == nil) then
         return
     end
     if (oq._inside_instance) and (not oq.iam_raid_leader()) then
@@ -17092,21 +17092,7 @@ function oq.create_tab_setup()
             oq.toggle_show_controlled(self)
         end
     )
-    y = y + cy
-    oq.tab5_autojoin_oqgeneral =
-        oq.checkbox(
-        parent,
-        x,
-        y,
-        23,
-        cy,
-        200,
-        OQ.SETUP_AUTOJOIN_OQGENERAL,
-        (OQ_data.auto_join_oqgeneral == 1),
-        function(self)
-            oq.toggle_autojoin_oqgeneral(self)
-        end
-    )
+
     y = y + cy
     oq.tab5_autohide_friendreqs =
         oq.checkbox(
@@ -24430,16 +24416,6 @@ function oq.toggle_show_controlled(cb)
     end
 end
 
-function oq.toggle_autojoin_oqgeneral(cb)
-    if (cb:GetChecked()) then
-        OQ_data.auto_join_oqgeneral = 1
-        oq.oqgeneral_join()
-    else
-        OQ_data.auto_join_oqgeneral = 0
-        oq.oqgeneral_leave()
-    end
-end
-
 oq._blacklist = {[ERR_BN_FRIEND_REQUEST_SENT] = true}
 
 function oq.uierrors_addmessage(frame, text, red, green, blue, id)
@@ -25623,7 +25599,7 @@ function oq.attempt_group_recovery()
         oq.tab4.now:Show()
     end
 
-    OQ_data.auto_join_oqgeneral = OQ_data.auto_join_oqgeneral or 1
+    OQ_data.auto_join_oqgeneral = 1
     OQ_data.autohide_friendreqs = OQ_data.autohide_friendreqs or 1
     OQ_data.premade_filter_qualified = OQ_data.premade_filter_qualified or 0
     OQ_data.loot_acceptance = OQ_data.loot_acceptance or 1
@@ -25649,7 +25625,6 @@ function oq.attempt_group_recovery()
     oq.tab5_autoinspect:SetChecked((OQ_data.ok2autoinspect == 1))
     oq.tab5_shoutads:SetChecked((OQ_data.show_premade_ads == 1))
     oq.tab5_shoutcontracts:SetChecked((OQ_data.show_contract_ads == 1))
-    oq.tab5_autojoin_oqgeneral:SetChecked((OQ_data.auto_join_oqgeneral == 1))
     oq.tab5_autohide_friendreqs:SetChecked((OQ_data.autohide_friendreqs == 1))
     oq.loot_acceptance_cb:SetChecked((OQ_data.loot_acceptance == 1))
 
@@ -25734,9 +25709,7 @@ function oq.ui_toggle()
             return
         end
         -- initial prep
-        if (OQ_data.auto_join_oqgeneral == 1) then
-            oq.oqgeneral_join()
-        end
+        oq.oqgeneral_join()
         if (oq.toon.disabled) then
             oq.oq_on()
         end
