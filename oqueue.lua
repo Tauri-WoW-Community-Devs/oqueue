@@ -32,7 +32,7 @@ local OQ_MSGHEADER = OQ_HEADER .. ','
 local OQ_FLD_TO = '#to:'
 local OQ_FLD_FROM = '#fr:'
 local OQ_FLD_REALM = '#rlm:'
-local OQ_REALM_CHANNEL = 'oqchannel'
+local OQ_REALM_CHANNEL = 'x.oqueue'
 local OQ_TTL = 4
 local OQ_PREMADE_STAT_LIFETIME = 5 * 60 -- 5 minutes
 local OQ_GROUP_TIMEOUT = 2 * 60 -- 2 minutes (matches raid-timeout) if no response will remove group
@@ -6087,6 +6087,9 @@ function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
         return
     end
 
+    -- TODO whole part below needs to be redone for x-realm purposes
+    local shortRealmName = oq.FindRealmNameShort(to_realm)
+   
     local pid, online = oq.is_bnfriend(real_id, to_name, to_realm)
     if (pid ~= nil) then
         if (pid > 0) then
@@ -18424,7 +18427,9 @@ function oq.get_battle_tag()
     oq._bnetdown_error_cnt = nil
     oq._bnetdown_error_tm = nil
 
-    player_realid = '#' .. select(1, UnitName('player'))
+    local player_realm_short = oq.GetRealmNameShort()
+    player_realid = UnitName('player') .. '-' .. player_realm_short
+
     if (player_realid == nil) then
         local now = oq.utc_time()
         if ((oq._btag_error_tm == nil) or ((now - oq._btag_error_tm) > 120)) and (oq._init_completed) then
@@ -19017,23 +19022,13 @@ function oq.valid_rid(rid)
     if (rid == nil) or (rid == OQ_NOEMAIL) then
         return nil
     end
-    -- good battle-tag has a '#' in the middle
-    if (rid:find('#') ~= nil) then
+
+    -- good tauri-tag has a '-' in the middle
+    if (rid:find('-') ~= nil) then
         -- battle-tag
         return true
     end
-    if (rid:find('+') or rid:find('&')) then
-        return nil
-    end
-    -- good email has a '@' and a '.'
-    local f1 = rid:find('@')
-    if (f1 ~= nil) then
-        local f2 = rid:find('.', f1)
-        if (f2 ~= nil) then
-            -- possible email
-            return true
-        end
-    end
+    
     return nil
 end
 
@@ -26359,6 +26354,31 @@ function oq.GetRealmName()
     if (OQ.REALMNAMES_SPECIAL[strlower(name)] ~= nil) then
         return OQ.REALMNAMES_SPECIAL[strlower(name)]
     end
+    return nil
+end
+
+function oq.GetRealmNameShort()
+    local name = oq.GetRealmName()
+    if (name == nil) then 
+        return
+    end
+
+    if (OQ.REALMNAMES_SHORTCUTS[name] ~= nil) then
+        return OQ.REALMNAMES_SHORTCUTS[name]
+    end
+    
+    return nil
+end
+
+function oq.FindRealmNameShort(name)
+    if (name == nil) then 
+        return
+    end
+
+    if (OQ.REALMNAMES_SHORTCUTS[name] ~= nil) then
+        return OQ.REALMNAMES_SHORTCUTS[name]
+    end
+    
     return nil
 end
 

@@ -31,4 +31,14 @@ OQ.SHORT_BGROUPS = {
     [3] = '[HU] Warriors of Darkness'
 }
 
+-- Used for whispers, invites etc.
+OQ.REALMNAMES_SHORTCUTS = {
+    ['[EN] Evermoon'] = "evermoon", -- [1]
+    ['[HU] Tauri WoW Server'] = "tauri", -- [2]
+    ['[HU] Warriors of Darkness'] = "wod", -- [3]
+    [1] = 'evermoon',
+    [2] = 'tauri',
+    [3] = 'wod'
+}
+
 OQ.gbl = {}
