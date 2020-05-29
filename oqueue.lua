@@ -3271,12 +3271,15 @@ function oq.BNSendFriendInvite(id, msg, note, name_, realm_)
 end
 
 function oq.SendChatMessage(msg, type, lang, channel)
-    if (msg == nil) or ((GetNumGroupMembers() == 0) and (type ~= 'CHANNEL')) then
+    if (msg == nil) then
+        return
+    end
+    
+    if ((GetNumGroupMembers() == 0) and (type ~= 'CHANNEL' and type ~= 'WHISPER')) then
         return
     end
 
     local instance, instanceType = IsInInstance()
-
     if (instance and ((type == 'PARTY') or (type == 'RAID'))) then
         type = 'INSTANCE_CHAT'
     elseif (instance == nil) then
@@ -6087,24 +6090,9 @@ function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
         return
     end
 
-    -- TODO whole part below needs to be redone for x-realm purposes
+    -- Cross-realm part, send whisper
     local shortRealmName = oq.FindRealmNameShort(to_realm)
-   
-    local pid, online = oq.is_bnfriend(real_id, to_name, to_realm)
-    if (pid ~= nil) then
-        if (pid > 0) then
-            if (insure) then
-                oq.BNSendWhisper_now(pid, msg, to_name, to_realm)
-            else
-                oq.BNSendWhisper(pid, msg, to_name, to_realm)
-            end
-            return
-        else
-            -- no way to leave a note... should resend when no reply recv'd
-            return
-        end
-    end
-    oq.BNSendFriendInvite(real_id, msg)
+    oq.SendChatMessage(msg, 'WHISPER', nil, to_name .. '-' .. shortRealmName)
 end
 
 function oq.bnbackflow(msg, to_pid)
@@ -24269,7 +24257,11 @@ end
 
 function oq.on_channel_msg(...)
     tbl.fill(_arg, ...)
-    if ((_arg[2] == player_name) and (oq._iam_scorekeeper == nil)) or ((_arg[1] == nil) or (_arg[1] == '')) then
+
+    local msg = _arg[1]
+    local sender = _arg[2]
+
+    if ((sender == player_name) and (oq._iam_scorekeeper == nil)) or ((msg == nil) or (msg == '')) then
         oq.post_process()
         return
     end
@@ -24284,10 +24276,28 @@ function oq.on_channel_msg(...)
         _inc_channel = OQ_REALM_CHANNEL
         _local_msg = true
         _source = OQ_REALM_CHANNEL
-        oq._sender = _arg[2]
+        oq._sender = sender
         _ok2relay = 1
-        oq.process_msg(_arg[2], _arg[1])
+        oq.process_msg(sender, msg)
     end
+    oq.post_process()
+end
+
+function oq.on_received_whisper(...)
+    tbl.fill(_arg, ...)
+
+    local msg = _arg[1]
+    local sender = _arg[2]
+
+    _local_msg = false
+    _source = 'bnet'
+    _ok2relay = nil
+    oq._sender = sender
+    if (oq._sender:find('-') == nil) and (player_realm) then
+        oq._sender = oq._sender .. '-' .. tostring(player_realm)
+    end
+
+    oq.process_msg(sender, msg)
     oq.post_process()
 end
 
@@ -26098,6 +26108,7 @@ function oq.register_events()
     oq.msg_handler['CHAT_MSG_BG_SYSTEM_NEUTRAL'] = oq.on_bg_neutral_event
     oq.msg_handler['CHAT_MSG_BN_WHISPER'] = oq.on_bn_event
     oq.msg_handler['CHAT_MSG_CHANNEL'] = oq.on_channel_msg
+    oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
     oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
     oq.msg_handler['ENCOUNTER_START'] = oq.on_encounter_start
     oq.msg_handler['PARTY_INVITE_REQUEST'] = oq.on_party_invite_request
@@ -26161,6 +26172,7 @@ function oq.register_events()
     oq.ui:RegisterEvent('CHAT_MSG_CHANNEL')
     oq.ui:RegisterEvent('CHAT_MSG_BG_SYSTEM_NEUTRAL')
     oq.ui:RegisterEvent('CHAT_MSG_BN_WHISPER')
+    oq.ui:RegisterEvent('CHAT_MSG_WHISPER')
     oq.ui:RegisterEvent('CLOSE_WORLD_MAP')
     oq.ui:RegisterEvent('ENCOUNTER_END')
     oq.ui:RegisterEvent('ENCOUNTER_START')
@@ -26791,6 +26803,7 @@ function oq.on_init(now)
     oq.marquee = oq.create_marquee()
 
     ChatFrame_AddMessageEventFilter('CHAT_MSG_SYSTEM', oq.chat_filter)
+    ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_WHISPER', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_WHISPER_INFORM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_INLINE_TOAST_BROADCAST', oq.chat_filter)
