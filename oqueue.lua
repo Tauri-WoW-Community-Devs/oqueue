@@ -293,11 +293,7 @@ end
 function oq.hook_options()
     oq.options = tbl.new()
     oq.options['?'] = oq.usage
-    oq.options['adds'] = oq.show_adds
     oq.options['ban'] = oq.ban_user
-    oq.options['blam'] = oq.blam
-    oq.options['j2tw'] = oq.j2tw_now
-    oq.options['bnclear'] = oq.bn_clear
     oq.options['brb'] = oq.brb
     oq.options['check'] = oq.ping_the_world
     oq.options['clear'] = oq.cmdline_clear
@@ -314,8 +310,6 @@ function oq.hook_options()
     oq.options['findmesh'] = oq.find_mesh
     oq.options['fixui'] = oq.reposition_ui
     oq.options['fog'] = oq.fog_command
-    oq.options['godark'] = oq.godark
-    oq.options['grinch'] = oq.grinch_mode
     oq.options['harddrop'] = oq.harddrop
     oq.options['help'] = oq.usage
     oq.options['hints'] = oq.cmdline_hint_shade
@@ -333,14 +327,12 @@ function oq.hook_options()
     oq.options['pending'] = oq.bn_show_pending
     oq.options['ping'] = oq.ping_toon
     oq.options['pos'] = oq.where_am_i
-    oq.options['purge'] = oq.remove_OQadded_bn_friends
     oq.options['raw'] = oq.show_raw_numbers
     oq.options['reset'] = oq.data_reset
     oq.options['show'] = oq.show_data
     oq.options['set'] = oq.set_params
     oq.options['spy'] = oq.battleground_spy
     oq.options['stats'] = oq.dump_statistics
-    oq.options['threat'] = oq.toggle_threat_level
     oq.options['thx'] = oq.special_thanks
     oq.options['time'] = oq.force_time_reset
     oq.options['timer'] = oq.user_timer
@@ -564,16 +556,6 @@ function oq.get_hostiles()
     return oq._hostiles
 end
 
-function oq.toggle_threat_level()
-    if (OQ_data.threat_show == nil) or (OQ_data.threat_show == 1) then
-        oq.threat_frame():Hide()
-        OQ_data.threat_show = 0
-    else
-        oq.threat_frame():Show()
-        OQ_data.threat_show = 1
-    end
-end
-
 function oq.toggle_timers()
     if (OQ_data.timer_show == nil) or (OQ_data.timer_show == 1) then
         oq.utimer_frame():Hide()
@@ -582,56 +564,6 @@ function oq.toggle_timers()
         oq.utimer_frame():Show()
         OQ_data.timer_show = 1
     end
-end
-
-function oq.get_threat_level()
-    local px, py = GetPlayerMapPosition('player')
-    local nfriendly = 0
-    local nhostile = 0
-
-    -- check friendlies
-    local i, v
-    for i = 1, GetNumGroupMembers() do
-        if UnitInRange('raid' .. i) then
-            nfriendly = nfriendly + 1
-        end
-    end
-
-    oq.get_hostiles()
-
-    -- check hostiles
-    if (oq._hostiles) then
-        local t1 = GetTime() - 5.0
-        for i, v in pairs(oq._hostiles) do
-            if (v.tm > t1) then
-                nhostile = nhostile + 1
-            end
-        end
-    end
-    return nfriendly, nhostile
-end
-
--- announce threat detected to other oqueue members
-function oq.report_threat()
-    if (oq._hostiles == nil) or (_inside_bg == nil) or (oq.fog_send_report == nil) then
-        return
-    end
-    local s = ''
-    local now = GetTime()
-    local t1 = now - 5.0
-    local i, v
-    for i, v in pairs(oq._hostiles) do
-        if (v.tm > t1) then
-            s = s .. '' .. oq.encode_mime64_1digit(v.ndx)
-        end
-    end
-    if (s == '') then
-        return
-    end
-    local x, y = GetPlayerMapPosition('player')
-    s = oq.encode_mime64_2digit(floor(x * 1000)) .. '' .. oq.encode_mime64_2digit(floor(y * 1000)) .. '' .. s
-    -- report to bg and process myself
-    oq.fog_send_report(s)
 end
 
 function oq.onLootAcceptanceHide(f)
@@ -840,119 +772,6 @@ function oq.utimer_frame_transit(self, flag)
             self.closepb:Hide()
         end
     end
-end
-
-function oq.threat_frame_transit(self, flag)
-    if (flag) then
-        self.closepb:Show()
-    else
-        local f = GetMouseFocus()
-        if (f ~= self.closepb) then
-            self.closepb:Hide()
-        end
-    end
-end
-
-function oq.threat_frame_toggle(self, flag)
-    OQ_data.threat_show = flag
-    if (flag) then
-        oq.timer('threat_update', 2.5, oq.threat_update, true)
-    else
-        oq.timer('threat_update', 2.5, nil)
-    end
-end
-
-function oq.threat_frame()
-    if (oq._threat_frame ~= nil) then
-        return oq._threat_frame
-    end
-    local d = oq.CreateFrame('FRAME', 'OQThreatFrame', UIParent)
-    d:SetBackdropColor(0.6, 0.6, 0.6, 1.0)
-    d:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.threat_frame_transit(self, 1)
-        end
-    )
-    d:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.threat_frame_transit(self, nil)
-        end
-    )
-    oq.setpos(d, 300, 300, 100, 50)
-
-    oq.make_frame_moveable(d)
-    d.closepb =
-        oq.closebox(
-        d,
-        function(self)
-            self:GetParent():Hide()
-            OQ_data.threat_show = 0
-        end
-    )
-    d.closepb:SetPoint('TOPRIGHT', d, 'TOPRIGHT', 3, 3)
-    d._save_position = function(self)
-        OQ_data.threat_x = max(0, floor(self:GetLeft()))
-        OQ_data.threat_y = max(0, floor(self:GetTop()))
-    end
-
-    -- friendly
-    local i = d:CreateTexture(nil, 'LOW')
-    i:SetWidth(40)
-    i:SetHeight(40)
-    i:SetPoint('TOPLEFT', d, 'TOPLEFT', 5, -10)
-    i:SetAlpha(0.65)
-    d.friend = i
-    d.nFriends = oq.label(d, 16, 2, 40, 25, '', 'CENTER', 'CENTER', 'GameFontNormalLarge', 'MEDIUM')
-    d.nFriends:SetAllPoints(i)
-    d.nFriends:SetTextColor(1, 1, 1)
-    d.nFriends:SetText('')
-
-    -- enemy
-    local e = d:CreateTexture(nil, 'LOW')
-    e:SetWidth(40)
-    e:SetHeight(40)
-    e:SetPoint('TOPRIGHT', d, 'TOPRIGHT', -5, -10)
-    e:SetAlpha(0.65)
-    d.enemy = e
-    d.nEnemies = oq.label(d, 16, 2, 40, 25, '', 'CENTER', 'CENTER', 'GameFontNormalLarge', 'MEDIUM')
-    d.nEnemies:SetAllPoints(e)
-    d.nEnemies:SetTextColor(1, 1, 1)
-    d.nEnemies:SetText('')
-
-    if (player_faction == 'A') then
-        i:SetTexture('Interface\\FriendsFrame\\PlusManz-Alliance')
-        e:SetTexture('Interface\\FriendsFrame\\PlusManz-Horde')
-    else
-        i:SetTexture('Interface\\FriendsFrame\\PlusManz-Horde')
-        e:SetTexture('Interface\\FriendsFrame\\PlusManz-Alliance')
-    end
-
-    d:Hide() -- require caller to explicitly show it
-
-    if (OQ_data.threat_x or OQ_data.threat_y) then
-        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.threat_x, OQ_data.threat_y)
-    end
-    oq._threat_frame = d
-    oq.threat_frame_transit(d, nil) -- hide certain bits
-    return oq._threat_frame
-end
-
-function oq.threat_update()
-    if (oq._threat_frame == nil) or (not oq._threat_frame:IsVisible()) or (oq._instance_type ~= 'pvp') then
-        return
-    end
-
-    local friends, enemies = oq.get_threat_level()
-    if (friends == 0) then
-        friends = ''
-    end
-    oq._threat_frame.nFriends:SetText(friends)
-    if (enemies == 0) then
-        enemies = ''
-    end
-    oq._threat_frame.nEnemies:SetText(enemies)
 end
 
 function oq.utimer_set_width(w)
@@ -1618,68 +1437,6 @@ function oq.armory(opts)
     oq.browser:OpenExternalLink('http://us.battle.net')
 end
 
-OQ.spice = {'bells', 'jolly', 'sing'}
-function oq.blam(n)
-    n = tonumber(n)
-    if (n == nil) or (n > #OQ.spice) then
-        n = oq.random(1, #OQ.spice)
-    end
-    PlaySoundFile('Interface\\Addons\\oqueue\\sounds\\' .. OQ.spice[n] .. '.mp3')
-end
-
--- joy to the world
--- (tip: type this a few times for a preview: /oq blam)
---
-function oq.j2tw(queue_it)
-    local mon = tonumber(date('%m'))
-    local day = tonumber(date('%d'))
-    if (mon ~= 12) or ((day < 21) and (day > 29)) then
-        OQ_data._j2tw = nil
-        return
-    end
-    if (queue_it ~= 1) and (OQ_data.grinch == nil) then
-        oq.j2tw_now()
-    end
-    local now = oq.utc_time()
-    local tm2hr = floor(60 - floor((now % 3600) / 60))
-    if (day == 25) then
-        oq.timer_oneshot(tm2hr * 60, oq.j2tw) -- every hour on Christmas day
-        OQ_data._j2tw = now + tm2hr
-    else
-        oq.timer_oneshot((tm2hr + 60) * 60, oq.j2tw) -- every 2 hours during Christmas week
-        OQ_data._j2tw = now + (tm2hr + 60) * 60
-    end
-end
-
-function oq.grinch_mode()
-    OQ_data.grinch = 1
-    print(L["You're a mean one, Mr Grinch"])
-    oq.sour_grapes()
-end
-
-function oq.j2tw_now()
-    -- Merry Christmas!
-    -- i love Christmas and if you don't like it, i'll gy-camp yer ass ;)
-    if (OQ_data.grinch) then
-        print(L['stam+1000: your heart has grown three sizes this day!'])
-    end
-    OQ_data.grinch = nil
-    oq.timer_oneshot(1.0, oq.blam, 3)
-    oq.timer_oneshot(1.5, oq.blam, 1)
-    oq.timer_oneshot(2.0, oq.blam, 2)
-end
-
-function oq.j2tw_sched()
-    local now = oq.utc_time()
-    if (OQ_data._j2tw) and (now < OQ_data._j2tw) then
-        oq.timer_oneshot(OQ_data._j2tw - now, oq.j2tw)
-    elseif (OQ_data._j2tw) and (abs(now - OQ_data._j2tw) < 1 * 3600) then
-        oq.j2tw() -- passed play time; play now
-    else
-        oq.j2tw(1) -- schedule for playing if needed
-    end
-end
-
 function oq.special_thanks()
     print('oQueue v' .. OQUEUE_VERSION)
     print("Written by Tinystomper / Weegeezer of Magtheridon (aka 'tiny')")
@@ -1716,13 +1473,6 @@ function oq.reposition_ui()
     oq.utimer_frame():SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -200)
     oq.utimer_frame():SetWidth(200)
     oq.utimer_frame():_save_position()
-
-    -- threat indicator
-    oq.utimer_start('temporary timer', 'alliance', 41, 60, 1)
-    oq.threat_frame():Show()
-    oq.threat_frame():SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -150)
-    oq.threat_frame():SetWidth(100)
-    oq.threat_frame():_save_position()
 
     -- toggle minimap button so it's on top
     OQ_MinimapButton:Show()
@@ -1835,8 +1585,6 @@ function oq.show_data(opt)
         oq.show_raid()
     elseif (opt == 'reform') then
         oq.reform_show_keys()
-    elseif (opt == 'remove') then
-        oq.remove_OQadded_bn_friends('show')
     elseif (opt == 'report') then
         oq.show_reports()
     elseif (opt == 'stats') then
@@ -2042,7 +1790,6 @@ function oq.usage()
     print(L['  delist          de-waitlist with any premades currently pending'])
     print(L['  dg              drop group.  same as /script LeaveParty()'])
     print(L['  fixui           will reposition the UI to upper left area'])
-    print(L["  godark          send 'oq stop' to all your OQ enabled friends"])
     print(L['  id              show guid, id, and name of target'])
     print(L['  log [clear]     toggle log on/off or clear'])
     print(L['  mini            toggle the minimap button'])
@@ -2108,15 +1855,6 @@ function oq.debug_toggle(level)
             print('debug on')
         end
     end
-end
-
-function oq.godark()
-    -- clear out bn friends
-    oq.bn_clear()
-    -- turn it off
-    oq.oq_off()
-    -- update OQ friends count
-    oq.n_connections()
 end
 
 function oq.reset_stats()
@@ -2942,30 +2680,6 @@ end
 
 function oq.show_member(m)
     print('-- [' .. tostring(m.name) .. '][' .. tostring(m.realm) .. ']')
-end
-
-function oq.show_adds()
-    local ntotal, nonline = GetNumFriends()
-    local cnt = 0
-    print('---  OQ added friends')
-    local friendId
-    for friendId = 1, ntotal do
-        tbl.fill(_f, GetFriendInfo(friendId))
-        local presenceID = _f[1]
-        local givenName = _f[2]
-        local btag = _f[3]
-        local client = _f[7]
-        local online = _f[8]
-        local noteText = _f[13]
-        if (noteText ~= nil) and ((noteText:find('OQ,') == 1) or (noteText:find('REMOVE OQ') == 1)) then
-            print(presenceID .. '.  ' .. givenName .. ' ' .. btag .. '   [' .. noteText .. ']')
-            cnt = cnt + 1
-        elseif ((noteText == nil) or (noteText == '')) and oq.in_btag_cache(tag) then
-            print(presenceID .. '.  ' .. givenName .. ' ' .. btag .. '   [' .. noteText .. ']')
-            cnt = cnt + 1
-        end
-    end
-    print('---  total :  ' .. cnt)
 end
 
 function oq.raid_init()
@@ -4304,13 +4018,8 @@ function oq.check_bg_status()
             oq.timer_oneshot(5, oq.oqgeneral_leave)
         end
         if (oq._instance_type == 'pvp') then
-            oq.timer('threat_update', 2.5, oq.threat_update, true)
-            oq.timer('report_threat', 2.5, oq.report_threat, true)
             if (OQ_data.timer_show == 1) then
                 oq.utimer_frame():Show()
-            end
-            if (OQ_data.threat_show == 1) then
-                oq.threat_frame():Show()
             end
         else
             if
@@ -4322,7 +4031,6 @@ function oq.check_bg_status()
                 end
                 oq.verify_loot_rules_acceptance()
             end
-            oq.timer('wipe_check', 5.0, oq.check_for_wipe, true)
         end
         SetMapToCurrentZone() -- one-time call to set the map to the current zone
         oq.mark_currency()
@@ -4339,12 +4047,8 @@ function oq.check_bg_status()
         oq.timer_oneshot(5.0, oq.oqgeneral_join)
         oq.timer_oneshot(5.0, oq.check_currency)
         oq.timer_oneshot(3.0, oq.bg_cleanup)
-        oq.timer('threat_update', 2.5, nil)
-        oq.timer('wipe_check', 5.0, nil)
-        oq.timer('report_threat', 2.5, nil)
         oq.CLEU_world_mode()
         oq.utimer_frame():Hide() -- hide while not in the bgs
-        oq.threat_frame():Hide() -- hide while not in the bgs
     end
     oq.group_lead_bookkeeping()
 
@@ -6803,11 +6507,6 @@ function oq.bn_echo_raid(msg)
     end
 end
 
-function oq.bn_clear()
-    tbl.clear(OQ_data.bn_friends, true)
-    oq.ping_the_world()
-end
-
 function oq.cmdline_clear(opt)
     if (opt == nil) then
         print(L['please specify clear option'])
@@ -6994,44 +6693,6 @@ function oq.dead_token(name, noteText)
         end
     end
     return true -- dead token
-end
-
--- options: all, offline, 5, show, list
---
-function oq.remove_OQadded_bn_friends(option)
-    local ntotal, nonline = GetNumFriends()
-    local now = oq.utc_time()
-    local removal_text = 'REMOVE ' .. OQ_HEADER
-    local i
-    if (option == 'show') or (option == 'list') then
-        print('--[  mesh tags to be removed ]--')
-    end
-    local cnt = 0
-    for i = ntotal, 1, -1 do
-        tbl.fill(_f, GetFriendInfo(i))
-
-        local presenceID = _f[1]
-        local givenName = _f[2]
-        local btag = _f[3]
-        local online = _f[8]
-        local noteText = _f[13] or ''
-        if ((option ~= 'offline') or ((option == 'offline') and (online == false))) then
-            -- remove this friend from OQ_data if noted
-            if (noteText == 'REMOVE OQ') or (noteText == 'OQ,mesh node') or oq.dead_token(givenName, noteText) then
-                cnt = cnt + (oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'group member') or 0)
-            elseif (noteText == 'OQ,leader') and (oq.raid.raid_token == nil) then
-                cnt = cnt + (oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'group leader') or 0)
-            elseif ((noteText == '') and oq.in_btag_cache(btag)) then
-                cnt = cnt + (oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'mesh auto-add') or 0)
-            end
-        end
-        if (option == '5') and (cnt >= 5) then
-            break
-        end
-    end
-    if (option == 'show') or (option == 'list') then
-        print('--')
-    end
 end
 
 function oq.remove_bn_friend_by_btag(btag_, iff_offline)
@@ -9080,13 +8741,6 @@ function oq.group_invite_slot(req_token, group_id, slot)
 
     oq.realid_msg(r.name, r.realm, r.realid, msg, true)
     oq.timer_oneshot(1.0, oq.InviteUnitRealID, r.realid, req_token)
-
-    -- local pid = oq.bnpresence(key)
-    -- if (pid ~= 0) then
-    --     oq.realid_msg(r.name, r.realm, r.realid, msg, true)
-    --     oq.timer_oneshot(1.0, oq.InviteUnit, r.name, r.realm, req_token)
-    --     return
-    -- end
 end
 
 function oq.group_invite_first_available(req_token)
@@ -17502,10 +17156,6 @@ function oq.create_tab_setup()
     oq.label(parent, x, y, 200, cy, OQ.REALID_MOP)
     y = y + cy + 6
 
-    oq.label(parent, x, y, 200, cy, OQ.SETUP_GODARK_LBL)
-    y = y + cy
-    oq.label(parent, x, y, 200, cy, OQ.SETUP_REMOQADDED)
-    y = y + cy
     oq.label(parent, x, y, 200, cy, OQ.SETUP_REMOVEBTAG)
     y = y + cy
     oq.label(parent, x, y, 200, cy, OQ.SETUP_TIMERWIDTH)
@@ -17762,58 +17412,8 @@ function oq.create_tab_setup()
     cy = 25
     cx = 145
     oq.tab5_bnet = oq.editline(parent, 'BnetAddress', x, y, cx - 4, cy, 60)
-    y = y + cy + 6
-    oq.tab5_go_dark =
-        oq.button(
-        parent,
-        x - 5,
-        y,
-        cx,
-        cy,
-        OQ.SETUP_GODARK,
-        function()
-            oq.godark()
-        end
-    )
-    y = y + cy
-    oq.tab5_prune_bnet =
-        oq.button(
-        parent,
-        x - 5,
-        y,
-        40,
-        cy,
-        L['all'],
-        function()
-            oq.remove_OQadded_bn_friends('all')
-        end
-    )
-    oq.tab5_prune_bnet =
-        oq.button(
-        parent,
-        x - 5 + 40 + 3,
-        y,
-        60,
-        cy,
-        L['offline'],
-        function()
-            oq.remove_OQadded_bn_friends('offline')
-        end
-    )
-    oq.tab5_prune_bnet =
-        oq.button(
-        parent,
-        x - 5 + 40 + 60 + 2 * 3,
-        y,
-        39,
-        cy,
-        L['5'],
-        function()
-            oq.remove_OQadded_bn_friends('5')
-        end
-    )
     oq.tab5_bnet:Disable()
-    y = y + cy
+    y = y + cy + 6
     oq.tab5_pullbtag_but =
         oq.button2(
         parent,
@@ -26149,8 +25749,6 @@ function oq.on_init(now)
     oq.timer('waitlist update', 1, oq.update_wait_times, true)
     oq.timer('bn_send_q', 0.250, oq.send_queued_msgs, true) -- 4 times per second, throttles bn msgs
 
-    oq.j2tw_sched()
-
     oq.clear_report_attempts()
     oq.clear_old_tokens()
     oq.create_tooltips()
@@ -26422,9 +26020,6 @@ function oq.attempt_group_recovery()
     oq.tab3_enforce:SetChecked((oq.raid.enforce_levels == 1))
 
     local instance, instanceType = IsInInstance()
-    if ((OQ_data.threat_show == nil) or (OQ_data.threat_show == 1)) and (instanceType == 'pvp') and (instance == 1) then
-        oq.threat_frame():Show()
-    end
     if ((OQ_data.timer_show == nil) or (OQ_data.timer_show == 1)) and (instanceType == 'pvp') and (instance == 1) then
         oq.utimer_frame():Show()
     end
@@ -26945,9 +26540,6 @@ OQ.minimap_menu_options = {
     {text = OQ.MM_OPTION3, f = function(self, arg1)
             oq.toggle_timers()
         end},
-    {text = OQ.MM_OPTION4, f = function(self, arg1)
-            oq.toggle_threat_level()
-        end},
     {text = OQ.MM_OPTION5, f = function(self, arg1)
             oq.utimer_stop_all()
         end},
@@ -26961,9 +26553,6 @@ OQ.minimap_menu_options = {
             oq.where_am_i()
         end},
     {text = '---', f = function(self, arg1)
-        end},
-    {text = OQ.MM_OPTION9, f = function(self, arg1)
-            oq.godark()
         end}
 }
 function oq.make_minimap_dropdown()
