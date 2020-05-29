@@ -24,7 +24,6 @@ BINDING_NAME_WAITLIST_INVITEALL = 'Invita tutti'
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - Trova Premade'
-OQ.BNET_FRIENDS = '%d  Amici b-net '
 OQ.PREMADE = 'Premade'
 OQ.FINDPREMADE = 'Trova Premade'
 OQ.CREATEPREMADE = 'Crea Premade'

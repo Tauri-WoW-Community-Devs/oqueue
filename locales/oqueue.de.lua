@@ -19,7 +19,6 @@ local L = OQ._T -- for literal string translations
 
 OQ.TITLE_LEFT = 'oQueue v' --i can't translate this
 OQ.TITLE_RIGHT = ' - Premade finder' --i can't translate this
-OQ.BNET_FRIENDS = '%d b-net Freunde'
 OQ.PREMADE = 'Premade'
 OQ.FINDPREMADE = 'Finde Premade'
 OQ.CREATEPREMADE = 'Erstelle Premade'

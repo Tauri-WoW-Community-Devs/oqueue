@@ -25,7 +25,6 @@ BINDING_NAME_WAITLIST_INVITEALL = 'Inviter Tous'
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - Chercheur de groupe'
-OQ.BNET_FRIENDS = '%d Amis battle-net'
 OQ.PREMADE = 'Groupe'
 OQ.FINDPREMADE = 'Chercher groupe'
 OQ.CREATEPREMADE = 'Créer groupe'

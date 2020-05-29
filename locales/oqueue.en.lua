@@ -20,7 +20,6 @@ BINDING_NAME_WAITLIST_INVITEALL = 'Invite All'
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - Premade finder'
-OQ.BNET_FRIENDS = '%d  b-net friends'
 OQ.PREMADE = 'Premade'
 OQ.FINDPREMADE = 'Find Premade'
 OQ.CREATEPREMADE = 'Create Premade'

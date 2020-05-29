@@ -1576,8 +1576,6 @@ function oq.show_data(opt)
         oq.frames_inuse_report(opt)
     elseif (opt == 'locals') then
         oq.show_locals()
-    elseif (opt == 'meshtags') then
-        oq.show_meshtags()
     elseif (opt:find('premades') == 1) then
         oq.show_premades(opt)
     elseif (opt == 'raid') or (opt == 'premade') then
@@ -1626,45 +1624,6 @@ function oq.dump_globals()
         end
     end
     print('-- ')
-end
-
-function oq.show_meshtags()
-    if (OQ_data.btag_cache == nil) then
-        print('btag cache is nil')
-        return
-    end
-    print('--[ mesh tags ]--')
-    local now = oq.utc_time()
-    local i, v
-    for i, v in pairs(OQ_data.btag_cache) do
-        print(
-            '  ' ..
-                i ..
-                    '  ' ..
-                        tostring(v.tm) ..
-                            '  [' .. tostring(v.note) .. ']  (tm: ' .. tostring(floor((v.tm - now) / 60)) .. ')'
-        )
-    end
-    print('--')
-end
-
-function oq.clear_old_meshtags()
-    if (OQ_data.btag_cache == nil) then
-        OQ_data.btag_cache = tbl.new()
-    end
-    local now = oq.utc_time()
-    local i, v
-    for i, v in pairs(OQ_data.btag_cache) do
-        if (type(v) ~= 'table') then
-            OQ_data.btag_cache[i] = nil
-        elseif (v) and (v.tm) and (v.tm < now) then
-            oq.remove_bn_friend_by_btag(i, true)
-            OQ_data.btag_cache[i] = tbl.delete(v)
-        elseif (v) and (v.tm == nil) then
-            oq.remove_bn_friend_by_btag(i, true)
-            OQ_data.btag_cache[i] = tbl.delete(v)
-        end
-    end
 end
 
 function oq.show_wallet()
@@ -2928,7 +2887,6 @@ function oq.BNSendFriendInvite(id, msg, note, name_, realm_)
         msg = msg:sub(1, OQ.MAX_SENDFRIENDREQ_MSGSZ)
     end
     BNSendFriendInvite(id, msg)
-    oq.cache_btag(id, note)
     oq.pkt_sent:inc()
 end
 
@@ -6214,103 +6172,6 @@ function oq.find_group_member(name)
     return nil
 end
 
-function oq.remove_one_mesh_node()
-    local ntotal, nonline = GetNumFriends()
-    local now = oq.utc_time()
-    local rc = nil
-    local option = 'silent'
-    local i
-    for i = ntotal, 1, -1 do
-        tbl.fill(_f, GetFriendInfo(i))
-
-        local presenceID = _f[1]
-        local givenName = _f[2]
-        local btag = _f[3]
-        local noteText = _f[13] or ''
-        -- remove this friend from OQ_data if noted
-        if (noteText == 'REMOVE OQ') or (noteText == 'OQ,mesh node') or oq.dead_token(givenName, noteText) then
-            rc = oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'group member')
-        elseif (noteText == 'OQ,leader') and (oq.raid.raid_token == nil) then
-            rc = oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'group leader')
-        elseif ((noteText == '') and oq.in_btag_cache(btag)) then
-            rc = oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'mesh auto-add')
-        end
-        if (rc ~= nil) then
-            break
-        end
-    end
-    if (rc ~= nil) then
-        print(
-            OQ.DIAMOND_ICON ..
-                ' ' ..
-                    string.format(
-                        L["NOTICE:  You've exceeded the cap before the cap(%d / %d).  removed: %s"],
-                        ntotal,
-                        OQ.BNET_CAPB4THECAP,
-                        tostring(_f[3])
-                    )
-        )
-    end
-    return rc
-end
-
-function oq.check_cap_before_the_cap()
-    local now = oq.utc_time()
-    local ntotal, nonline = GetNumFriends()
-    if (ntotal) and (OQ.BNET_CAPB4THECAP) and (ntotal > OQ.BNET_CAPB4THECAP) then
-        -- remove one
-        if (oq.remove_one_mesh_node()) then
-            return
-        else
-            if (oq._warning_001 == nil) or ((now - oq._warning_001) > 120) then
-                print(
-                    OQ.LILSKULL_ICON ..
-                        ' ' ..
-                            string.format(L['WARNING:  Your battle.net friends list has %s friends.'], tostring(ntotal))
-                )
-                print(
-                    OQ.LILSKULL_ICON ..
-                        ' ' ..
-                            string.format(
-                                L["WARNING:  You've exceeded the cap before the cap(%s)"],
-                                OQ.BNET_CAPB4THECAP
-                            )
-                )
-                print(
-                    OQ.LILSKULL_ICON ..
-                        ' ' ..
-                            string.format(
-                                L['WARNING:  No mesh nodes available for removal.  Please trim your b.net friends list']
-                            )
-                )
-            end
-            oq._warning_001 = now
-        end
-    end
-end
-
-function oq.is_toon_friended(name, realm)
-    local ntotal, nonline = GetNumFriends()
-    local friendId, toonIndx
-    for friendId = 1, ntotal do
-        tbl.fill(_f, GetFriendInfo(friendId))
-        local client = _f[7]
-        local online = _f[8]
-        local nToons = BNGetNumFriendToons(friendId)
-        if (nToons > 0) and online and (client == 'WoW') then
-            for toonIndx = 1, nToons do
-                tbl.fill(_toon, BNGetFriendToonInfo(friendId, toonIndx))
-                local toonName = _toon[2]
-                local realmName = _toon[4]
-                if (name == toonName) and (realm == realmName) then
-                    return 1
-                end
-            end
-        end
-    end
-    return nil
-end
-
 function oq.get_toon_pid(friendId, name_, realm_)
     if (name_ == nil) or (realm_ == nil) then
         return 0
@@ -6376,11 +6237,9 @@ function oq.get_nConnections()
 end
 
 function oq.n_connections()
-    local nOQlocals, nOQfriends, nBNfriends = 0
+    local nOQlocals, nOQfriends = 0
     if (oq.loaded) then
-        oq.tab2_nfriends:SetText(string.format(OQ.BNET_FRIENDS, nBNfriends))
         oq.tab2._connection:SetText(string.format(OQ.CONNECTIONS, nOQlocals, nOQfriends))
-        oq.tab7.waitlist_nfriends:SetText(string.format(OQ.BNET_FRIENDS, nBNfriends))
     end
 end
 
@@ -6517,9 +6376,6 @@ function oq.cmdline_clear(opt)
         OQ_data._height = nil
         oq.frame_resize()
         return
-    elseif (opt == 'meshtags') then
-        oq.clear_btag_cache()
-        return
     elseif (opt == 'premades') then
         oq.remove_all_premades()
         return
@@ -6572,28 +6428,6 @@ function oq.clear_exclusions()
     oq.toggle_raid_scroll(0)
 
     oq.reshuffle_premades()
-end
-
-function oq.remove_friend_by_pid(pid, btag, givenName, option, why)
-    if (option == 'show') or (option == 'list') then
-        print(OQ.DIAMOND_ICON .. '  ' .. tostring(btag or givenName) .. '  (' .. tostring(why) .. ')')
-        return nil
-    end
-    if (option ~= 'silent') then
-        print(OQ.DIAMOND_ICON .. '  removing ' .. btag or givenName .. '  (' .. tostring(why) .. ')')
-    end
-    if (OQ_data.bn_friends ~= nil) then
-        local n, friend
-        for n, friend in pairs(OQ_data.bn_friends) do
-            if (friend.pid == pid) then
-                tbl.clear(OQ_data.bn_friends[n])
-            end
-        end
-    end
-    BNSetFriendNote(pid, '')
-    BNRemoveFriend(pid)
-    oq.remove_btag_from_meshcache(btag)
-    return 1
 end
 
 function oq.show_btags(opt)
@@ -6692,32 +6526,6 @@ function oq.dead_token(name, noteText)
         end
     end
     return true -- dead token
-end
-
-function oq.remove_bn_friend_by_btag(btag_, iff_offline)
-    local ntotal, nonline = GetNumFriends()
-    local now = oq.utc_time()
-    local removal_text = 'REMOVE ' .. OQ_HEADER
-    local i
-    if (btag == nil) then
-        return
-    end
-    for i = ntotal, 1, -1 do
-        tbl.fill(_f, GetFriendInfo(i))
-
-        local presenceID = _f[1]
-        local givenName = _f[2]
-        local btag = _f[3]
-        local is_online = _f[8]
-        local noteText = _f[13] or ''
-        -- remove this friend from OQ_data if noted
-        if (btag_ == btag) and (iff_offline) and (is_online == false) then
-            oq.remove_friend_by_pid(presenceID, btag, givenName, option, 'remove by btag')
-        end
-    end
-    if (option == 'show') or (option == 'list') then
-        print('--')
-    end
 end
 
 function oq.is_enabled(toonName, realm)
@@ -11237,41 +11045,6 @@ function oq.submit_still_kickin()
     return 1
 end
 
-function oq.cache_btag(tag, note_)
-    if (tag == nil) or (tag == '') or (note_ == nil) then
-        return
-    end
-    if (OQ_data.btag_cache == nil) then
-        OQ_data.btag_cache = tbl.new()
-    end
-    tag = strlower(tag)
-    OQ_data.btag_cache[tag] = tbl.new()
-    OQ_data.btag_cache[tag].tm = oq.utc_time() + floor(OQ_BTAG_SUBMIT_INTERVAL / 2) -- ony good for 2 days
-    OQ_data.btag_cache[tag].note = note_
-end
-
-function oq.clear_btag_cache()
-    print(L['btag mesh cache cleared'])
-    tbl.clear(OQ_data.btag_cache)
-end
-
-function oq.in_btag_cache(tag)
-    if (OQ_data.btag_cache == nil) then
-        OQ_data.btag_cache = tbl.new()
-        return nil
-    end
-    if (tag == nil) or (OQ_data.btag_cache[strlower(tag)] == nil) then
-        return nil
-    end
-    return true
-end
-function oq.remove_btag_from_meshcache(btag)
-    if (btag ~= nil) then
-        btag = strlower(btag)
-        OQ_data.btag_cache[btag] = tbl.delete(OQ_data.btag_cache[btag])
-    end
-end
-
 function oq.on_btags(token, t1, t2, t3, t4, t5, t6)
     _ok2relay = nil
     if (not oq.token_was_seen(token)) then
@@ -11308,18 +11081,6 @@ function oq.on_btags(token, t1, t2, t3, t4, t5, t6)
     end
     if (not oq.is_banned(t6)) then
         oq.BNSendFriendInvite(t6, msg, 'OQ,mesh node')
-    end
-end
-
-function oq.on_mesh_tag(faction_, rid_)
-    if (OQ_data.autoaccept_mesh_request ~= 1) then
-        return
-    end
-    local ntotal, nonline = GetNumFriends()
-    if (ntotal < OQ_MAX_BNFRIENDS) then
-        _ok2decline = nil
-        _oq_note = 'OQ,mesh node'
-        oq.cache_btag(rid_, _oq_note)
     end
 end
 
@@ -13903,9 +13664,8 @@ function oq.create_tab1_common(parent)
     oq.tab1._notes:SetTextColor(0.9, 0.9, 0.9, 1)
      --
 
-    --[[ tag and version ]] OQFrameHeaderLogo:SetText(
-        OQ.TITLE_LEFT .. '' .. OQUEUE_VERSION .. '' .. OQ_SPECIAL_TAG .. '' .. OQ.TITLE_RIGHT
-    )
+    --[[ tag and version ]]
+    OQFrameHeaderLogo:SetText(OQ.TITLE_LEFT .. OQUEUE_VERSION .. OQ_SPECIAL_TAG .. OQ.TITLE_RIGHT)
 
     -- brb button
     oq.tab1._brb_button =
@@ -13926,7 +13686,7 @@ function oq.create_tab1_common(parent)
     oq.tab1._lucky_charms =
         oq.button(
         parent,
-        250,
+        200,
         parent:GetHeight() - 40,
         100,
         25,
@@ -13940,7 +13700,7 @@ function oq.create_tab1_common(parent)
     oq.tab1._readycheck_button =
         oq.button(
         parent,
-        350,
+        300,
         parent:GetHeight() - 40,
         100,
         25,
@@ -14180,25 +13940,26 @@ end
 --
 function oq.create_scrolling_list(parent, type_)
     local scroll = oq.CreateFrame('ScrollFrame', parent:GetName() .. 'ListScrollBar', parent, 'FauxScrollFrameTemplate')
+    scroll.scroll_update = scroll_update_ or OQ_ModScrollBar_Update
     scroll:SetScript(
         'OnShow',
         function(self)
-            OQ_ModScrollBar_Update(self)
+            self:scroll_update()
         end
     )
     scroll:SetScript(
         'OnVerticalScroll',
         function(self, offset)
             if (self._scroll_func) then
-                self._scroll_func(self, offset, 16, OQ_ModScrollBar_Update)
+                self._scroll_func(self, offset, 16, self.scroll_update)
             else
-                FauxScrollFrame_OnVerticalScroll(self, offset, 16, OQ_ModScrollBar_Update)
+                FauxScrollFrame_OnVerticalScroll(self, offset, 16, self.scroll_update)
             end
         end
     )
     scroll._type = type_
 
-    local list = oq.CreateFrame('Frame', parent:GetName() .. 'List', scroll)
+    local list = oq.CreateFrame(list_frame_type_ or 'Frame', parent:GetName() .. 'List', scroll)
     if (oq.__backdrop06 == nil) then
         oq.__backdrop06 = {
             bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
@@ -14913,9 +14674,7 @@ function oq.create_tab2()
     oq.tab2 = parent
 
     -- sorting and filtering presets
-    if (OQ_data.premade_filter_type == nil) then
-        OQ_data.premade_filter_type = OQ.TYPE_NONE -- show all premade types
-    end
+    OQ_data.premade_filter_type = OQ_data.premade_filter_type or OQ.TYPE_NONE -- show all premade types
 
     parent:SetScript(
         'OnShow',
@@ -15014,10 +14773,6 @@ function oq.create_tab2()
 
     oq.hook_modifier(parent) -- hooked to the main tab window
     oq.tab2_paused:Show()
-
-    x = parent:GetWidth() - 200
-    oq.tab2_nfriends = oq.label(parent, x, y, 150, cy, string.format(OQ.BNET_FRIENDS, 0))
-    oq.tab2_nfriends:SetJustifyH('right')
 
     x = parent:GetWidth() - (120 + 50)
     y = parent:GetHeight() - 32
@@ -16008,10 +15763,6 @@ function oq.create_tab_waitlist()
     )
     f.string:SetFont(OQ.FONT, 10, '')
     oq.tab7.inviteall_button = f
-
-    x = x - (150 + 8)
-    oq.tab7.waitlist_nfriends = oq.label(parent, x, y, 150, cy, string.format(OQ.BNET_FRIENDS, 0))
-    oq.tab7.waitlist_nfriends:SetJustifyH('right')
 
     x = 120
     f =
@@ -17326,21 +17077,6 @@ function oq.create_tab_setup()
         end
     )
 
-    y = y + cy
-    oq.tab5_autoaccept_mesh_request =
-        oq.checkbox(
-        parent,
-        x,
-        y,
-        23,
-        cy,
-        200,
-        OQ.SETUP_AUTOACCEPT_MESH_REQ,
-        (OQ_data.autoaccept_mesh_request == 1),
-        function(self)
-            oq.toggle_autoaccept_mesh_request(self)
-        end
-    )
     y = y + cy
     oq.tab5_show_controlled_towers =
         oq.checkbox(
@@ -20114,27 +19850,6 @@ function oq.update_wait_times()
             v.wait_tm:SetText(date('!%H:%M:%S', (now - v.m.create_tm)))
         end
     end
-end
-
-function oq.on_req_mesh(token)
-    if (OQ_data.autoaccept_mesh_request ~= 1) or (token == nil) then
-        return
-    end
-    local ntotal, nonline = GetNumFriends()
-    if (ntotal >= OQ_MAX_BNFRIENDS) then
-        return
-    end
-    if (_source ~= OQ_REALM_CHANNEL) or (oq._sender == nil) then
-        -- only works locally
-        return
-    end
-    if (oq.is_toon_friended(oq._sender, player_realm)) then
-        return
-    end
-    _ok2relay = nil -- this should be a realm only msg
-    local msg = OQ_HEADER .. ',' .. OQ_VER .. ',' .. 'W1,0,imesh,' .. tostring(token) .. ',' .. tostring(player_realid)
-
-    oq.SendAddonMessage('OQ', msg, 'WHISPER', oq._sender)
 end
 
 function oq.on_imesh(token, btag)
@@ -23102,7 +22817,6 @@ function oq.procs_init()
     oq.proc['leave_waitlist'] = oq.on_leave_waitlist
     oq.proc['mbox_bn_enable'] = oq.on_mbox_bn_enable
     oq.proc['member'] = oq.on_member
-    oq.proc['mesh_tag'] = oq.on_mesh_tag
     oq.proc['name'] = oq.on_name
     oq.proc['need_btag'] = oq.on_need_btag
     oq.proc['new_lead'] = oq.on_new_lead
@@ -23128,7 +22842,6 @@ function oq.procs_init()
     oq.proc['removed_from_waitlist'] = oq.on_removed_from_waitlist
     oq.proc['report_recvd'] = oq.on_report_recvd
     oq.proc['ri'] = oq.on_req_invite -- was "req_invite"
-    oq.proc['req_mesh'] = oq.on_req_mesh
     oq.proc['role_check'] = oq.on_role_check
     oq.proc['scores'] = oq.on_scores
     oq.proc['selfie'] = oq.on_selfie
@@ -23174,7 +22887,6 @@ function oq.procs_join_raid()
   oq.proc[ "k3"                    ] = oq.on_karma ;
   oq.proc[ "leave_waitlist"        ] = oq.on_leave_waitlist ;  
   oq.proc[ "mbox_bn_enable"        ] = oq.on_mbox_bn_enable ;
-  oq.proc[ "mesh_tag"              ] = oq.on_mesh_tag ;
   oq.proc[ "oq_user"               ] = oq.on_oq_user ;   
   oq.proc[ "oq_user_ack"           ] = oq.on_oq_user ;   
   oq.proc[ "oq_version"            ] = oq.on_oq_version ;   
@@ -23186,7 +22898,6 @@ function oq.procs_join_raid()
   oq.proc[ "removed_from_waitlist" ] = oq.on_removed_from_waitlist ;
   oq.proc[ "report_recvd"          ] = oq.on_report_recvd ;
   oq.proc[ "ri"                    ] = oq.on_req_invite ; -- was "req_invite"
-  oq.proc[ "req_mesh"              ] = oq.on_req_mesh ;
   oq.proc[ "scores"                ] = oq.on_scores ;
   oq.proc[ "bb"                    ] = oq.on_thebook ;  -- was "thebook"
   oq.proc[ "tops_recvd"            ] = oq.on_tops_recvd ;
@@ -24351,7 +24062,6 @@ function oq.load_oq_data()
     if (OQ_data == nil) then
         OQ_data = tbl.new()
         OQ_data.bn_friends = tbl.new()
-        OQ_data.autoaccept_mesh_request = 1
         OQ_data.show_premade_ads = 0
         OQ_data.show_contract_ads = 1
         OQ_data.stats = tbl.new()
@@ -24717,14 +24427,6 @@ function oq.toggle_show_controlled(cb)
             (oq._bg_checks[_bg_shortname].show_controlled ~= nil)
      then
         oq._bg_checks[_bg_shortname].show_controlled(OQ_data.show_controlled)
-    end
-end
-
-function oq.toggle_autoaccept_mesh_request(cb)
-    if (cb:GetChecked()) then
-        OQ_data.autoaccept_mesh_request = 1
-    else
-        OQ_data.autoaccept_mesh_request = 0
     end
 end
 
@@ -25126,7 +24828,6 @@ function oq.register_events()
 end
 
 function oq.init_bnet_friends()
-    oq.clear_old_meshtags()
     if (OQ_data.bn_friends) then
         tbl.clear(OQ_data.bn_friends, true)
     else
@@ -25764,7 +25465,6 @@ function oq.on_logout()
     -- hang onto group data if still in an OQ_group (may come back)
     local disabled = oq.toon.disabled
 
-    OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 0
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0
     OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1
 
@@ -25798,7 +25498,6 @@ function oq.on_logout()
     }
 
     OQ_data.scores = tbl.copy(oq.scores, OQ_data.scores, true)
-    OQ_data.bn_friends = nil -- clear out bnfriends; will reload next login
     OQ_data.reports = nil -- old data; making sure it's cleaned out
     OQ_data.setup = nil -- old data; making sure it's cleaned out
     OQ_data.bn_friends = nil -- clean it out so we re-check upon login
@@ -25815,7 +25514,6 @@ function oq.attempt_group_recovery()
 
     if (oq.toon) then
         oq.toon.class_portrait = oq.toon.class_portrait or 1
-        OQ_data.autoaccept_mesh_request = OQ_data.autoaccept_mesh_request or 1
         OQ_data.ok2autoinspect = OQ_data.ok2autoinspect or 1
 
         -- more then 60 seconds passed, recovery not an option
@@ -25951,7 +25649,6 @@ function oq.attempt_group_recovery()
     oq.tab5_autoinspect:SetChecked((OQ_data.ok2autoinspect == 1))
     oq.tab5_shoutads:SetChecked((OQ_data.show_premade_ads == 1))
     oq.tab5_shoutcontracts:SetChecked((OQ_data.show_contract_ads == 1))
-    oq.tab5_autoaccept_mesh_request:SetChecked((OQ_data.autoaccept_mesh_request == 1))
     oq.tab5_autojoin_oqgeneral:SetChecked((OQ_data.auto_join_oqgeneral == 1))
     oq.tab5_autohide_friendreqs:SetChecked((OQ_data.autohide_friendreqs == 1))
     oq.loot_acceptance_cb:SetChecked((OQ_data.loot_acceptance == 1))

@@ -22,7 +22,6 @@ BINDING_NAME_TOGGLE_OQUEUE = 'Вкл/Выкл oQueue'
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - Поисковик премейдов'
-OQ.BNET_FRIENDS = '%d  b-net друзей'
 OQ.PREMADE = 'Мой премейд'
 OQ.FINDPREMADE = 'Поиск'
 OQ.CREATEPREMADE = 'Создать'
