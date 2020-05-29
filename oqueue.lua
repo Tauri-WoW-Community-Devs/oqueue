@@ -73,7 +73,6 @@ local player_queued = nil
 local player_online = 1
 local player_karma = 0
 local _source = nil -- bnet, addon, bnfinvite, oqgeneral, party
-local _sender_pid = nil
 local _msg_token = nil
 local _debug = nil
 local _inc_channel = nil
@@ -4031,6 +4030,7 @@ function oq.check_bg_status()
                 end
                 oq.verify_loot_rules_acceptance()
             end
+            oq.timer('wipe_check', 5.0, oq.check_for_wipe, true)
         end
         SetMapToCurrentZone() -- one-time call to set the map to the current zone
         oq.mark_currency()
@@ -5739,9 +5739,6 @@ function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
 end
 
 function oq.bnbackflow(msg, to_pid)
-    if (_sender_pid ~= to_pid) then
-        return nil
-    end
     -- ie: "OQ,0A,P477389297,G17613410,name,1,3,Tinymasher,Magtheridon"
     local tok = msg:sub(7, 16)
     if (_msg_token ~= tok) then
@@ -6031,6 +6028,7 @@ function oq.crack_bn_msg(msg)
     realm = oq.get_field(msg, OQ_FLD_REALM)
     realm = oq.realm_uncooked(realm)
     from = oq.get_field(msg, OQ_FLD_FROM)
+    
     local from_name, from_realm = oq.crack_name(from)
     from_realm = oq.realm_uncooked(from_realm)
     return m, name, realm, from
@@ -6477,6 +6475,7 @@ function oq.bnpresence_realm(realm)
 end
 
 function oq.bn_echo_msg(name, realm, msg)
+    print(name .. '-' .. realm)
     local pid = oq.bnpresence(name .. '-' .. realm)
     if (pid == 0) then
         return
@@ -18557,6 +18556,7 @@ function oq.update_premade_note()
     if (not oq.iam_raid_leader()) then
         return
     end
+
     local name = oq.tab3_raid_name:GetText()
     local note = oq.tab3_notes:GetText()
 
@@ -19372,7 +19372,7 @@ function oq.process_premade_info(
     if (abs(now - tm_) >= OQ_PREMADE_STAT_LIFETIME) then
         -- premade leader's time is off.  ignore
         _ok2relay = nil
-        _reason = 'out of sync'
+        _reason = 'out of sync  dt: '.. tostring(now - tm_) .. ' sec'
         return
     end
 
@@ -22636,11 +22636,16 @@ function oq.decode_premade_info(data)
         karma = oq.decode_mime64_digits(karma) - 25
     end
 
-    return faction, has_pword, is_realm_specific, is_source, range, oq.decode_mime64_digits(data:sub(3, 4)), oq.decode_mime64_digits( -- min ilevel
-        data:sub(5, 7)
-    ), oq.decode_mime64_digits(data:sub(8, 8)), oq.decode_mime64_digits(data:sub(9, 9)), oq.decode_mime64_digits( -- min resil -- nmembers -- nwaiting
-        data:sub(10, 10)
-    ), oq.decode_mime64_digits(data:sub(11, 16)), oq.decode_mime64_digits(data:sub(17, 18)), karma -- stat -- raid.tm -- min mmr -- karma; must be -25..25
+    local min_ilevel = oq.decode_mime64_digits(data:sub(3, 4))
+    local min_resil = oq.decode_mime64_digits(data:sub(5, 7))
+    local nmembers = oq.decode_mime64_digits(data:sub(8, 8))
+    local nwaiting = oq.decode_mime64_digits(data:sub(9, 9))
+    local status = oq.decode_mime64_digits(data:sub(10, 10))
+    local tm_ = oq.utc_time()  -- raid.tm is now local time since it came across a realm channel
+    local min_mmr = oq.decode_mime64_digits(data:sub(17, 18))
+
+    return faction, has_pword, is_realm_specific, is_source, range, min_ilevel, min_resil, nmembers, nwaiting, status, 
+    tm_, min_mmr, karma -- stat -- raid.tm -- min mmr -- karma; must be -25..25
 end
 
 function oq.encode_preferences(voip_, role_, classes_, lang_)
@@ -23283,79 +23288,6 @@ function oq.on_addon_event(prefix, msg, channel, sender)
     oq.post_process()
 end
 
---
--- channel always WHISPER
---
-function oq.on_bnet_addon_event(prefix, msg, channel, senderToonID)
-    if ((prefix ~= 'OQ') or (sender == player_name)) or ((msg == nil) or (msg == '')) then
-        return
-    end
-    tbl.fill(_f, BNGetToonInfo(senderToonID))
-    oq._sender_name = _f[2]
-    oq._sender_realm = _f[4]
-    oq._sender_toonid = senderToonID
-    _sender_pid = senderToonID
-    local sender = oq._sender_name
-    if (oq._sender_realm) and (oq._sender_realm ~= player_realm) then
-        sender = sender .. '-' .. oq._sender_realm
-    end
-
-    if (oq.iam_party_leader() and (sender == oq.raid.leader) and (not oq.toon.disabled)) then
-        -- from the leader and i'm party leader, send only to my party
-        oq.channel_party(msg)
-    end
-
-    -- just process, do not send it on
-    _local_msg = true
-    _source = 'bnet'
-    _ok2relay = nil
-    oq._sender = oq._sender_name .. '-' .. oq._sender_realm
-    if (msg:find('W1,1,b9,')) then
-        oq.process_bundle(oq._sender, oq._sender_realm, msg)
-    else
-        oq.process_msg(oq._sender, msg)
-    end
-    oq.post_process()
-end
-
---
--- transition:  no long being used much
---
-function oq.on_bn_event(...)
-    if (oq.toon.disabled or (not oq.loaded)) then
-        return
-    end
-    tbl.fill(_arg, ...)
-    local msg = _arg[1]
-    local presenceID = _arg[13]
-    if (presenceID == nil) or (presenceID == 0) or ((msg == nil) or (msg == '') or (oq._bnet_disabled)) then
-        oq.post_process()
-        return
-    end
-
-    tbl.fill(_opts, BNGetToonInfo(presenceID))
-    local toonName = _opts[2]
-    local realmName = _opts[4]
-    local faction = _opts[6]
-
-    if (toonName == nil) or (realmName == nil) then
-        oq.post_process()
-        return
-    end
-    local name = toonName .. '-' .. realmName
-
-    oq._sender = name
-    oq._sender_name = toonName
-    oq._sender_realm = realmName
-    _sender_pid = presenceID
-    _source = 'bnet'
-    _oq_msg = nil
-    _ok2relay = 1
-
-    oq.process_msg(name, msg)
-    oq.post_process()
-end
-
 function oq.on_channel_msg(...)
     tbl.fill(_arg, ...)
 
@@ -23374,11 +23306,17 @@ function oq.on_channel_msg(...)
     end
 
     if (chan_name == OQ_REALM_CHANNEL) then
+        local name, realm = strsplit('-', sender)
+
         _inc_channel = OQ_REALM_CHANNEL
         _local_msg = true
         _source = OQ_REALM_CHANNEL
         oq._sender = sender
+        oq._sender_name = name
+        oq._sender_realm = realm
+                
         _ok2relay = 1
+
         oq.process_msg(sender, msg)
     end
     oq.post_process()
@@ -23805,8 +23743,6 @@ function oq.process_msg(sender, msg)
     _msg_type = token:sub(1, 1)
     _oq_msg = true
 
-    oq.check_if_new(_sender_pid, oq._sender_name, oq._sender_realm)
-
     if (_msg_type == 'A') then
         atok = _vars[6] -- announce token
         if (not oq.atok_ok2process(atok)) then
@@ -23986,7 +23922,6 @@ function oq.post_process()
     oq._sender_name = nil
     oq._sender_realm = nil
     oq._sender_toonid = nil
-    _sender_pid = nil
     _local_msg = nil
     _source = nil
     _ok2relay = 1
@@ -24249,35 +24184,6 @@ function oq.on_bg_event(event, ...)
             return
         end
     end
-end
-
-function oq.check_if_new(toon_pid, toonName, realmName)
-    if (pid == nil) or (toonName == nil) or (realmName == nil) then
-        return
-    end
-    local name_ndx = strlower(toonName .. '-' .. realmName)
-    local friend = OQ_data.bn_friends[name_ndx]
-    --
-    -- only does the check if more then 30 seconds have passed or the name is new
-    --
-    if (friend) and (friend.isOnline) and (friend.oq_enabled) then
-        -- avoid updating the UI unnecessarily
-        friend.toon_id = toon_pid -- just to make sure
-        return
-    end
-
-    if (friend == nil) then
-        OQ_data.bn_friends[name_ndx] = tbl.new()
-        friend = OQ_data.bn_friends[name_ndx]
-        friend.toonName = toonName
-        friend.realm = realmName
-    end
-
-    friend.isOnline = true
-    friend.pid = -3
-    friend.toon_id = toon_pid
-    friend.oq_enabled = true
-    oq.n_connections()
 end
 
 function oq.clear_postclicks()
@@ -25122,15 +25028,6 @@ end
 function oq.on_group_roster_update()
 end
 
--- triggered by bn friends going online/offline
--- wait a half second to allow the data to populate before pulling
---
-function oq.timer_bn_pingworld()
-    -- replacable timer to bundle events and minimize pings
-    -- bnet has a tendency to bounce on and offline when getting ddos'd.  try to avoid piling on
-    oq.timer('ping_world', 5.0, oq.ping_the_world, nil)
-end
-
 function oq.register_base_events()
     oq.msg_handler = tbl.new()
     oq.msg_handler['ADDON_LOADED'] = oq.on_addon_loaded
@@ -25140,12 +25037,8 @@ end
 
 function oq.register_events()
     oq.msg_handler['ACTIVE_TALENT_GROUP_CHANGED'] = oq.get_player_role
-    oq.msg_handler['BN_CHAT_MSG_ADDON'] = oq.on_bnet_addon_event
-    oq.msg_handler['BN_CONNECTED'] = oq.timer_bn_pingworld
-    oq.msg_handler['BN_SELF_ONLINE'] = oq.timer_bn_pingworld
     oq.msg_handler['CHAT_MSG_ADDON'] = oq.on_addon_event
     oq.msg_handler['CHAT_MSG_BG_SYSTEM_NEUTRAL'] = oq.on_bg_neutral_event
-    oq.msg_handler['CHAT_MSG_BN_WHISPER'] = oq.on_bn_event
     oq.msg_handler['CHAT_MSG_CHANNEL'] = oq.on_channel_msg
     oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
     oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
@@ -25199,14 +25092,10 @@ function oq.register_events()
     ------------------------------------------------------------------------
     oq.ui:RegisterEvent('PVPQUEUE_ANYWHERE_SHOW')
     oq.ui:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-    oq.ui:RegisterEvent('BN_CHAT_MSG_ADDON')
-    oq.ui:RegisterEvent('BN_CONNECTED')
-    oq.ui:RegisterEvent('BN_SELF_ONLINE')
     oq.ui:RegisterEvent('CHANNEL_ROSTER_UPDATE')
     oq.ui:RegisterEvent('CHAT_MSG_ADDON')
     oq.ui:RegisterEvent('CHAT_MSG_CHANNEL')
     oq.ui:RegisterEvent('CHAT_MSG_BG_SYSTEM_NEUTRAL')
-    oq.ui:RegisterEvent('CHAT_MSG_BN_WHISPER')
     oq.ui:RegisterEvent('CHAT_MSG_WHISPER')
     oq.ui:RegisterEvent('CLOSE_WORLD_MAP')
     oq.ui:RegisterEvent('ENCOUNTER_END')
@@ -25704,9 +25593,8 @@ function oq.on_init(now)
     oq.marquee = oq.create_marquee()
 
     ChatFrame_AddMessageEventFilter('CHAT_MSG_SYSTEM', oq.chat_filter)
+    ChatFrame_AddMessageEventFilter('CHAT_MSG_CHANNEL', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER', oq.chat_filter)
-    ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_WHISPER', oq.chat_filter)
-    ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_WHISPER_INFORM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_INLINE_TOAST_BROADCAST', oq.chat_filter)
 
     -- first time check
