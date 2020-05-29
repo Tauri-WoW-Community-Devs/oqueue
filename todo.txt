@@ -1,0 +1,61 @@
+to-do list for oQueue
+--
+
+-  personal rank: dmg-rank and heal-rank; 1-100 position for both sides per bg
+-  personal rank: ui element the user would leave up that would show their current dmg or heal rank
+-  stats: record results of each game
+-  game stats; raid leader should track bg members, both factions, and results
+-  hero identified; using previous game info, raid leader should be able to identify the strong players
+-  setup profiles for different bgs
+-  (possible) allow leader to change a group into a raid w/ assist-on-all to allow members to invite ppl in their realm (helps ppl w/out b-net)
+-  disable comms while in an instance (similar to being in a bg)
+-  on logout, attempts to remove player from any premade waitlists 
+-  put current honor and conquest pts on main premade tab
+-  clear out the BG blacklist, putting up a note when it happens
+-  add weekly winners to score tab
+
+-  thumbs-down option for a premade.  would send thumbs-down msg to user, no more frequent then every 2 minutes.  
+-  100 thumbs-dn recv'd, disbands the group
+-  sub category for spec on waitlist to help determine what type of dps/tank/heal
+-  inspect resil, ilevel, mmr and pvppower for all players when entering a bg.  if not qualified, offer leader chance to report to oqsk
+-  if waitlisting with a group, collect min values for qualifying traits
+-  bg timer bars
+-  leader score should be based on the premade type; having 1000 bg victories doesnt mean the same as 1000 rbg wins or 1000 heroic runs
+-  colorblind update: possibly allow users to select class colors via selector; http://www.wowinterface.com/downloads/info12513-ClassColors.html
+-  stats: personal and as lead
+-  personal stats; 7-day running stats; # games, # kbs, honor gained, avg dmg per game, avg heal per game
+
+-  list of pve achieves for a pve group
+-  cmdline: disband
+-  change notes into single line for vent and single line for notes
+-  submit daily stat info to scorekeeper 
+-  free-for-all needs to be selectable
+-  dropdown to filter premades by language (requires language selector in create-premade)
+-  tab for the last N people in the players group.  should be able to place in a permanant list or ban them, both with notes (thx smokebomb!)
+
+- submitted via b-tag, oQ demographics? usage?
+- /oq reset won't reset stats
+
+-  announce when someone leaves the party
+-  ref:  http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-general/226258-ulduar-boss-sound-scripts.html
+-  allow leave-queue to be 30sec, 60sec, and no-boot
+-  warn the OQ leader if someone is flagged as brb (allow for queue-anyway)
+-  add 'reach' to setup panel (bit-string representing all realms)
+-  poll; allow raid leader to specify up to 4 items and have members vote.  bar graph display visible to all
+-  break timer
+-  option under keybindings to allow user to bind a key to toggle the main oq ui
+
+from andybro-requiem
+- ranking system (on the website somehow)
+- smaller ui showing whether or not group queues are good
+- see about clearing out 'wait for leader' msg
+
+-  contact Blizzard and check to see if it's possible to be banned for addon spam and what constitutes spam (msgs/sec)
+  o  not really sure
+-  contact Blizzard for possiblity of a x-realm addon channel or data object
+  o  interesting
+-  request x-realm addon channel via battle-net messages
+  o  posted on us.battle.net/ui & macro forums
+  http://us.battle.net/wow/en/forum/topic/6080258604
+
+note:  website button font:  jokerman-18pt-regular black with white shadow

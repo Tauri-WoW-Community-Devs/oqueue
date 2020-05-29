@@ -1,0 +1,15 @@
+------------------------------------------------------------------------
+r86 | zarnivoop | 2013-09-13 17:09:48 +0000 (Fri, 13 Sep 2013) | 2 lines
+Changed paths:
+   M /trunk/LibBossIDs-1.0.lua
+   M /trunk/LibBossIDs-1.0.toc
+
+.toc update
+added SoO bosses (from theondry)
+------------------------------------------------------------------------
+r85 | stanzilla | 2013-04-29 23:25:06 +0000 (Mon, 29 Apr 2013) | 1 line
+Changed paths:
+   M /trunk/LibBossIDs-1.0.lua
+
+random fixes
+------------------------------------------------------------------------
