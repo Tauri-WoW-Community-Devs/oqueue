@@ -11,22 +11,16 @@ local OQ_REVISION = 5
 local OQ_BUILD = 195
 local OQ_SPECIAL_TAG = ''
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
-local OQUEUE_VERSION_SHORT = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '' .. OQ_REVISION
 local OQ_VERSION = tostring(OQ_MAJOR) .. '' .. tostring(OQ_MINOR) .. '' .. tostring(OQ_REVISION)
 local OQ_VER_STR = OQUEUE_VERSION
 local OQ_VER = '1C' -- just removing the dot
 local OQSK_VER = '0C'
 local OQSK_HEADER = 'OQSK'
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
-local OQ_VERSION_SWAP_TM = 24 * 60 * 60 -- daily check for toons that are OQ enabled
 local OQ_ONEDAY = 24 * 60 * 60
 local OQ_REALISTIC_MAX_GAMELEN = 8 * 60 * 60 -- classic AV no longer exists
 local OQ_MAX_RELAY_REALMS = 7
 local OQ_NOEMAIL = '.'
-local OQ_OLDBNHEADER = '[OQ] '
-local OQ_BNHEADER_TAG = '(OQ)'
-local OQ_BNHEADER = OQ_BNHEADER_TAG .. ' '
-local OQ_SKHEADER = '[SK] '
 local OQ_HEADER = 'OQ'
 local OQ_MSGHEADER = OQ_HEADER .. ','
 local OQ_FLD_TO = '#to:'
@@ -35,13 +29,11 @@ local OQ_FLD_REALM = '#rlm:'
 local OQ_REALM_CHANNEL = 'x.oqueue'
 local OQ_TTL = 4
 local OQ_PREMADE_STAT_LIFETIME = 5 * 60 -- 5 minutes
-local OQ_GROUP_TIMEOUT = 2 * 60 -- 2 minutes (matches raid-timeout) if no response will remove group
 local OQ_GROUP_RECOVERY_TM = 5 * 60 -- 5 minutes
 local OQ_SEC_BETWEEN_ADS = 20
 local OQ_SEC_BETWEEN_PROMO = 20
 local OQ_MIN_PROMO_TIME = 20
 local OQ_BOOKKEEPING_INTERVAL = 10
-local OQ_BRIEF_INTERVAL = 30
 local HAILTOTHEKINGBABY = 3600 -- no more then once an hour
 local OQ_MAX_ATOKEN_LIFESPAN = 120 -- 120 seconds before token removed from ATOKEN list
 local OQ_MIN_ATOKEN_RELAY_TM = 30 -- do not relay atokens more then once every 30 seconds
@@ -49,8 +41,6 @@ local OQ_MAX_HONOR_WARNING = 3600
 local OQ_MAX_HONOR = 4000
 local OQ_MAX_SUBMIT_ATTEMPTS = 20
 local OQ_MAX_WAITLIST = 30
-local OQ_TOTAL_BGS = 10
-local OQ_MIN_RUNAWAY_TM = 40
 local OQ_MIN_CONNECTION = 20
 local OQ_MIN_BNET_CONNECTIONS = 10
 local OQ_INVITEALL_CD = 5 -- seconds
@@ -60,22 +50,18 @@ local OQ_CREATEPREMADE_CD = 5 -- seconds
 local OQ_BTAG_SUBMIT_INTERVAL = 4 * 24 * 60 * 60
 local OQ_DIP_GAP = 30 -- seconds
 local MAX_OQGENERAL_TALKERS = 25
-local last_runaway = 0
 local last_stat_tm = 0
 local my_group = 0
 local my_slot = 0
-local next_bn_check = 0
-local next_check = 0
 local next_invite_tm = 0
 local last_ident_tm = 0
-local last_stats_tm = 0
 local skip_stats = 0
 local last_stats = ''
 local player_name = nil
 local player_class = nil
 local player_guid = nil
 local player_realm = nil
-local player_key = nil -- strlower(name-realm)
+local player_realm_short = nil
 local player_realm_id = 0
 local player_realid = nil
 local player_faction = nil
@@ -98,7 +84,6 @@ local _ok2relay = 1
 local _ok2decline = true
 local _ok2accept = true
 local _local_msg = nil
-local _last_find_tm = 0
 local _inside_bg = nil
 local _bg_shortname = nil
 local _bg_zone = nil
@@ -108,7 +93,6 @@ local _msg_type = nil
 local _msg_id = nil
 local _oq_note = nil
 local _oq_msg = nil
-local _last_grp_stats = nil
 local _dest_realm = nil
 local _core_msg = nil
 local _to_name = nil
@@ -127,7 +111,6 @@ local _oqgeneral_count = 0
 local _oqgeneral_lockdown = true -- restricted until unlocked once the # of members of oqgeneral are determined
 local _flags = nil
 local _enemy = nil
-local _nkbs = 0
 local _hailtiny = 0
 local _next_flag_check = 0
 local _announcePremades = nil
@@ -144,10 +127,6 @@ local _realms = nil
 local _items = nil
 local _vips = nil
 local _vlist = nil
-local gem_colors = nil -- to avoid uncleaned up table (very annoying lua problem)
-local __gems = nil
-local __info = nil
-local __ilink_info = nil
 local oq_ascii = nil
 local oq_mime64 = nil
 local lead_ticker = 0
@@ -164,11 +143,6 @@ OQ.RELAY_OVERLOAD = 28 -- if sent msgs/sec exceeds 28, p8 msgs will stop sending
 OQ.MAX_MSGS_PER_CYCLE = 6 -- cycles 4 times per second sending msgs
 OQ.MAX_SENDFRIENDREQ_MSGSZ = 127
 OQ.MAX_PENDING_NOTE = 70
-OQ.QUEUE_POP_BREAK = 200 -- millisecond breaks
-
-function BNConnected()
-    return true
-end
 
 local _  -- throw away (was getting taint warning; what happened blizz?)
 
@@ -3964,7 +3938,6 @@ function oq.entering_bg()
     _inside_bg = true
     _lucky_charms = nil
     _winner = nil
-    _nkbs = 0
     _last_report = nil
     _last_bg = nil
     _last_crc = nil
@@ -6274,13 +6247,13 @@ function oq.BNSendWhisper(pid, msg, name, realm)
 end
 
 function oq.BNSendWhisper_now(pid, msg, name, realm)
+    print("BNSendWhisper_now was called, but regular whisper should be used")
     if (pid == 0) or (msg == nil) or (oq.toon.disabled) or (oq._isAfk) then
         return
     end
-    if (BNConnected() == false) then
-        oq.pkt_sent:noop()
-        return
-    end
+    
+    -- oq.pkt_sent:noop()
+    -- return
     if (#msg > OQ.MAX_BNET_MSG_SZ) then
         msg = msg:sub(1, OQ.MAX_BNET_MSG_SZ)
     end
@@ -16897,100 +16870,6 @@ function oq.create_banbox(parent)
     return f
 end
 
-function oq.create_bnetdownbox(parent)
-    if (parent._bnetdown) then
-        return parent._bnetdown
-    end
-    local pcx = parent:GetWidth()
-    local pcy = parent:GetHeight()
-    local cx = floor(pcx / 2)
-    local cy = floor(4 * pcy / 5)
-    local f = oq.panel(parent, 'BnetDownBox', floor((pcx - cx) / 2), floor((pcy - cy) / 2), cx, cy)
-    if (oq.__backdrop07 == nil) then
-        oq.__backdrop07 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop07)
-    f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
-    f:SetAlpha(1.0)
-
-    x = 30
-    y = -40
-    local msg = oq.CreateFrame('SimpleHTML', 'OQBnetDownPoster', f)
-    msg:SetPoint('TOPLEFT', x, y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 12)
-    msg:SetWidth(cx - 2 * x)
-    msg:SetHeight(cy - 2 * y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 14)
-    msg:SetTextColor(136 / 256, 221 / 256, 221 / 256, 0.8)
-
-    msg:SetFont('p', 'Fonts\\FRIZQT__.TTF', 14)
-    msg:SetTextColor('p', 225 / 256, 225 / 256, 225 / 256, 0.8)
-
-    msg:SetFont('h1', 'Fonts\\FRIZQT__.TTF', 16)
-    msg:SetTextColor('h1', 221 / 256, 36 / 256, 36 / 256, 0.8)
-
-    msg:SetFont('h2', 'Fonts\\MORPHEUS.ttf', 36)
-    msg:SetShadowColor('h2', 0, 0, 0, 1)
-    msg:SetShadowOffset('h2', 1, -1)
-    msg:SetTextColor('h2', 221 / 256, 36 / 256, 36 / 256, 0.8)
-
-    msg:SetFont('h3', 'Fonts\\FRIZQT__.ttf', 22)
-    msg:SetShadowColor('h3', 0, 0, 0, 1)
-    msg:SetShadowOffset('h3', 0, 0)
-    msg:SetTextColor('h3', 221 / 256, 36 / 256, 36 / 256, 0.8)
-
-    msg:SetText(
-        L[
-            '<html><body>' ..
-                '<h3 align="center">Battle.Net is down</h3>' ..
-                    '<br/>' ..
-                        '<p>oQueue will not function properly until Battle.net is restored.  If it does not come back up within a few minutes, log out to the password and log back in.</p>' ..
-                            '<br/>  ' ..
-                                "<p>If you're unable to resolve your issues, please jump into vent or check out the forums. </p>" ..
-                                    '<br/>  ' ..
-                                        '<p>- tiny  </p>' ..
-                                            '<br/>  ' ..
-                                                '<h1 align="left">vent support</h1>' ..
-                                                    '<p>wow.publicvent.org : 4135  room 0</p>' ..
-                                                        '<br/>' ..
-                                                            '<h1 align="left">forums</h1>' ..
-                                                                '<p><a href="forums">solidice.com/forums</a></p>' ..
-                                                                    '<br/>' .. '</body></html>'
-        ]
-    )
-    msg:Show()
-    msg:SetScript('OnHyperLinkClick', oq.href)
-
-    f.tryagain_but =
-        oq.button(
-        f,
-        cx - 125,
-        cy - 55,
-        100,
-        30,
-        L['check again'],
-        function(self)
-            if (BNConnected()) then
-                oq.hide_shade()
-            else
-                print(OQ.LILREDX_ICON .. ' ' .. L['Battle.Net is still down.'])
-                print(OQ.LILREDX_ICON .. ' ' .. L['Try logging out to the password and logging back in.'])
-            end
-        end
-    )
-    f.html = msg
-
-    parent._bnetdown = f
-    return f
-end
-
 function oq.on_pending_note(raid_token, btag, txt, token)
     if (raid_token == nil) or (oq.raid.raid_token ~= raid_token) or (not oq.iam_raid_leader()) then
         return
@@ -17337,10 +17216,6 @@ end
 
 function oq.banned_shade()
     oq.shaded_dialog(oq.create_banbox(oq.create_ui_shade()), true)
-end
-
-function oq.bnet_down_shade()
-    oq.shaded_dialog(oq.create_bnetdownbox(oq.create_ui_shade()), true)
 end
 
 function oq.pending_note_shade(self)
@@ -18390,32 +18265,18 @@ function oq.create_main_ui()
     )
 end
 
+-- TODO is it still needed?
 function oq.get_battle_tag()
     if (player_realid) then
         return player_realid
     end
+
+    print("get_battle_tag used")
+    
     if (oq.loaded == nil) then
         return nil
     end
-    if (BNConnected() == false) then
-        local now = oq.utc_time()
-        oq._bnetdown_error_cnt = (oq._bnetdown_error_cnt or 0) + 1
-        if (oq._bnetdown_error_cnt < 3) then
-            -- allow for 3 strikes before announcing.
-            -- b.net could just glitch for a few seconds, allow for recovery
-            return nil
-        end
-        if (oq._bnetdown_error_tm == nil) or ((now - oq._bnetdown_error_tm) > 150) then
-            oq._bnetdown_error_tm = now
-            print(OQ.LILREDX_ICON .. L[' Battle.net is currently down.'])
-            print(OQ.LILREDX_ICON .. L[' oQueue will not function properly until Battle.net is restored.'])
-        end
-        return nil
-    end
-    oq._bnetdown_error_cnt = nil
-    oq._bnetdown_error_tm = nil
 
-    local player_realm_short = oq.GetRealmNameShort()
     player_realid = UnitName('player') .. '-' .. player_realm_short
 
     if (player_realid == nil) then
@@ -24445,8 +24306,7 @@ function oq.ping_oq_toon(toon_pid, toonName, realmName, ts, ack)
         oq.get_battle_tag()
     end
     if
-        (player_realid == nil) or (player_realm == nil) or (player_name == nil) or (player_name == nil) or
-            (BNConnected() == false)
+        (player_realid == nil) or (player_realm == nil) or (player_name == nil) or (player_name == nil)
      then
         return
     end
@@ -26291,10 +26151,6 @@ function oq.init_locals()
     _items = tbl.new()
     _vips = tbl.new()
     _vlist = tbl.new()
-    gem_colors = tbl.new()
-    __gems = tbl.new()
-    __info = tbl.new()
-    __ilink_info = tbl.new()
 
     oq.channels = tbl.new()
     oq.premades = tbl.new()
@@ -26593,139 +26449,6 @@ function oq.get_actual_ilevel(itemLink)
     return ilevel, enchant_text
 end
 
-local __enchantable = {
-    [1] = nil, -- head
-    [2] = nil, -- neck
-    [3] = true, -- shoulder
-    [15] = true, -- back
-    [5] = true, -- chest
-    [9] = true, -- wrist
-    [10] = true, -- hands
-    [6] = nil, -- waist
-    [7] = true, -- legs
-    [8] = true, -- feet
-    [11] = nil, -- finger0
-    [12] = nil, -- finger1
-    [13] = nil, -- trinket0
-    [14] = nil, -- trinket1
-    [16] = true, -- main hand
-    [17] = true -- off hand
-}
-
-local __profession_enchantable = {
-    [1] = nil, -- head
-    [2] = nil, -- neck
-    [3] = nil, -- shoulder
-    [15] = nil, -- back
-    [5] = nil, -- chest
-    [9] = nil, -- wrist
-    [10] = 'ENG', -- hands
-    [6] = nil, -- waist
-    [7] = nil, -- legs
-    [8] = 'ENG', -- feet
-    [11] = 'ENC', -- finger0
-    [12] = 'ENC', -- finger1
-    [13] = nil, -- trinket0
-    [14] = nil -- trinket1
-}
-
-function oq.nGems(target, slot)
-    local ilink = GetInventoryItemLink(target, slot)
-    if (ilink == nil) then
-        return 0, nil, nil, nil, nil
-    end
-    tbl.fill_match(__ilink_info, ilink, ':')
-
-    local item_id = __ilink_info[2]
-    local enchant_id = __ilink_info[3] or 0
-    local enchant_text = ''
-    local is_pvp = 0
-    if (item_id == nil) then
-        return 0, nil, nil, nil, nil
-    end
-    gem_colors[1] = nil
-    gem_colors[2] = nil
-    gem_colors[3] = nil
-    gem_colors[4] = nil
-    __gems[1] = nil
-    __gems[2] = nil
-    __gems[3] = nil
-    __gems[4] = nil
-
-    tbl.fill(__info, GetItemInfo(item_id))
-
-    local name = __info[1]
-    local iid = __info[4]
-    local ibare = __info[2]
-    local line = nil
-    local ilevel = 0
-    if (ibare == nil) then
-        return 0, nil, nil, nil, nil, nil, nil
-    end
-    --  local g = scantip ;
-    local g = GameTooltip
-    g:SetOwner(UIParent, 'ANCHOR_NONE')
-    g:SetHyperlink(ibare)
-    g:Show()
-    local i = 0
-    local ngems = 0
-    for i = 1, g:NumLines() do
-        local mytext = _G[g:GetName() .. 'TextLeft' .. i]
-        if (mytext ~= nil) then
-            local line = mytext:GetText()
-            if (line) and (line:find(OQ.SOCKET)) then
-                ngems = ngems + 1
-                gem_colors[ngems] = line:sub(1, line:find(OQ.SOCKET) - 1)
-            elseif (line) and (line:find(OQ.SHA_TOUCHED)) and (line:find('"' .. OQ.SHA_TOUCHED .. '"') == nil) then
-                ngems = ngems + 1
-                gem_colors[ngems] = 'sha'
-            elseif (line) and (line:find(L['PvP Power'])) then
-                is_pvp = is_pvp + 1
-            end
-        end
-    end
-    g:Hide()
-    _, __gems[1] = GetItemGem(ilink or ibare, 1)
-    _, __gems[2] = GetItemGem(ilink or ibare, 2)
-    _, __gems[3] = GetItemGem(ilink or ibare, 3)
-    _, __gems[4] = GetItemGem(ilink or ibare, 4)
-    if (__gems[ngems + 1] ~= nil) then
-        ngems = ngems + 1
-    end
-
-    -- get real ilevels
-    ilevel, enchant_text = oq.get_actual_ilevel(ilink)
-    info = nil
-    return ngems, __gems[1], __gems[2], __gems[3], __gems[4], gem_colors[1], gem_colors[2], gem_colors[3], gem_colors[4], enchant_id, enchant_text, ilevel, is_pvp
-end
-
-OQ.EMPTY_GEMSLOT = '|TInterface\\TARGETINGFRAME\\UI-PhasingIcon.blp:16|t'
-function oq.gem_string(ngems, gem1, gem2, gem3)
-    local gstr = ''
-    if (ngems >= 1) then
-        if (gem1) then
-            gstr = gstr .. '|T' .. select(10, GetItemInfo(gem1)) .. '.blp:14|t '
-        else
-            gstr = gstr .. '' .. OQ.EMPTY_GEMSLOT
-        end
-    end
-    if (ngems >= 2) then
-        if (gem2) then
-            gstr = gstr .. '|T' .. select(10, GetItemInfo(gem2)) .. '.blp:14|t '
-        else
-            gstr = gstr .. '' .. OQ.EMPTY_GEMSLOT
-        end
-    end
-    if (ngems >= 3) then
-        if (gem3) then
-            gstr = gstr .. '|T' .. select(10, GetItemInfo(gem3)) .. '.blp:14|t'
-        else
-            gstr = gstr .. '' .. OQ.EMPTY_GEMSLOT
-        end
-    end
-    return gstr
-end
-
 function oq.the_check()
     if (player_realid == nil) then
         oq.get_battle_tag()
@@ -26783,13 +26506,16 @@ function oq.on_init(now)
     player_name = UnitName('player')
     player_guid = UnitGUID('player')
     player_realm = oq.GetRealmName()
-    player_key = string.gsub(strlower(player_name .. '-' .. player_realm), ' ', '')
+    player_realm_short = oq.GetRealmNameShort()
     player_realm_id = oq.realm_cooked(player_realm)
+    player_realid = strlower(player_name .. '-' .. player_realm_short)
+    if (player_realid == strlower(OQ.SK_BTAG)) then
+        oq._iam_scorekeeper = true
+    end
     player_class = OQ.SHORT_CLASS[select(2, UnitClass('player'))]
     player_level = UnitLevel('player')
     player_ilevel = oq.get_ilevel()
     player_resil = oq.get_resil()
-    player_realid = oq.get_battle_tag()
     player_faction = oq.get_player_faction()
     player_karma = 0
     player_role = oq.get_player_role()
@@ -27239,11 +26965,6 @@ function oq.ui_toggle()
     else
         oq.ui:Show()
         _ui_open = true
-        -- bnet down
-        if (BNConnected() == false) then
-            oq.bnet_down_shade()
-            return
-        end
         -- check bad btag
         if (oq.get_battle_tag() == nil) then
             oq.badtag_shade()
