@@ -23244,6 +23244,7 @@ function oq.on_oq_user(toonName, realmName, faction, btag, ts_, is_ack)
     if (_source ~= 'bnet') then
         return
     end
+    print("on_oq_user")
     local ts = oq.decode_mime64_digits(ts_)
     local name_ndx = strlower(tostring(toonName) .. '-' .. tostring(realmName))
     local friend = OQ_data.bn_friends[name_ndx]
