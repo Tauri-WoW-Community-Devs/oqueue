@@ -311,7 +311,6 @@ function oq.hook_options()
     oq.options['fog'] = oq.fog_command
     oq.options['harddrop'] = oq.harddrop
     oq.options['help'] = oq.usage
-    oq.options['hints'] = oq.cmdline_hint_shade
     oq.options['id'] = oq.id_target
     oq.options['inviteall'] = oq.waitlist_invite_all
     oq.options['log'] = oq.log_cmdline
@@ -16438,18 +16437,6 @@ function oq.hint_page(f, pg)
     )
 end
 
-function oq.cmdline_hint_shade()
-    if (not oq.ui:IsVisible()) then
-        oq.ui_toggle()
-    end
-    oq.hint_shade()
-end
-
-function oq.hint_shade()
-    oq.shaded_dialog(oq.create_hintbox(oq.create_ui_shade()), nil)
-    OQ_data._hint_intro_shown = oq.utc_time()
-end
-
 function oq.reminder_due(t)
     if ((oq.utc_time() - (t or 0)) > 7 * 24 * 60 * 60) then
         return true
@@ -25291,12 +25278,6 @@ function oq.on_init(now)
     oq.timer_oneshot(7, oq.ping_the_world)
     oq.timer_oneshot(10, oq.bump_scorekeeper)
 
-    if (OQ_data._hint_intro_shown == nil) then
-        OQ_data._height = OQ.MIN_FRAME_HEIGHT -- users from 1.8.3 have some weirdness on first load; forcing the issue
-        oq.frame_resize()
-        oq.timer_oneshot(3, oq.ui_toggle) -- open ui w/ hint shade the first time to greet the user
-    end
-
     if (InspectFrame == nil) then
         LoadAddOn('Blizzard_InspectUI') -- make sure its loaded
     end
@@ -25715,10 +25696,6 @@ function oq.ui_toggle()
         oq.oqgeneral_join()
         if (oq.toon.disabled) then
             oq.oq_on()
-        end
-        local now = oq.utc_time()
-        if oq.reminder_due(OQ_data._hint_intro_shown) then
-            oq.hint_shade()
         end
     end
 end
