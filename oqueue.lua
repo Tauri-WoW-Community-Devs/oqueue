@@ -717,7 +717,7 @@ function oq.verify_loot_rules_acceptance()
     if (OQ_data.loot_acceptance ~= 1) or (UnitIsGroupLeader('player') == true) then
         return
     end
-    
+
     local instance, instanceType = IsInInstance()
     if (instance == nil) or ((instanceType ~= 'party') and (instanceType ~= 'raid')) then
         return
@@ -12535,7 +12535,7 @@ function oq.log(echo, ...)
         oq._log:update_text()
     end
     if (echo) then
-        print(...)
+        print("[OQUEUE] "...)
     end
 end
 
