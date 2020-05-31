@@ -1195,12 +1195,6 @@ L['WARNING:  No mesh nodes available for removal.  Please trim your b.net friend
 L['Found oQ banned b.tag on your friends list.  removing: %s'] =
     'В вашем списке друзей найден заблокированный Battle Tag. Удаление: %s'
 
-L['loot.freeforall'] = 'free for all'
-L['loot.roundrobin'] = 'round robin'
-L['loot.master'] = 'master looter'
-L['loot.group'] = 'group loot'
-L['loot.needbeforegreed'] = 'need before greed'
-
 L['Premade type'] = 'Тип премейда'
 L['Sub type'] = 'Подтип'
 L['VoIP'] = 'Связь'

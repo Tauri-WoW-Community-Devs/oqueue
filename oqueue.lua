@@ -717,21 +717,24 @@ function oq.verify_loot_rules_acceptance()
     if (OQ_data.loot_acceptance ~= 1) or (UnitIsGroupLeader('player') == true) then
         return
     end
+    
     local instance, instanceType = IsInInstance()
+    if (instance == nil) or ((instanceType ~= 'party') and (instanceType ~= 'raid')) then
+        return
+    end
+
     local name, type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, mapID =
         GetInstanceInfo()
     if (difficultyIndex < 3) or (difficultyIndex > 6) then -- only valid for: 10m, 25m, 10m+, 25m+
         return
     end
-    if (instance == nil) or ((instanceType ~= 'party') and (instanceType ~= 'raid')) then
-        return
-    end
+
     oq._loot_rule_contract = oq._loot_rule_contract or oq.create_loot_rule_contract()
 
     local f = oq._loot_rule_contract
     local method, partyMaster, raidMaster = GetLootMethod()
 
-    if (OQ_data.loot_method == L[method]) then
+    if (OQ_data.loot_method == method) then
         -- already accepted, leave
         return
     end

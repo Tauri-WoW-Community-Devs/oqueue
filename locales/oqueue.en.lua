@@ -1205,11 +1205,11 @@ L["WARNING:  You've exceeded the cap before the cap(%s)"] = nil
 L['WARNING:  No mesh nodes available for removal.  Please trim your b.net friends list'] = nil
 L['Found oQ banned b.tag on your friends list.  removing: %s'] = nil
 
-L['loot.freeforall'] = 'free for all'
-L['loot.roundrobin'] = 'round robin'
-L['loot.master'] = 'master looter'
-L['loot.group'] = 'group loot'
-L['loot.needbeforegreed'] = 'need before greed'
+L['loot.freeforall'] = 'Free for all'
+L['loot.roundrobin'] = 'Round robin'
+L['loot.master'] = 'Master looter'
+L['loot.group'] = 'Group loot'
+L['loot.needbeforegreed'] = 'Need before greed'
 
 OQ.HINTS = {
     [1] = L["</p><br/><h3 align=\"center\">|cffE9EB15Don't Panic|r</h3><p>"],
