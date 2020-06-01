@@ -12535,7 +12535,7 @@ function oq.log(echo, ...)
         oq._log:update_text()
     end
     if (echo) then
-        print("[OQUEUE] "...)
+        print("[OQUEUE]" .. ...)
     end
 end
 
