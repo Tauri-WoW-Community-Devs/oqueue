@@ -1554,7 +1554,7 @@ function oq.show_data(opt)
         print('   locals       local premade leaders')
         print('   premades     list premades')
         print('   raid         show current raid members')
-        print("   remove       list all the tauri-tags that will be removed with 'remove now'")
+        print("   remove       list all the Tauri-tags that will be removed with 'remove now'")
         print('   report       show battleground reports yet to be filed')
         print('   stats        list various stats')
         print('   thebook      bounty board')
@@ -1700,7 +1700,7 @@ function oq.usage()
     print(L['usage:  /oq [command]'])
     print(L['command such as:'])
     print(L['  adds            show the list of OQ added b.net friends'])
-    print(L['  ban [b-tag]     manually add tauri-tag to your ban list'])
+    print(L['  ban [b-tag]     manually add Tauri-tag to your ban list'])
     print(L['  bnclear         clear OQ enabled battle-net associations'])
     print(L["  brb             signal to the group that you'll be-right-back"])
     print(L['  check           force OQ capability check'])
@@ -2512,7 +2512,7 @@ function oq.dump_statistics()
     end
 
     if (player_realid == nil) then
-        print('  my_btag          : ' .. OQ.LILREDX_ICON .. ' |cFFFF8080no tauri-tag assigned|r')
+        print('  my_btag          : ' .. OQ.LILREDX_ICON .. ' |cFFFF8080no Tauri-tag assigned|r')
     else
         print('  my_btag          : ' .. tostring(player_realid))
     end
@@ -14827,7 +14827,7 @@ function oq.create_tab3()
     y = y + cy + 6
 
     -- disable real-id to force user to setup tab
-    -- in MoP, tab3_rid can only be the tauri-tag
+    -- in MoP, tab3_rid can only be the Tauri-tag
     oq.tab3_lead_name:Disable()
     oq.tab3_rid:Disable()
 
@@ -17155,8 +17155,8 @@ function oq.get_battle_tag()
         local now = oq.utc_time()
         if ((oq._btag_error_tm == nil) or ((now - oq._btag_error_tm) > 120)) and (oq._init_completed) then
             oq._btag_error_tm = now
-            print(OQ.LILREDX_ICON .. L[' Please set your tauri-tag before using oQueue.'])
-            print(OQ.LILREDX_ICON .. L[' Your tauri-tag can only be set via your WoW account page.'])
+            print(OQ.LILREDX_ICON .. L[' Please set your Tauri-tag before using oQueue.'])
+            print(OQ.LILREDX_ICON .. L[' Your Tauri-tag can only be set via your WoW account page.'])
         end
         return nil
     end
@@ -17616,9 +17616,9 @@ function oq.valid_rid(rid)
         return nil
     end
 
-    -- good tauri-tag has a '-' in the middle
+    -- good Tauri-tag has a '-' in the middle
     if (rid:find('-') ~= nil) then
-        -- tauri-tag
+        -- Tauri-tag
         return true
     end
     
@@ -19216,7 +19216,7 @@ end
 
 function oq.ban_add(rid, reason_)
     if (rid == nil) or (rid == '') or (rid == player_realid) then
-        print(OQ.LILREDX_ICON .. ' invalid tauri-tag (' .. tostring(rid) .. ')')
+        print(OQ.LILREDX_ICON .. ' invalid Tauri-tag (' .. tostring(rid) .. ')')
         return
     end
     if (OQ_data.banned == nil) then
@@ -19232,7 +19232,7 @@ end
 
 function oq.ban_remove(rid)
     if (rid == nil) or (rid == '') then
-        print(OQ.LILREDX_ICON .. ' invalid tauri-tag (' .. tostring(rid) .. ')')
+        print(OQ.LILREDX_ICON .. ' invalid Tauri-tag (' .. tostring(rid) .. ')')
         return
     end
     if (OQ_data.banned == nil) then
@@ -24729,7 +24729,7 @@ function oq.onHyperlink_btag(link)
         -- battletag hyperlinks are only good for 2 hours
         return
     end
-    -- popup menu on the tauri-tag
+    -- popup menu on the Tauri-tag
     oq.menu_create():Raise()
 
     local i, v
@@ -24786,7 +24786,7 @@ function oq.onHyperlink_oqueue(link)
     if (token == nil) then
         return
     end
-    -- popup menu on the tauri-tag
+    -- popup menu on the Tauri-tag
     oq.menu_create():Raise()
 
     local i, v

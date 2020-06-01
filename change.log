@@ -386,7 +386,7 @@ v1.6.2  BUGFIX: you can now log between characters on different factions and the
         add: UIErrorsFrame toggle option (auto hide error text); hides the yellow text msg when friend requests come in/go out
         note: wildcard filter:  'flex.*4' shows any premade with 'flex' and '4' with anything in between.  the '.' is critical (thx MattiasA !!)
         add: negate filter; type '!yolo' into the filter and the list will only show groups without 'yolo'; '!' must be first letter
-        add: missing tauri-tag shade to alert the user if their tauri-tag is unavailable
+        add: missing Tauri-tag shade to alert the user if their Tauri-tag is unavailable
 
 v1.6.1  *skipping to insure all beta testers get the update notice
 
@@ -902,7 +902,7 @@ v0.9z.89 BUGFIX: updates to sure-up msg'ing
          UPD: stretched ban-list columns and shrunk the font
          add: ability to find b-tags in the mesh
          add: ability to submit your b-tag to the mesh (a one-time action)
-         add: ability to manually add a tauri-tag to your ban list (ie: /oq ban asshat#1234)
+         add: ability to manually add a Tauri-tag to your ban list (ie: /oq ban asshat#1234)
          add: removed repeated 'you're afk' msgs
          add: MMR now added to the waitlist and in-group tooltip
          add: rated-battlegrounds should no longer impact stats
@@ -997,7 +997,7 @@ v0.9z.64 BUGFIX: was not reporting CAPPED if capped.  fixed.
          BUGFIX: after reload, group info can be nil causing uncaught bug
          UPD: updated invite 
          UPD: tweaked oq.BNCustomMessage
-         UPD: 'remove now' will now announce each friend removed and display the tauri-tag, if available
+         UPD: 'remove now' will now announce each friend removed and display the Tauri-tag, if available
          add: website for weekly stats.  oqstats.com  (thx Synatra for the name idea!)
          add: report rage-quits to scorekeeper
          add: will announce when you've struck a killing blow
@@ -1017,7 +1017,7 @@ v0.9z.56 BUGFIX: * CAPPED * wasn't showing if already capped and no honor gained
          add: win-loss and hks now on player tool tip
          add: win-loss tracking for individual players
          add: oq version now displayed on each player's tooltip
-         add: tauri-tags are live; forcing b-tag requirement
+         add: Tauri-tags are live; forcing b-tag requirement
 
 v0.9z.55 UPD: scorekeeper tweaks
 
