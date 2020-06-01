@@ -739,12 +739,12 @@ function oq.verify_loot_rules_acceptance()
         return
     end
 
-    oq.log("This debug message is related to issue #6")
-    oq.log("If you see the loot type change message too often - please show report the results below to our Github")
-    oq.log("#6 - start")
-    oq.log("Previous loot method: ", OQ_data.loot_method)
-    oq.log("Current loot method: ", method)
-    oq.log("#6 - end")
+    oq.log(true, "This debug message is related to issue #6")
+    oq.log(true, "If you see the loot type change message too often - please show report the results below to our Github")
+    oq.log(true, "#6 - start")
+    oq.log(true, "Previous loot method: ", OQ_data.loot_method)
+    oq.log(true, "Current loot method: ", method)
+    oq.log(true, "#6 - end")
     
     f._method = method
     f.loot_text:SetText(L['loot.' .. method])
@@ -25958,7 +25958,7 @@ function oq.create_marquee()
     t:Hide()
     f.texture = t
 
-    f.label = oq.label(f, 0, 0, f:GetWidth() - (2 * 5 + 16), f:GetHeight() - 2 * 2, L['weekly score'], 'TOP', 'LEFT')
+    f.label = oq.label(f, 0, 0, f:GetWidth() - (2 * 5 + 16), f:GetHeight() - 2 * 2, L['Weekly score'], 'TOP', 'LEFT')
     f.label:SetPoint('TOPLEFT', f, 'TOPLEFT', 8, 12)
     f.label:SetTextColor(1, 1, 1)
     f.label:Hide()
