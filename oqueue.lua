@@ -725,7 +725,15 @@ function oq.verify_loot_rules_acceptance()
 
     local name, type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, mapID =
         GetInstanceInfo()
-    if (difficultyIndex < 3) or (difficultyIndex > 6) then -- only valid for: 10m, 25m, 10m+, 25m+
+    
+    -- 1 Normal - party 	
+    -- 2 Heroic - party
+    -- 3 10 Player
+    -- 4 25 Player
+    -- 5 10 Player (Heroic)
+    -- 6 25 Player (Heroic)
+    -- 9 40 Player	raid	
+    if (difficultyIndex > 6 and difficultyIndex ~= 9) then
         return
     end
 
@@ -6783,7 +6791,7 @@ function oq.raid_disband(dont_clean)
         local raid_tok = oq.raid.raid_token
         local m = 'disband,' .. oq.raid.raid_token .. ',' .. token
         oq.log(nil, '|cFF808080group disbanded:|r ' .. tostring(oq.raid.name) .. '')
-        print(dont_clean, token, raid_tok)
+
         oq.announce(m)
         oq.recently_disbanded(raid_tok)
         oq.mini_count_update(0)
