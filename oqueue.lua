@@ -739,6 +739,13 @@ function oq.verify_loot_rules_acceptance()
         return
     end
 
+    oq.log("This debug message is related to issue #6")
+    oq.log("If you see the loot type change message too often - please show report the results below to our Github")
+    oq.log("#6 - start")
+    oq.log("Previous loot method: ", OQ_data.loot_method)
+    oq.log("Current loot method: ", method)
+    oq.log("#6 - end")
+    
     f._method = method
     f.loot_text:SetText(L['loot.' .. method])
     oq.moveto(f, floor((GetScreenWidth() - f:GetWidth()) / 2), 200)
