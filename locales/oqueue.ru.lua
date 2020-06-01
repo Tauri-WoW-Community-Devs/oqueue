@@ -30,7 +30,7 @@ OQ.UPDATE_BUTTON = 'Обновить премейд'
 OQ.WAITLIST = 'Очередь'
 OQ.HONOR_BUTTON = 'oQ премейд'
 OQ.PLEASE_SELECT_BG = 'Пожалуйста, выберите поле боя'
-OQ.BAD_REALID = 'Неверный real-id или battle-tag.\n'
+OQ.BAD_REALID = 'Неверный real-id или tauri-tag.\n'
 OQ.QUEUE1_SELECTBG = '<выберите поле боя>'
 OQ.NOLEADS_IN_RAID = 'В рейде нет лидеров групп'
 OQ.NOGROUPS_IN_RAID = 'Невозможно присоединить группу к рейду'
@@ -106,7 +106,7 @@ OQ.QUALIFIED = 'Подходит'
 OQ.PREMADE_NAME = 'Название премейда'
 OQ.LEADERS_NAME = 'Имя лидера'
 OQ.REALID = 'Real-Id или B-tag'
-OQ.REALID_MOP = 'Battle-tag'
+OQ.REALID_MOP = 'tauri-tag'
 OQ.MIN_ILEVEL = 'Мин. ур. предметов'
 OQ.MIN_RESIL = 'Мин. устойчивость'
 OQ.MIN_MMR = 'Мин. рейтинг поля боя'
@@ -1180,9 +1180,9 @@ OQ.lieutenants = {
 }
 
 --
-L[' Please set your battle-tag before using oQueue.'] =
+L[' Please set your tauri-tag before using oQueue.'] =
     'Пожалуйста, создайте Battle Tag прежде чем использовать oQueue.'
-L[' Your battle-tag can only be set via your WoW account page.'] =
+L[' Your tauri-tag can only be set via your WoW account page.'] =
     'Ваш Battle Tag может быть создан только на странице аккаунта.'
 L["NOTICE:  You've exceeded the cap before the cap(%s).  removed: %s"] =
     'НАПОМИНАНИЕ: Вы превысили максимально возможное кол-во(%s). Удаление: %s'
