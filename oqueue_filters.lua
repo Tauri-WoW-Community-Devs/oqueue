@@ -17,8 +17,8 @@ function oq.chat_filter(self, event, msg, author, ...)
 
     -- hide error msg if scorekeeper is temporarily offline or being ignored
     if
-        (msg:find("No player named '" .. OQ.SK_NAME .. "' is currently playing") ~= nil) or
-            ((msg:find(OQ.SK_NAME) ~= nil) and (msg:find('is no longer being ignored') ~= nil))
+        (msg:find("No player named '" .. OQ.SCOREKEEPER_NAME .. "' is currently playing") ~= nil) or
+            ((msg:find(OQ.SCOREKEEPER_NAME) ~= nil) and (msg:find('is no longer being ignored') ~= nil))
      then
         -- ignore message
         return true

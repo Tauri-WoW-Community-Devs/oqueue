@@ -5,9 +5,9 @@ if (string.sub(GetCVar('realmList'), 1, 2) ~= 'hu') then
 end
 
 OQ.REGION = 'hu'
-OQ.SK_BTAG = 'Maczuga'
-OQ.SK_NAME = 'Maczuga'
-OQ.SK_REALM = '[EN] Evermoon'
+OQ.SCOREKEEPER_BATTLE_TAG = 'maczuga-evermoon'
+OQ.SCOREKEEPER_NAME = 'Maczuga'
+OQ.SCOREKEEPER_REALM = '[EN] Evermoon'
 OQ.DEFAULT_PREMADE_TEXT = ''
 
 OQ.BGROUP_ICON = {['Tauri Cross Realm'] = 'Interface\\Icons\\achievement_character_tauren_male'}

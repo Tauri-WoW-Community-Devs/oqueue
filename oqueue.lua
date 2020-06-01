@@ -7,8 +7,8 @@ local tbl = OQ.table
 -------------------------------------------------------------------------------
 local OQ_MAJOR = 1
 local OQ_MINOR = 9
-local OQ_REVISION = 5
-local OQ_BUILD = 195
+local OQ_REVISION = 6
+local OQ_BUILD = 196
 local OQ_SPECIAL_TAG = ''
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
 local OQ_VERSION = tostring(OQ_MAJOR) .. '' .. tostring(OQ_MINOR) .. '' .. tostring(OQ_REVISION)
@@ -32,7 +32,7 @@ local OQ_PREMADE_STAT_LIFETIME = 5 * 60 -- 5 minutes
 local OQ_GROUP_RECOVERY_TM = 5 * 60 -- 5 minutes
 local OQ_SEC_BETWEEN_ADS = 20
 local OQ_SEC_BETWEEN_PROMO = 20
-local OQ_MIN_PROMO_TIME = 20
+-- local OQ_MIN_PROMO_TIME = 20
 local OQ_BOOKKEEPING_INTERVAL = 10
 local HAILTOTHEKINGBABY = 3600 -- no more then once an hour
 local OQ_MAX_ATOKEN_LIFESPAN = 120 -- 120 seconds before token removed from ATOKEN list
@@ -47,7 +47,6 @@ local OQ_FINDMESH_CD = 15 -- seconds
 local OQ_PENDINGNOTE_UPDATE_CD = 5
 local OQ_CREATEPREMADE_CD = 5 -- seconds
 local OQ_BTAG_SUBMIT_INTERVAL = 4 * 24 * 60 * 60
-local OQ_DIP_GAP = 30 -- seconds
 local MAX_OQGENERAL_TALKERS = 25
 local last_stat_tm = 0
 local my_group = 0
@@ -81,7 +80,6 @@ local _reason = nil
 local _ok2relay = 1
 local _ok2decline = true
 local _ok2accept = true
-local _local_msg = nil
 local _inside_bg = nil
 local _bg_shortname = nil
 local _bg_zone = nil
@@ -101,7 +99,6 @@ local _last_report = nil
 local _last_tops = nil
 local _last_bg = nil
 local _last_crc = nil
-local _next_dip = 0
 local _map_open = nil
 local _ui_open = nil
 local _oqgeneral_id = nil
@@ -128,7 +125,6 @@ local _vlist = nil
 local oq_ascii = nil
 local oq_mime64 = nil
 local lead_ticker = 0
-local OQ_MAX_BNFRIENDS = 85
 OQ.BUNDLE_EARLIEST_SEND = 3.0 -- seconds
 OQ.BUNDLE_EXPIRATION = 4.0 -- seconds
 OQ.MAX_BNET_MSG_SZ = 4078 -- max size as per blizz limitation
@@ -300,7 +296,6 @@ function oq.hook_options()
     oq.options['datestamp'] = oq.toggle_datestamp
     oq.options['debug'] = oq.debug_toggle
     oq.options['delist'] = oq.clear_pending
-    oq.options['dip'] = oq.dip
     oq.options['disband'] = oq.raid_disband
     oq.options['dg'] = oq.quit_raid_now -- drop group
     oq.options['dp'] = oq.quit_raid_now -- drop party
@@ -408,17 +403,6 @@ function oq.toggle_mini()
         oq.toon.mini_hide = nil
         print(OQ.MINIMAP_SHOWN)
     end
-end
-
-function oq.toggle_bnet()
-    if (oq._bnet_disabled) then
-        oq._bnet_disabled = nil
-        print(L['oqueue bnet connection: enabled'])
-    else
-        oq._bnet_disabled = 1
-        print(L['oqueue bnet connection: disabled'])
-    end
-    oq.n_connections()
 end
 
 local function comma_value(n) -- credit http://richard.warburton.it
@@ -740,7 +724,7 @@ function oq.verify_loot_rules_acceptance()
     oq._loot_rule_contract = oq._loot_rule_contract or oq.create_loot_rule_contract()
 
     local f = oq._loot_rule_contract
-    local method, partyMaster, raidMaster = GetLootMethod()
+    local method = GetLootMethod()
 
     if (OQ_data.loot_method == method) then
         -- already accepted, leave
@@ -1563,13 +1547,11 @@ function oq.show_data(opt)
     if (opt == nil) or (opt == '?') then
         print('oQueue v' .. OQUEUE_VERSION .. '  build ' .. OQ_BUILD .. ' (' .. tostring(OQ.REGION) .. ')')
         print(' usage:  /oq show <option>')
-        print('   btags        list btag friends')
         print('   count        sum up LFM info')
         print('   frames       frame report (ie: show frames listingregion)')
         print('   income       currency report')
         print('   inuse        frames in use (ie: show inuse listingregion)')
         print('   locals       local premade leaders')
-        print('   meshtags     show list of btags from the mesh')
         print('   premades     list premades')
         print('   raid         show current raid members')
         print("   remove       list all the battle-tags that will be removed with 'remove now'")
@@ -1577,8 +1559,6 @@ function oq.show_data(opt)
         print('   stats        list various stats')
         print('   thebook      bounty board')
         print("   wallet       what's in YOUR wallet?")
-    elseif (opt:find('btags') == 1) then
-        oq.show_btags(opt)
     elseif (opt == 'count') then
         oq.show_count()
     elseif (opt == 'date') then
@@ -1666,8 +1646,6 @@ function oq.toggle_option(opt)
         print('   mini         toggle the minimap icon')
     elseif (opt == 'mini') then
         oq.toggle_mini()
-    elseif (opt == 'bnet') then
-        oq.toggle_bnet()
     elseif (opt == 'ads') then
         if (OQ_data.show_premade_ads == nil) or (OQ_data.show_premade_ads == 0) then
             OQ_data.show_premade_ads = 1
@@ -1705,41 +1683,6 @@ function oq.harddrop()
     oq.raid_init()
 
     print(L['OQ: group info reset'])
-end
-
-function oq.dip(opt)
-    local n_bnfriends = select(1, GetNumFriends())
-    if (n_bnfriends >= OQ_MAX_BNFRIENDS) then
-        print(OQ.LILSKULL_ICON .. ' ' .. string.format(OQ.NODIPFORYOU, OQ_MAX_BNFRIENDS))
-        return
-    end
-    local now = oq.utc_time()
-    if (_next_dip > now) then
-        return
-    end
-    _next_dip = now + OQ_DIP_GAP
-
-    oq._dip_cnt = min(max(0, tonumber(opt or '20') or 0), 50)
-    if (oq._dip_cnt < 1) then
-        print(string.format(L['invalid dip amount: %s'], tostring(oq._dip_cnt)))
-        return
-    end
-    oq._dip_tm = oq.utc_time() + 10 -- only valid for the next 10 seconds
-    print(string.format(L['dip max: %d'], oq._dip_cnt))
-
-    local msg_tok = 'W' .. oq.token_gen()
-    oq.token_push(msg_tok)
-
-    local token = 'M' .. oq.token_gen()
-    oq.token_push(token)
-
-    local msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. 'req_mesh,' .. token
-
-    -- allow for dip request
-    local temp = _oqgeneral_lockdown
-    _oqgeneral_lockdown = nil
-    oq.channel_general(msg)
-    _oqgeneral_lockdown = temp
 end
 
 function oq.ban_user(tag)
@@ -2694,7 +2637,7 @@ end
 
 function oq.channel_isregistered(chan_name)
     local n = strlower(chan_name)
-    return (oq.channels[n])
+    return oq.channels[n]
 end
 
 function oq.buildChannelList(...)
@@ -2709,10 +2652,7 @@ end
 
 function oq.channel_join(chan_name, pword)
     local n = strlower(chan_name)
-    if
-        ((n == OQ_REALM_CHANNEL) and (oq._inside_instance) and (not oq.iam_raid_leader())) or
-            (oq._oqgeneral_initialized == nil)
-     then
+    if ((n == OQ_REALM_CHANNEL and oq._inside_instance and not oq.iam_raid_leader()) or oq._oqgeneral_initialized == nil) then
         return nil
     end
     if (oq.channels[n] == nil) then
@@ -2825,33 +2765,29 @@ function oq.log_cmdline(opt)
     end
 end
 
-function oq.channel_say(chan_name, msg)
+function oq.SendChannelMessage(chan_name, msg)
     local n = strlower(chan_name)
     if (not oq.well_formed_msg(msg)) then
         local msg_tok = 'A' .. oq.token_gen()
         oq.token_push(msg_tok)
         msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
-    if (n ~= nil) and (oq.channels[n] ~= nil) and (oq._isAfk == nil) and (oq.channels[n].id) and (oq._banned == nil) then
+    if (n ~= nil and oq.channels[n] ~= nil and oq._isAfk == nil and oq.channels[n].id and oq._banned == nil) then
         oq.SendChatMessage(msg, 'CHANNEL', nil, oq.channels[n].id)
     end
 end
 
-function oq.join_oq_general()
-    if (oq._banned) or (oq._inside_instance) or (oq._oqgeneral_initialized == nil) then
-        return
-    end
-    oq.channel_join(OQ_REALM_CHANNEL)
-end
-
 function oq.oqgeneral_join()
-    if (oq._banned) or (oq._oqgeneral_initialized == nil) then
+    oq.initial_join_oqgeneral();
+    if (oq._banned or oq._oqgeneral_initialized == nil) then
         return
     end
-    if (oq._inside_instance) and (not oq.iam_raid_leader()) then
+    if (oq._inside_instance and not oq.iam_raid_leader()) then
         return
     end
-    if (oq.channel_join(OQ_REALM_CHANNEL) == 1) then
+
+    local joined = oq.channel_join(OQ_REALM_CHANNEL)
+    if (joined == 1) then
         oq.timer('hook_roster_update', 5, oq.hook_roster_update, true, OQ_REALM_CHANNEL) -- will repeat until channel joined
         oq.timer('chk_OQGeneralLockdown', 30, oq.check_oqgeneral_lockdown, true) -- will check capacity every 30 seconds
     else
@@ -2860,6 +2796,20 @@ function oq.oqgeneral_join()
 end
 
 function oq.initial_join_oqgeneral()
+    if (oq._oqgeneral_initialized) then
+        return
+    end
+    local now = GetTime()
+    if (oq._next_init_tm) and (now < oq._next_init_tm) then
+        return
+    end
+    oq._next_init_tm = now + 5
+
+    tbl.fill(_arg, GetChannelList())
+    if (#_arg < 2) then
+        return
+    end
+
     oq._oqgeneral_initialized = 1
     oq.oqgeneral_join()
     return oq._oqgeneral_initialized
@@ -2871,11 +2821,11 @@ function oq.oqgeneral_leave()
     oq.timer('chk_OQGeneralLockdown', 0, nil)
 end
 
-function oq.channel_general(msg)
+function oq.SendOQChannelMessage(msg)
     if (_oqgeneral_lockdown) then
         return -- too many ppl in oqgeneral, voluntary mute engaged
     end
-    oq.channel_say(OQ_REALM_CHANNEL, msg)
+    oq.SendChannelMessage(OQ_REALM_CHANNEL, msg)
 end
 
 function oq.iam_in_a_party()
@@ -2890,21 +2840,6 @@ function oq.is_oqueue_msg(msg)
         return true
     end
     return nil
-end
-
-function oq.BNSendFriendInvite(id, msg, note, name_, realm_)
-    if (id == nil) or (id == player_realid) or (id == '') or (oq._isAfk) then
-        return
-    end
-    local pid, is_online = oq.is_bnfriend(id, name_, realm_)
-    if (pid ~= nil) then
-        return -- already friended
-    end
-    if (msg ~= nil) and (#msg > OQ.MAX_SENDFRIENDREQ_MSGSZ) then
-        msg = msg:sub(1, OQ.MAX_SENDFRIENDREQ_MSGSZ)
-    end
-    BNSendFriendInvite(id, msg)
-    oq.pkt_sent:inc()
 end
 
 function oq.SendChatMessage(msg, type, lang, channel)
@@ -2977,7 +2912,7 @@ function oq.SendAddonMessage(channel, msg, type, to_name)
     end
 end
 
-function oq.channel_party(msg)
+function oq.SendPartyMessage(msg)
     oq.SendAddonMessage('OQ', msg, 'PARTY')
 end
 
@@ -3996,9 +3931,7 @@ function oq.check_bg_status()
                 oq.utimer_frame():Show()
             end
         else
-            if
-                ((oq.raid.raid_token ~= nil) and (oq.raid.type == OQ.TYPE_RAID)) or
-                    ((oq.raid.raid_token == nil) and (instanceType == 'raid'))
+            if (oq.raid.raid_token ~= nil and oq.raid.type == OQ.TYPE_RAID) or (oq.raid.raid_token == nil and instanceType == 'raid')
              then
                 if (oq._loot_rule_contract) then
                     oq._loot_rule_contract._method = 'unspecified'
@@ -4330,7 +4263,7 @@ function oq.send_report(report, submit_token, tm)
                                                                     submit_token ..
                                                                         ',' ..
                                                                             oq.encode_mime64_2digit(OQ_data.nrage or 0)
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 
     oq.timer_oneshot(4, oq.req_karma, 'player')
 end
@@ -4419,7 +4352,7 @@ function oq.post_karma_request(pbtag, btag, salt)
                                                         ',' ..
                                                             tostring(btag) ..
                                                                 ',' .. tostring(0) .. ',' .. submit_token .. ',' .. salt
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
 function oq.req_karma(btag)
@@ -4470,7 +4403,7 @@ function oq.send_karma(btag, pts)
                                                         ',' ..
                                                             tostring(btag) ..
                                                                 ',' .. tostring(pts) .. ',' .. submit_token
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
 function oq.max_karma(btag, now)
@@ -4624,7 +4557,7 @@ function oq.bump_scorekeeper()
                                                     tostring(player_faction) ..
                                                         ',' .. tostring(player_realid) .. ',' .. oq.salt()
 
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
     oq.timer_oneshot(10, oq.req_karma, 'player')
 end
 
@@ -4680,7 +4613,7 @@ function oq.send_top_dps(tops, submit_token, bg, crc)
                             oq.encode_mime64_1digit(oq.get_player_level_id()) ..
                                 '' .. oq.encode_mime64_6digit(tonumber(crc)) .. ',' .. submit_token
 
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
 function oq.send_top_heals(tops, submit_token, bg, crc)
@@ -4735,38 +4668,46 @@ function oq.send_top_heals(tops, submit_token, bg, crc)
                             oq.encode_mime64_1digit(oq.get_player_level_id()) ..
                                 '' .. oq.encode_mime64_6digit(tonumber(crc)) .. ',' .. submit_token
 
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
-function oq.clear_sk_ignore()
-    local sk = strlower(OQ.SK_NAME)
-    if (player_realm ~= OQ.SK_REALM) then
-        sk = sk .. '-' .. strlower(OQ.SK_REALM)
+function oq.DelIgnoreScoreKeeper()
+    local scorekeeper_name = strlower(OQ.SCOREKEEPER_NAME)
+    if (player_realm ~= OQ.SCOREKEEPER_REALM) then
+        scorekeeper_name = OQ.SCOREKEEPER_BATTLE_TAG
     end
     local n = GetNumIgnores()
     local i
     for i = 1, n do
         local ignored = strlower(GetIgnoreName(i))
-        if (sk == ignored) then
-            DelIgnore(sk)
+        if (scorekeeper_name == ignored) then
+            DelIgnore(scorekeeper_name)
             return
         end
     end
 end
 
-function oq.send_to_scorekeeper(msg)
-    oq.clear_sk_ignore()
-    local pid, online = oq.is_bnfriend(OQ.SK_BTAG)
-    if (pid ~= nil) then
-        if (online) then
-            oq.BNSendWhisper_now(pid, msg, OQ.SK_NAME, OQ.SK_REALM)
-            return
-        else
-            -- no way to leave a note... should resend when no reply recv'd
-            return
-        end
-    end
-    oq.BNSendFriendInvite(OQ.SK_BTAG, msg)
+function oq.SendScoreKeeperMessage(msg)
+    oq.DelIgnoreScoreKeeper()
+
+    oq.XRealmWhisper(OQ.SCOREKEEPER_NAME, OQ.SCOREKEEPER_REALM, msg)
+
+    -- TODO discuss who is a scorekeeper
+
+    -- for i = 1, GetNumFriends() do
+    --     local name, _, _, _, isOnline = GetFriendInfo(i)
+    --     if (name == OQ.SCOREKEEPER_BATTLE_TAG) then
+    --         if (isOnline) then
+    --             oq.XRealmWhisper(OQ.SCOREKEEPER_NAME, OQ.SCOREKEEPER_REALM, msg)
+    --         else
+    --             return
+    --         end
+    --     end 
+    -- end
+
+    -- if (player_realid ~= OQ.SCOREKEEPER_BATTLE_TAG) then
+    --     AddFriend(OQ.SCOREKEEPER_BATTLE_TAG)
+    -- end
 end
 
 function oq.submit_report(str, tops, bg, crc, bg_end_tm)
@@ -5294,7 +5235,7 @@ function oq.send_my_premade_info()
     if (_oqgeneral_lockdown) then
         local is_restricted = _oqgeneral_lockdown
         _oqgeneral_lockdown = nil -- this allows the group leader to advertise on their own realm
-        oq.channel_general(msg)
+        oq.SendOQChannelMessage(msg)
         _oqgeneral_lockdown = is_restricted
     end
 end
@@ -5656,8 +5597,6 @@ function oq.raid_create()
         oq.raid._preferences
     )
 
-    -- print(_reason);
-
     -- update tab_1
     oq.update_tab1_common()
     oq.update_tab1_stats()
@@ -5703,14 +5642,7 @@ function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
         msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
 
-    if (to_realm == player_realm) then
-        oq.SendAddonMessage_now('OQ', msg, 'WHISPER', to_name)
-        return
-    end
-
-    -- Cross-realm part, send whisper
-    local shortRealmName = oq.FindRealmNameShort(to_realm)
-    oq.SendChatMessage(msg, 'WHISPER', nil, to_name .. '-' .. shortRealmName)
+    oq.XRealmWhisper(to_name, to_realm, msg)
 end
 
 function oq.bnbackflow(msg, to_pid)
@@ -6009,51 +5941,6 @@ function oq.crack_bn_msg(msg)
     return m, name, realm, from
 end
 
-function oq.whisper_msg(to_name, to_realm, msg, immediate)
-    if (msg == nil) then
-        return
-    end
-    local rc = 0
-    if ((to_name == nil) or (to_name == '-')) then
-        return
-    end
-    if ((to_name == player_name) and (to_realm == player_realm)) then
-        return
-    end
-    if (not oq.well_formed_msg(msg)) then
-        local msg_tok = 'W' .. oq.token_gen()
-        oq.token_push(msg_tok)
-        msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
-    end
-    if (to_realm == player_realm) then
-        if ((oq._sender == nil) or (oq._sender ~= to_name)) then
-            if (immediate) then
-                if (oq._isAfk == nil) then
-                    SendAddonMessage('OQ', msg, 'WHISPER', to_name)
-                    oq.pkt_sent:inc()
-                end
-            else
-                oq.SendAddonMessage('OQ', msg, 'WHISPER', to_name)
-            end
-        end
-        return
-    elseif (to_realm ~= nil) then
-        -- check to see if we have BN access
-        local presenceID = oq.bnpresence(to_name .. '-' .. to_realm)
-        if (presenceID == 0) then
-            local msg_sent = nil
-            -- send to real-id list for ppl not in the raid (hoping they will forward to their local OQGeneral channel)
-            return
-        else
-            if (immediate) then
-                oq.BNSendWhisper_now(presenceID, msg, to_name, to_realm)
-            else
-                oq.BNSendWhisper(presenceID, msg, to_name, to_realm)
-            end
-        end
-    end
-end
-
 function oq.whisper_party_leader(msg)
     if ((my_group <= 0) or (oq.raid.group[my_group].member[1].name == nil) or (msg == nil)) then
         return
@@ -6072,24 +5959,22 @@ function oq.whisper_party_leader(msg)
         oq.token_push(msg_tok)
         msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
-    oq.SendAddonMessage('OQ', msg, 'WHISPER', name)
+    oq.XRealmWhisper('OQ', msg, 'WHISPER', name)
 end
 
 function oq.whisper_raid_leader(msg)
-    if (msg == nil) then
+    if (msg == nil or oq.raid.leader == nil or oq.raid.leader_realm == nil) then
         return
     end
 
-    if ((oq.raid.leader == nil) or (oq.raid.leader_realm == nil)) then
-        return
-    end
     -- make sure the msg is well formed
     if (not oq.well_formed_msg(msg)) then
         local msg_tok = 'W' .. oq.token_gen()
         oq.token_push(msg_tok)
         msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
-    oq.whisper_msg(oq.raid.leader, oq.raid.leader_realm, msg, true)
+
+    oq.XRealmWhisper(oq.raid.leader, oq.raid.leader_realm, msg)
 end
 
 function oq.send_invite_accept(raid_token, group_id, slot, name, class, realm, realid, req_token)
@@ -6276,17 +6161,8 @@ function oq.mbsync_toons(to_name)
     local ndx, friend
     for ndx, friend in pairs(OQ_data.bn_friends) do
         if ((friend.toon_id ~= 0) and friend.isOnline and friend.oq_enabled) then
-            local m =
-                'OQ,' ..
-                OQ_VER ..
-                    ',' ..
-                        'W1,' ..
-                            OQ_TTL ..
-                                ',' ..
-                                    'mbox_bn_enable,' ..
-                                        friend.toonName ..
-                                            ',' .. tostring(oq.realm_cooked(friend.realm)) .. ',' .. tostring(1)
-            oq.whisper_msg(to_name, player_realm, m)
+            local m = 'OQ,' .. OQ_VER .. ',' .. 'W1,' .. OQ_TTL .. ',' .. 'mbox_bn_enable,' .. friend.toonName .. ',' .. tostring(oq.realm_cooked(friend.realm)) .. ',' .. tostring(1)
+            oq.XRealmWhisper(to_name, player_realm, m)
         end
     end
 end
@@ -6294,16 +6170,8 @@ end
 function oq.mbsync_single(toonName, toonRealm)
     local i, v
     for i, v in pairs(oq.toon.my_toons) do
-        local m =
-            'OQ,' ..
-            OQ_VER ..
-                ',' ..
-                    'W1,' ..
-                        OQ_TTL ..
-                            ',' ..
-                                'mbox_bn_enable,' ..
-                                    toonName .. ',' .. tostring(oq.realm_cooked(toonRealm)) .. ',' .. tostring(1)
-        oq.whisper_msg(v.name, player_realm, m)
+        local m = 'OQ,' .. OQ_VER .. ',' .. 'W1,' .. OQ_TTL .. ',' .. 'mbox_bn_enable,' .. toonName .. ',' .. tostring(oq.realm_cooked(toonRealm)) .. ',' .. tostring(1)
+        oq.XRealmWhisper(v.name, player_realm, m)
     end
 end
 
@@ -6447,46 +6315,6 @@ function oq.clear_exclusions()
     oq.reshuffle_premades()
 end
 
-function oq.show_btags(opt)
-    local arg = nil
-    if (opt) and (opt:find(' ')) then
-        arg = strlower(opt:sub(opt:find(' ') + 1, -1))
-    end
-    local ntotal, nonline = GetNumFriends()
-    local btags = tbl.new()
-    local btag_ids = tbl.new()
-    local i, v
-    for i = 1, ntotal do
-        tbl.fill(_f, GetFriendInfo(i))
-
-        if (_f[3] ~= nil) then
-            btags[_f[3]] = tbl.new()
-            btags[_f[3]].name = _f[2]
-            btags[_f[3]].note = _f[13] or ''
-            table.insert(btag_ids, _f[3])
-        end
-    end
-    table.sort(btag_ids) -- names have embedded codes making it impossible to sort by name
-    print('--[ your b.net friends ]--')
-    for i, v in pairs(btag_ids) do
-        if (arg) then
-            local n1 = strlower(v)
-            local n2 = strlower(btags[v].name)
-            local n3 = strlower(btags[v].note)
-            if n1:find(arg) or n2:find(arg) or n3:find(arg) then
-                print(tostring(v) .. '  |cFFFFFF00' .. tostring(btags[v].name) .. '|r  ' .. tostring(btags[v].note))
-            end
-        else
-            print(tostring(v) .. '  |cFFFFFF00' .. tostring(btags[v].name) .. '|r  ' .. tostring(btags[v].note))
-        end
-    end
-    print('--')
-
-    -- cleanup
-    tbl.delete(btags, true)
-    tbl.delete(btag_ids, true)
-end
-
 function oq.show_premades(opt)
     local arg = nil
     if (opt) and (opt:find(' ')) then
@@ -6601,31 +6429,11 @@ function oq.announce(msg, to_name, to_realm)
     end
 
     if (to_name ~= nil) then
-        if (to_realm == player_realm) then
-            local msg_tok = 'W' .. oq.token_gen()
-            oq.token_push(msg_tok)
-            local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
-            oq.SendAddonMessage('OQ', m, 'WHISPER', to_name)
-            return
-        end
-        -- try to go direct if pid exists
-        local pid = oq.bnpresence(to_name .. '-' .. to_realm)
-        if (pid ~= 0) then
-            local msg_tok = 'W' .. oq.token_gen()
-            oq.token_push(msg_tok)
-            local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
-            oq.BNSendWhisper(pid, m, to_name, to_realm)
-            return
-        end
-        -- if i have a bn-friend on the target realm, bnsend it to them and return
-        pid = oq.bnpresence_realm(to_realm)
-        if (pid ~= 0) then
-            local msg_tok = 'A' .. oq.token_gen()
-            oq.token_push(msg_tok)
-            local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
-            oq.BNSendWhisper(pid, m, to_name, to_realm)
-            return
-        end
+        local msg_tok = 'W' .. oq.token_gen()
+        oq.token_push(msg_tok)
+        local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
+
+        oq.XRealmWhisper(to_name, to_realm, m)
 
         msg =
             msg .. ',' .. OQ_FLD_TO .. '' .. to_name .. ',' .. OQ_FLD_REALM .. '' .. tostring(oq.realm_cooked(to_realm))
@@ -6654,7 +6462,7 @@ function oq.announce_relay(m, insure)
 
     -- send to general channel
     if (_inc_channel ~= OQ_REALM_CHANNEL) and (oq._banned == nil) then
-        oq.channel_general(m)
+        oq.SendOQChannelMessage(m)
     end
 
     -- send to raid channels
@@ -6741,7 +6549,7 @@ end
 
 function oq.raid_announce_relay(m)
     -- send to my own party
-    oq.channel_party(m)
+    oq.SendPartyMessage(m)
 end
 
 function oq.raid_announce_member(group_id, slot, name, realm, class)
@@ -6766,7 +6574,7 @@ function oq.party_announce(msg)
 
     local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
     -- send to party channel
-    oq.channel_party(m)
+    oq.SendPartyMessage(m)
 end
 
 function oq.bg_announce(msg)
@@ -6798,7 +6606,7 @@ function oq.raid_disband(dont_clean)
         if (_oqgeneral_lockdown) then
             local is_restricted = _oqgeneral_lockdown
             _oqgeneral_lockdown = nil
-            oq.channel_general(m)
+            oq.SendOQChannelMessage(m)
             _oqgeneral_lockdown = is_restricted
         end
         if (dont_clean == nil) then
@@ -6887,8 +6695,8 @@ function oq.raid_ping()
     local i
     for i = 2, 8 do
         local grp = oq.raid.group[i]
-        if ((grp.member) and (grp.member[1].name) and (grp.member[1].name ~= '-') and (grp.member[1].realm)) then
-            oq.whisper_msg(grp.member[1].name, grp.member[1].realm, m, true)
+        if (grp.member and grp.member[1].name and grp.member[1].realm) then
+            oq.XRealmWhisper(grp.member[1].name, grp.member[1].realm, m)
         end
     end
 end
@@ -6904,7 +6712,7 @@ function oq.raid_ping_ack(tok, tm)
             realm = oq.realm_uncooked(realm)
         end
         local msg = 'ping_ack,' .. tok .. ',' .. tm .. ',' .. (my_group or 0)
-        oq.whisper_msg(name, realm, msg)
+        oq.XRealmWhisper(name, realm, msg)
     else
         local m = 'ping_ack,' .. tok .. ',' .. tm .. ',' .. (my_group or 0)
         oq.whisper_raid_leader(m)
@@ -6924,7 +6732,7 @@ function oq.ping_toon(toon)
         realm = toon:sub(toon:find('-') + 1, -1)
         realm = oq.realm_uncooked(realm)
     end
-    oq.whisper_msg(name, realm, 'ping,' .. oq.my_tok .. ',' .. GetTime() * 1000)
+    oq.XRealmWhisper(name, realm, 'ping,' .. oq.my_tok .. ',' .. GetTime() * 1000)
 end
 
 function oq.ping_self_thru_raid()
@@ -10027,7 +9835,7 @@ function oq.send_req_vlist(id)
                     'W1,' ..
                         'req_vlist,' ..
                             tostring(player_realid) .. ',' .. submit_token .. ',' .. oq.encode_mime64_2digit(id)
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
 function oq.on_vlist(token, id, expiration, vlist)
@@ -11032,7 +10840,7 @@ function oq.find_mesh()
                                     tostring(oq.realm_cooked(player_realm)) ..
                                         ',' .. tostring(player_faction) .. ',' .. tostring(player_realid) .. ',' .. tok
     oq.token_push(tok)
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
 end
 
 function oq.pull_btag()
@@ -11041,7 +10849,7 @@ function oq.pull_btag()
     local msg =
         OQSK_HEADER ..
         ',' .. OQSK_VER .. ',' .. 'W1,' .. 'pull_btag,' .. tostring(player_faction) .. ',' .. tostring(player_realid)
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
     oq.tab5_pullbtag_but:Disable()
 
     OQ_data.btag_submitted = nil
@@ -11058,47 +10866,8 @@ function oq.submit_still_kickin()
     local msg =
         OQSK_HEADER ..
         ',' .. OQSK_VER .. ',' .. 'W1,' .. 'still_kickin,' .. tostring(player_faction) .. ',' .. tostring(player_realid)
-    oq.send_to_scorekeeper(msg)
+    oq.SendScoreKeeperMessage(msg)
     return 1
-end
-
-function oq.on_btags(token, t1, t2, t3, t4, t5, t6)
-    _ok2relay = nil
-    if (not oq.token_was_seen(token)) then
-        -- not my token, bogus msg
-        return
-    end
-    oq.log(true, OQ.LILDIAMOND_ICON .. ' ' .. L["find-mesh response recv'd"])
-
-    local sktm = oq.decode_mime64_digits(_vars[4])
-    local now = oq.utc_time('pure')
-    if (sktm == 0) then
-        OQ_data.sk_adjust = nil
-        OQ_data.sk_next_update = now + 60 * 60 -- not possible; check again in an hour
-    else
-        OQ_data.sk_adjust = now - sktm
-        OQ_data.sk_next_update = now + 3 * 24 * 60 * 60 -- check back in within 3 days
-    end
-
-    local msg = OQ_HEADER .. ',' .. OQ_VER .. ',' .. 'W1,0,mesh_tag,0'
-    if (not oq.is_banned(t1)) then
-        oq.BNSendFriendInvite(t1, msg, 'OQ,mesh node')
-    end
-    if (not oq.is_banned(t2)) then
-        oq.BNSendFriendInvite(t2, msg, 'OQ,mesh node')
-    end
-    if (not oq.is_banned(t3)) then
-        oq.BNSendFriendInvite(t3, msg, 'OQ,mesh node')
-    end
-    if (not oq.is_banned(t4)) then
-        oq.BNSendFriendInvite(t4, msg, 'OQ,mesh node')
-    end
-    if (not oq.is_banned(t5)) then
-        oq.BNSendFriendInvite(t5, msg, 'OQ,mesh node')
-    end
-    if (not oq.is_banned(t6)) then
-        oq.BNSendFriendInvite(t6, msg, 'OQ,mesh node')
-    end
 end
 
 --------------------------------------------------------------------------
@@ -12100,7 +11869,7 @@ function oq.check_bounty_board(id)
                                                         ',' ..
                                                             tostring(player_faction) ..
                                                                 ',' .. tostring(player_realid) .. ',' .. submit_token
-            oq.send_to_scorekeeper(msg)
+            oq.SendScoreKeeperMessage(msg)
             break
         end
     end
@@ -17392,7 +17161,7 @@ function oq.get_battle_tag()
         return nil
     end
     player_realid = strlower(player_realid)
-    if (player_realid == strlower(OQ.SK_BTAG)) then
+    if (player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
         oq._iam_scorekeeper = true
     end
     return player_realid
@@ -17823,10 +17592,6 @@ function oq.on_proxy_target(group_id, slot, enc_data, raid_token, req_token)
     oq.raid.group[group_id].member[1].realm = gl_realm
     oq.raid.group[group_id].member[1].realid = gl_rid
     oq.raid.raid_token = raid_token
-
-    if (gl_realm ~= player_realm) then
-        oq.bn_realfriend_invite(gl_name, gl_realm, gl_rid) -- will need to be b-net friends to invite cross-realm (!!!!)
-    end
 end
 
 --
@@ -17847,7 +17612,7 @@ function oq.proxy_invite(group_id, slot, name, realm, rid, req_token)
 end
 
 function oq.valid_rid(rid)
-    if (rid == nil) or (rid == OQ_NOEMAIL) then
+    if (rid == nil) then
         return nil
     end
 
@@ -17858,35 +17623,6 @@ function oq.valid_rid(rid)
     end
     
     return nil
-end
-
--- will need to real-id friend the person in order to invite  (!!!!)
-function oq.bn_realfriend_invite(name, realm, rid, extra_note)
-    if ((rid == nil) or (rid == OQ_NOEMAIL)) then
-        return
-    end
-    if (not oq.valid_rid(rid)) then
-        message(OQ.BAD_REALID .. ' ' .. tostring(rid))
-        return
-    end
-
-    local friend = OQ_data.bn_friends[strlower(tostring(name) .. '-' .. tostring(realm))]
-    if (friend ~= nil) and friend.isOnline and friend.oq_enabled then
-        -- won't try to add if friended at all.  oq enabled or not
-        return
-    end
-    if (friend ~= nil) and (friend.toon_id == 0) then
-        return
-    end
-
-    -- if already friended, ok to re-try.  will fail silently (well, red text top center)
-    local msg = 'OQ,' .. oq.raid.raid_token
-    if (extra_note) then
-        msg = msg .. ',' .. extra_note
-    end
-    oq.BNSendFriendInvite(rid, msg, 'OQ,mesh node', name, realm)
-
-    oq.timer_oneshot(15, oq.set_note_if_null, name, realm, 'OQ,' .. oq.raid.raid_token)
 end
 
 function oq.raid_identify_self()
@@ -17905,10 +17641,10 @@ function oq.brief_group_lead(group_id)
         if (i ~= group_id) then
             local grp = oq.raid.group[i]
             if (grp._names ~= nil) then
-                oq.whisper_msg(name, realm, grp._names)
+                oq.XRealmWhisper(name, realm, grp._names)
             end
             if (grp._stats ~= nil) then
-                oq.whisper_msg(name, realm, grp._stats)
+                oq.XRealmWhisper(name, realm, grp._stats)
             end
         end
     end
@@ -18394,7 +18130,7 @@ function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
             return
         end
         -- send to party BEFORE processing
-        oq.channel_party(_msg)
+        oq.SendPartyMessage(_msg)
         _ok2relay = nil
 
         -- promote
@@ -18992,11 +18728,12 @@ function oq.on_premade(
     if (oq._p8s == nil) then
         oq._p8s = tbl.new()
     end
-    if ((now - (oq._p8s[raid_tok] or 0)) < OQ_MIN_PROMO_TIME) then
-        _ok2relay = nil
-        _reason = 'too soon'
-        return
-    end
+    -- Removing this so table is being more dynamic. Let's see how it goes.
+    -- if ((now - (oq._p8s[raid_tok] or 0)) < OQ_MIN_PROMO_TIME) then
+    --     _ok2relay = nil
+    --     _reason = 'too soon'
+    --     return
+    -- end
     oq._p8s[raid_tok] = now
 
     local raid_tm_token = raid_tok .. '.' .. tm_
@@ -19842,49 +19579,6 @@ function oq.update_wait_times()
         if (v.m.create_tm) then
             v.wait_tm:SetText(date('!%H:%M:%S', (now - v.m.create_tm)))
         end
-    end
-end
-
-function oq.on_imesh(token, btag)
-    _ok2relay = nil -- this should be a targeted msg
-    if (not oq.token_was_seen(token)) then
-        -- not my token, bogus msg
-        return
-    end
-    if (player_realid == btag) then
-        -- my tag, disregard
-        return
-    end
-    local ntotal, nonline = GetNumFriends()
-    if (ntotal >= OQ_MAX_BNFRIENDS) then
-        return
-    end
-
-    local pid, is_online = oq.is_bnfriend(btag)
-    if (pid ~= nil) then
-        -- already friended
-        return
-    end
-    local now = oq.utc_time()
-    if (oq._dip_tm) and (now < oq._dip_tm) then
-        if (oq._dip_cnt <= 0) then
-            return -- max'd out
-        end
-    elseif (oq._dip_tm) then
-        if ((now - oq._dip_tm) < OQ_DIP_GAP) then
-            return -- not ready for more
-        end
-    end
-    if (oq._dip_cnt) then
-        oq._dip_cnt = oq._dip_cnt - 1
-        if (oq._dip_cnt < 0) then
-            return
-        end
-    end
-
-    if (not oq.is_banned(btag)) then
-        local msg = OQ_HEADER .. ',' .. OQ_VER .. ',' .. 'W1,0,mesh_tag,0'
-        oq.BNSendFriendInvite(btag, msg, 'OQ,mesh node')
     end
 end
 
@@ -21107,7 +20801,8 @@ function oq.on_scores(enc_data, sk_time, curr_oq_version, xdata, officers, xreal
 end
 
 function oq.send_xrealm(m)
-    oq.bnfriends_relay(m, nil, true)
+    oq.SendOQChannelMessage(m)
+    -- oq.bnfriends_relay(m, nil, true)
 end
 
 function oq.verify_version(proto_version, oq_version)
@@ -22789,7 +22484,6 @@ function oq.procs_init()
     oq.proc['contract'] = oq.on_bounty -- was "bounty"
     oq.proc['brb'] = oq.on_brb
     oq.proc['btag'] = oq.on_btag
-    oq.proc['btags'] = oq.on_btags
     oq.proc['charm'] = oq.on_charm
     oq.proc['disband'] = oq.on_disband
     oq.proc['enter_bg'] = oq.on_enter_bg
@@ -22797,7 +22491,6 @@ function oq.procs_init()
     oq.proc['group_hp'] = oq.on_group_hp
     oq.proc['iam_back'] = oq.on_iam_back
     oq.proc['identify'] = oq.on_identify
-    oq.proc['imesh'] = oq.on_imesh
     oq.proc['invite_accepted'] = oq.on_invite_accepted
     oq.proc['invite_group'] = oq.on_invite_group
     oq.proc['invite_req_response'] = oq.on_invite_req_response
@@ -22873,7 +22566,6 @@ function oq.procs_join_raid()
   oq.proc[ "contract"              ] = oq.on_bounty ; -- was "bounty"
   oq.proc[ "btags"                 ] = oq.on_btags ;
   oq.proc[ "disband"               ] = oq.on_disband ;
-  oq.proc[ "imesh"                 ] = oq.on_imesh ; 
   oq.proc[ "invite_accepted"       ] = oq.on_invite_accepted ;
   oq.proc[ "invite_group"          ] = oq.on_invite_group ;
   oq.proc[ "invite_req_response"   ] = oq.on_invite_req_response ;
@@ -22978,7 +22670,6 @@ function oq.on_addon_event(prefix, msg, channel, sender)
         return
     end
     -- just process, do not send it on
-    _local_msg = true
     _source = 'addon'
     if (channel == 'PARTY') then
         _source = 'party'
@@ -22998,7 +22689,7 @@ function oq.on_channel_msg(...)
     local msg = _arg[1]
     local sender = _arg[2]
 
-    if ((sender == player_name) and (oq._iam_scorekeeper == nil)) or ((msg == nil) or (msg == '')) then
+    if (sender == player_name and oq._iam_scorekeeper == nil) or (msg == nil or msg == '') then
         oq.post_process()
         return
     end
@@ -23013,7 +22704,6 @@ function oq.on_channel_msg(...)
         local name, realm = strsplit('-', sender)
 
         _inc_channel = OQ_REALM_CHANNEL
-        _local_msg = true
         _source = OQ_REALM_CHANNEL
         oq._sender = sender
         oq._sender_name = name
@@ -23032,7 +22722,6 @@ function oq.on_received_whisper(...)
     local msg = _arg[1]
     local sender = _arg[2]
 
-    _local_msg = false
     _source = 'bnet'
     _ok2relay = nil
     oq._sender = sender
@@ -23048,7 +22737,7 @@ function oq.forward_msg_raid(msg)
     if (oq.iam_party_leader() and (_source == 'party')) then
         oq.whisper_raid_leader(msg)
     elseif (oq.iam_party_leader() and (_source ~= 'party')) then
-        oq.channel_party(msg)
+        oq.SendPartyMessage(msg)
     end
 end
 
@@ -23059,18 +22748,16 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
 
     -- no relaying while in a BG.  BATTLEGROUND msgs are BG-wide, everything else stops here
     --
-    if
-        (_msg_id == 'p8') and (_inc_channel ~= OQ_REALM_CHANNEL) and (my_slot ~= 1) and
-            (oq._raid_token ~= oq.raid.raid_token)
-     then
-        oq.channel_general(msg)
+    if _msg_id == 'p8' and _inc_channel ~= OQ_REALM_CHANNEL and my_slot ~= 1 and oq._raid_token ~= oq.raid.raid_token then
+        oq.SendOQChannelMessage(msg)
         if (_hop == 0) then
             return
         end
-    elseif (_msg_id == 'p8') and (_inc_channel ~= OQ_REALM_CHANNEL) and (_hop == 0) and (_source == 'bnet') then
-        oq.channel_general(msg)
+    elseif _msg_id == 'p8' and _inc_channel ~= OQ_REALM_CHANNEL and _hop == 0 and _source == 'bnet' then
+        oq.SendOQChannelMessage(msg)
         return
     end
+
     if (_inside_bg) then
         return
     end
@@ -23110,7 +22797,7 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
     end
     if (oq.iam_raid_leader()) and ((msg_type == 'B') or (msg_type == 'R')) then
         -- relay to group leads
-        oq.channel_party(msg)
+        oq.SendPartyMessage(msg)
         return
     end
     if
@@ -23127,7 +22814,7 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
         oq.bn_echo_raid(msg)
         oq.announce_relay(msg)
     elseif (msg_type == 'P') then
-        oq.channel_party(msg)
+        oq.SendPartyMessage(msg)
     elseif (msg_type == 'R') then
         oq.forward_msg_raid(msg)
     end
@@ -23373,7 +23060,6 @@ function oq.recover_premades()
             end
             if (tm) and (msg) and ((now - tm) < OQ_PREMADE_STAT_LIFETIME) then
                 _inc_channel = OQ_REALM_CHANNEL
-                _local_msg = true
                 _source = OQ_REALM_CHANNEL
                 oq._sender = '#backup'
                 _ok2relay = nil
@@ -23627,7 +23313,6 @@ function oq.post_process()
     oq._sender_name = nil
     oq._sender_realm = nil
     oq._sender_toonid = nil
-    _local_msg = nil
     _source = nil
     _ok2relay = 1
     _dest_realm = nil
@@ -24664,7 +24349,7 @@ function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize,
                                                                                                                             ) -
                                                                                                                                 oq._instance_tm
                                                                                                                         )
-        oq.send_to_scorekeeper(msg)
+        oq.SendScoreKeeperMessage(msg)
         return pts
     end
     return 0
@@ -25258,7 +24943,7 @@ function oq.on_init(now)
     player_realm_short = oq.GetRealmNameShort()
     player_realm_id = oq.realm_cooked(player_realm)
     player_realid = strlower(player_name .. '-' .. player_realm_short)
-    if (player_realid == strlower(OQ.SK_BTAG)) then
+    if (player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
         oq._iam_scorekeeper = true
     end
     player_class = OQ.SHORT_CLASS[select(2, UnitClass('player'))]
@@ -26203,6 +25888,26 @@ function OQ_ResizeMouse_up(f)
     p.__resizing = nil
 end
 
+function oq.XRealmWhisper(receiverName, receiverRealm, msg)
+    if (oq._isAfk) then
+        return
+    end
+
+    if (not oq.well_formed_msg(msg)) then
+        local messageToken = 'W' .. oq.token_gen()
+        oq.token_push(messageToken)
+        msg = 'OQ,' .. OQ_VER .. ',' .. messageToken .. ',' .. OQ_TTL .. ',' .. msg
+    end
+
+    if (player_realm == nil or player_realm == receiverRealm) then
+        SendAddonMessage('OQ', msg, 'WHISPER', receiverName)
+        oq.pkt_sent:inc()
+        return
+    end
+
+    local shortRealmName = oq.FindRealmNameShort(receiverRealm)
+    oq.SendChatMessage(msg, 'WHISPER', nil, receiverName .. '-' .. shortRealmName)
+end
 -- function oq.debug(msg, ...)
 --   if type(msg) == "table" then
 --     for k, v in pairs(msg) do

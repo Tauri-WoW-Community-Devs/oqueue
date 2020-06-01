@@ -210,15 +210,15 @@ OQ.PREMADE_TYPES = {
     [OQ.TYPE_ROLEPLAY] = 1
 }
 
-OQ.DD_NONE = 'none'
-OQ.DD_STAR = 'star'
-OQ.DD_CIRCLE = 'circle'
-OQ.DD_DIAMOND = 'diamond'
-OQ.DD_TRIANGLE = 'triangle'
-OQ.DD_MOON = 'moon'
-OQ.DD_SQUARE = 'square'
-OQ.DD_REDX = 'cross'
-OQ.DD_SKULL = 'skull'
+OQ.DD_NONE = 'None'
+OQ.DD_STAR = 'Star'
+OQ.DD_CIRCLE = 'Circle'
+OQ.DD_DIAMOND = 'Diamond'
+OQ.DD_TRIANGLE = 'Triangle'
+OQ.DD_MOON = 'Moon'
+OQ.DD_SQUARE = 'Square'
+OQ.DD_REDX = 'Cross'
+OQ.DD_SKULL = 'Skull'
 
 OQ.RACE_UNKNOWN = 0
 OQ.RACE_DWARF = 1

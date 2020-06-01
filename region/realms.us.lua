@@ -5,9 +5,9 @@ if (string.sub(GetCVar('realmList'), 1, 2) ~= 'us') then
 end
 
 OQ.REGION = 'us'
-OQ.SK_BTAG = 'OQSK#1855'
-OQ.SK_NAME = 'Scorekeeper'
-OQ.SK_REALM = 'Magtheridon'
+OQ.SCOREKEEPER_BATTLE_TAG = 'OQSK#1855'
+OQ.SCOREKEEPER_NAME = 'Scorekeeper'
+OQ.SCOREKEEPER_REALM = 'Magtheridon'
 OQ.DEFAULT_PREMADE_TEXT = 'vent:  wow.publicvent.org : 4135\nroom: '
 
 OQ.OCEANIC = {
