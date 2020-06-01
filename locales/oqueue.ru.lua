@@ -358,7 +358,6 @@ OQ.MSG_MISSINGTYPE = 'Пожалуйста, выберите тип премей
 OQ.LABEL_VENTRILO = 'Ventrilo'
 OQ.LABEL_TEAMSPEAK = 'Teamspeak'
 OQ.LABEL_DISCORD = 'Discord'
-OQ.LABEL_MUMBLE = 'Mumble'
 OQ.LABEL_UNSPECIFIED = 'Не выбрано'
 OQ.LABEL_NOVOICE = 'Без голоса'
 

@@ -361,7 +361,6 @@ OQ.WONTHEMATCH = 'won the match!'
 OQ.LABEL_VENTRILO = 'Ventrilo'
 OQ.LABEL_TEAMSPEAK = 'Teamspeak'
 OQ.LABEL_DISCORD = 'Discord'
-OQ.LABEL_MUMBLE = 'Mumble'
 OQ.LABEL_UNSPECIFIED = 'Unspecified'
 OQ.LABEL_NOVOICE = 'No voice'
 

@@ -361,7 +361,6 @@ OQ.MSG_MISSINGTYPE = 'Selectionnez votre type de groupe'
 OQ.LABEL_VENTRILO = 'Ventrilo'
 OQ.LABEL_TEAMSPEAK = 'Teamspeak'
 OQ.LABEL_DISCORD = 'Discord'
-OQ.LABEL_MUMBLE = 'Mumble'
 OQ.LABEL_UNSPECIFIED = 'Non spécifié'
 OQ.LABEL_NOVOICE = 'Muet'
 
