@@ -14512,10 +14512,6 @@ function oq.create_tab3()
     x = 40
     oq.label(OQTabPage3, x, y, 100, cy, OQ.PREMADE_NAME)
     y = y + cy + 4
-    oq.label(OQTabPage3, x, y, 100, cy, OQ.LEADERS_NAME)
-    y = y + cy + 4
-    oq.label(OQTabPage3, x, y, 100, cy, OQ.REALID_MOP)
-    y = y + cy + 4
     oq.label(OQTabPage3, x, y, 100, cy, OQ.MIN_ILEVEL)
     y = y + cy + 4
     oq.label(OQTabPage3, x, y, 100, cy, OQ.MIN_RESIL)
@@ -14569,10 +14565,6 @@ function oq.create_tab3()
     cy = 25
     oq.tab3_raid_name = oq.editline(OQTabPage3, 'RaidName', x, y, cx, cy, 25)
     y = y + cy + 4
-    oq.tab3_lead_name = oq.editline(OQTabPage3, 'LeadName', x, y, cx, cy, 30)
-    y = y + cy + 4
-    oq.tab3_rid = oq.editline(OQTabPage3, 'RealID', x, y, cx, cy, 60)
-    y = y + cy + 4
     oq.tab3_min_ilevel = oq.editline(OQTabPage3, 'MinIlevel', x, y, cx, cy, 10)
     y = y + cy + 4
     oq.tab3_min_resil = oq.editline(OQTabPage3, 'MinResil', x, y, cx, cy, 10)
@@ -14607,17 +14599,8 @@ function oq.create_tab3()
     oq.tab3_pword = oq.editline(OQTabPage3, 'password', x, y, cx, cy, 10)
     y = y + cy + 6
 
-    -- disable real-id to force user to setup tab
-    -- in MoP, tab3_rid can only be the battle-tag
-    oq.tab3_lead_name:Disable()
-    oq.tab3_rid:Disable()
-
     oq.tab3_faction = player_faction
     oq.tab3_channel_pword = 'p' .. oq.token_gen() -- no reason for the leader to set password.  just auto generate
-    oq.tab3_lead_name:SetText(player_name) -- auto-populate the leader name
-    if (player_realid ~= nil) then
-        oq.tab3_rid:SetText(player_realid) -- auto-populate the leader real-id, if we have it
-    end
 
     -- premade type selector
     y = 110
@@ -17026,9 +17009,6 @@ end
 
 function oq.populate_tab3()
     oq.get_battle_tag()
-
-    oq.tab3_lead_name:SetText(player_name or '')
-    oq.tab3_rid:SetText(player_realid or '')
 
     local now = oq.utc_time()
     if (oq.toon.tab3_notice == nil) or (oq.toon.tab3_notice < now) then
@@ -19585,8 +19565,6 @@ function oq.update_tab3_info()
         return
     end
     oq.tab3_raid_name:SetText(oq.raid.name)
-    oq.tab3_lead_name:SetText(player_name)
-    oq.tab3_rid:SetText(player_realid or '')
     oq.tab3_min_ilevel:SetText(oq.raid.min_ilevel or 0)
     oq.tab3_min_resil:SetText(oq.raid.min_resil or 0)
     oq.tab3_min_mmr:SetText(oq.raid.min_mmr or 0)

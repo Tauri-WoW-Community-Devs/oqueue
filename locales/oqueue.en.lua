@@ -89,7 +89,6 @@ OQ.HDR_POWER = 'PVP Power'
 OQ.HDR_TIME = 'Time'
 OQ.QUALIFIED = 'Qualified'
 OQ.PREMADE_NAME = 'Premade name'
-OQ.LEADERS_NAME = "Leader's name"
 OQ.REALID = 'Real-Id or B-tag'
 OQ.REALID_MOP = 'Battle-tag'
 OQ.MIN_ILEVEL = 'Minimum iLvl'
