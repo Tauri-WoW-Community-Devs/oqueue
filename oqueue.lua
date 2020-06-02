@@ -2819,10 +2819,7 @@ function oq.SendOQChannelMessage(msg)
 end
 
 function oq.iam_in_a_party()
-    if (GetNumGroupMembers() > 0) then
-        return true
-    end
-    return nil
+    return GetNumGroupMembers() > 0
 end
 
 function oq.is_oqueue_msg(msg)
@@ -17648,14 +17645,7 @@ function oq.on_invite_accepted(raid_token, group_id, slot, class, enc_data, req_
         return
     end
 
-    -- invite (by proxy if needed)
-    if (realm == player_realm and group_id == my_group) then
-        -- direct invite ok
-        local enc = oq.encode_data('abc123', name, realm, rid) -- rid not needed, as the invite goes to this realm
-        oq.on_proxy_invite(group_id, slot, enc, req_token)
-    else
-        oq.proxy_invite(group_id, slot, name, realm, rid, req_token)
-    end
+    oq.proxy_invite(group_id, slot, name, realm, rid, req_token)
 end
 
 function oq.update_my_premade_line()
@@ -18605,14 +18595,11 @@ function oq.process_premade_info(
         return
     end
 
-    if
-        (oq._my_group == nil) and (lead_rid == player_realid) and
-            ((my_group == 1) and (my_slot == 1) and (oq.raid.raid_token))
-     then
-    -- _ok2relay = nil ;
-    -- _reason = "bad msg" ;
-    -- return ;
-    end
+    -- if (oq._my_group == nil and lead_rid == player_realid and my_group == 1 and my_slot == 1 and oq.raid.raid_token) then
+    --     _ok2relay = nil ;
+    --     _reason = "bad msg" ;
+    --     return ;
+    -- end
 
     if (oq.is_banned(lead_rid)) then
         -- do not record or relay premade info for banned people
@@ -21903,99 +21890,6 @@ function oq.find_first_empty_slot(gid)
         end
     end
     return nil
-end
-
--- makes sure slots are filled with party member names to insure someone doesn't
--- disappear from group
---
-function oq.verify_group_members()
-    if (not oq.iam_party_leader() or _inside_bg) then
-        return
-    end
-    if
-        (oq.raid.type == OQ.TYPE_BG) or (oq.raid.type == OQ.TYPE_RBG) or (oq.raid.type == OQ.TYPE_RAID) or
-            (oq.raid.type == OQ.TYPE_ROLEPLAY)
-     then
-        -- short circuit for raids
-        return
-    end
-    local i, j
-    local n_members = GetNumGroupMembers()
-    local grp = oq.raid.group[my_group]
-    if (grp == nil) or (grp.member == nil) then
-        return -- ??
-    end
-
-    -- check for members that left
-    local i, j
-    for i = 2, 5 do
-        if (grp.member[i].name) and (grp.member[i].name ~= '-') and (grp.member[i].name ~= '') then
-            grp.member[i].not_here = true
-        else
-            grp.member[i].not_here = nil
-        end
-    end
-    for i = 1, 4 do
-        local n = GetUnitName('party' .. i, true)
-        local name = n
-        if (name) then
-            local realm = player_realm
-            if (name) and (name:find('-')) then
-                name = n:sub(1, n:find('-') - 1)
-                realm = n:sub(n:find('-') + 1, -1)
-            end
-            for j = 2, 5 do
-                if (grp.member[j].name == name) then
-                    grp.member[j].not_here = nil
-                    break
-                end
-            end
-        end
-    end
-    for i = 2, 5 do
-        if (grp.member[i].not_here) then
-            oq.set_group_member(my_group, i, nil, nil, 'XX', nil, '0', '0')
-            oq.raid_cleanup_slot(my_group, i)
-        end
-    end
-
-    -- look for new members
-    for i = 1, 4 do
-        local n = GetUnitName('party' .. i, true)
-        local name = n
-        local realm = player_realm
-        if (name ~= nil) and (name:find('-') ~= nil) then
-            name = n:sub(1, n:find('-') - 1)
-            realm = n:sub(n:find('-') + 1, -1)
-        end
-        if (name ~= nil) then
-            local found = nil
-            for j = 2, 5 do
-                if (grp.member) then
-                    local p = grp.member[j]
-                    if (p) and (p.name ~= nil) and (p.name == name) then
-                        p.realm = realm
-                        found = true
-                        p.not_here = nil
-                        break
-                    end
-                end
-            end
-            if (not found) then
-                -- new member found; party member not in OQ raid group
-                slot = oq.find_first_empty_slot(my_group)
-                if (slot) and (grp.member) then
-                    grp.member[slot].name = name -- reserve the spot for this player
-                    grp.member[slot].realm = realm
-                    grp.member[slot].class = OQ.SHORT_CLASS[select(2, UnitClass('party' .. i))] or 'ZZ'
-                    grp.member[slot].not_here = nil -- reserve the spot for this player
-                    oq.timer('brief_new_member', 2.0, oq.brief_player)
-                else
-                    -- error.  all slots full, unknown people in party
-                end
-            end
-        end
-    end
 end
 
 function oq.first_raid_slot()
