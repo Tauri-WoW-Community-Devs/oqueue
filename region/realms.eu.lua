@@ -10,25 +10,19 @@ OQ.SCOREKEEPER_NAME = 'Maczuga'
 OQ.SCOREKEEPER_REALM = '[EN] Evermoon'
 OQ.DEFAULT_PREMADE_TEXT = ''
 
-OQ.BGROUP_ICON = {['Tauri Cross Realm'] = 'Interface\\Icons\\achievement_character_tauren_male'}
+OQ.REALMS = {
+    -- Those 3 are only used to get realm ID from GetRealmName()
+    ['[EN] Evermoon'] = 'evermoon',
+    ['[HU] Tauri WoW Server'] = 'tauri',
+    ['[HU] Warriors of Darkness'] = 'wod',
 
-OQ.REALMNAMES_SPECIAL = {}
-
-OQ.BGROUPS = {
-    ['Tauri Cross Realm'] = {
-        '[EN] Evermoon',
-        '[HU] Tauri WoW Server',
-        '[HU] Warriors of Darkness'
-    }
-}
-
-OQ.SHORT_BGROUPS = {
-    ['[EN] Evermoon'] = 1, -- [1]
-    ['[HU] Tauri WoW Server'] = 2, -- [2]
-    ['[HU] Warriors of Darkness'] = 3, -- [3]
-    [1] = '[EN] Evermoon',
-    [2] = '[HU] Tauri WoW Server',
-    [3] = '[HU] Warriors of Darkness'
+    -- Those are actually used
+    ['evermoon'] = 1,
+    ['tauri'] = 2,
+    ['wod'] = 3,
+    [1] = 'evermoon',
+    [2] = 'tauri',
+    [3] = 'wod'
 }
 
 -- Used for whispers, invites etc.

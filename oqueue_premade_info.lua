@@ -792,42 +792,6 @@ function oq.pdata_raid_conflict(pdata)
     return nil
 end
 
-function oq.oceanic_conflict(p)
-    oq.__conflict = L[': none']
-    if (string.sub(GetCVar('realmList'), 1, 2) == 'eu') then
-        return nil -- no oceanic style conflict for the EU
-    end
-    if (p.type ~= OQ.TYPE_RAID) or (#p.pdata < 8) then
-        return nil
-    end
-    -- no conflict unless world boss
-    local R = oq.decode_mime64_digits(p.pdata:sub(5, 5)) -- raid id
-    if (R ~= 63) then -- raid-id 63 == world boss raid
-        return nil
-    end
-    oq._player_realm = oq._player_realm or oq.GetRealmName()
-
-    if (OQ.OCEANIC[p.leader_realm]) then
-        if (OQ.OCEANIC[oq._player_realm]) then
-            return nil
-        end
-        oq.__conflict = L[': oceanic']
-        return true
-    elseif (OQ.BRALIZIAN[p.leader_realm]) then
-        if (OQ.BRALIZIAN[oq._player_realm]) then
-            return nil
-        end
-        oq.__conflict = L[': brazilian']
-        return true
-    end
-
-    if (OQ.OCEANIC[oq._player_realm]) or (OQ.BRALIZIAN[oq._player_realm]) then
-        oq.__conflict = L[': US']
-        return true
-    end
-    return nil
-end
-
 function oq.get_raid_boss_progression(name)
     if (name == nil) then
         return 'AAA'

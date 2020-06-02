@@ -305,8 +305,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
 
     tooltip.right[2]:SetText(oq.get_rank_icons(m.ranks))
 
-    tooltip.left[3]:SetText(m.bgroup)
-    tooltip.left[3]:SetTextColor(0.8, 0.8, 0.8, 1)
     local spec = oq.get_class_type(m.spec_id) or oq.get_class_spec(m.spec_id)
     if (spec) then
         tooltip.right[3]:SetText(spec.n:sub(4, -1))
@@ -868,9 +866,6 @@ function oq.pm_tooltip_set(f, raid_token)
 
     pm_tooltip.left[3]:SetText(OQ.TT_REALM)
     pm_tooltip.right[3]:SetText(raid.leader_realm)
-
-    pm_tooltip.left[4]:SetText(OQ.TT_BATTLEGROUP)
-    pm_tooltip.right[4]:SetText(oq.find_bgroup(raid.leader_realm))
 
     pm_tooltip.left[5]:SetText(OQ.TT_MEMBERS)
     pm_tooltip.right[5]:SetText(nMembers)
