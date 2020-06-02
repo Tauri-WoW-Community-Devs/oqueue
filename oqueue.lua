@@ -1795,10 +1795,6 @@ function oq.oq_on()
     print(OQ.ENABLED)
 end
 
-function oq.GetNumPartyMembers()
-    return GetNumGroupMembers()
-end
-
 local _consts = {
     0x00000000,
     0x77073096,
@@ -2089,7 +2085,7 @@ function oq.mycrew(arg)
             oq.add_toon(name)
         end
     else
-        n = oq.GetNumPartyMembers()
+        n = GetNumGroupMembers()
         oq.add_toon(player_name)
         local i
         for i = 1, n do
@@ -2767,7 +2763,7 @@ end
 
 function oq.SendChannelMessage(chan_name, msg)
     local n = strlower(chan_name)
-    if (not oq.well_formed_msg(msg)) then
+    if (not oq.IsMessageWellFormed(msg)) then
         local msg_tok = 'A' .. oq.token_gen()
         oq.token_push(msg_tok)
         msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
@@ -2913,7 +2909,7 @@ function oq.SendAddonMessage(channel, msg, type, to_name)
 end
 
 function oq.SendPartyMessage(msg)
-    oq.SendAddonMessage('OQ', msg, 'PARTY')
+    oq.SendAddonMessage(OQ_HEADER, msg, 'PARTY')
 end
 
 --------------------------------------------------------------------------
@@ -5629,17 +5625,12 @@ function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
         return
     end
     local rc = 0
-    if ((to_name == nil) or (to_name == '-') or (to_realm == nil)) then
+    if (to_name == nil or to_name == '-' or to_realm == nil) then
         return
     end
-    if ((to_name == player_name) and (to_realm == player_realm)) then
+    if (to_name == player_name and to_realm == player_realm) then
         -- sending to myself?
         return
-    end
-    if (not oq.well_formed_msg(msg)) then
-        local msg_tok = 'W' .. oq.token_gen()
-        oq.token_push(msg_tok)
-        msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
 
     oq.XRealmWhisper(to_name, to_realm, msg)
@@ -5667,21 +5658,6 @@ function oq.bn_ok2send(msg, pid)
     return nil
 end
 
-function oq.well_formed_msg(m)
-    if (m == nil) then
-        return nil
-    end
-    local str = OQ_MSGHEADER .. '' .. OQ_VER .. ','
-    if (m:sub(1, #str) == str) then
-        return true
-    end
-    str = OQSK_HEADER .. ',' .. OQSK_VER .. ','
-    if (m:sub(1, #str) == str) then
-        return true
-    end
-    return nil
-end
-
 function oq.BNSendQ_push(func_, pid_, msg_, name_, realm_)
     if (pid_ == 0) or (msg_ == nil) or (oq.toon.disabled) then
         return
@@ -5689,7 +5665,7 @@ function oq.BNSendQ_push(func_, pid_, msg_, name_, realm_)
     local now = GetTime()
     oq.send_q = oq.send_q or tbl.new()
 
-    if (pid_ ~= 'OQ') and (msg_:find('oq_user') == nil) then
+    if (pid_ ~= OQ_HEADER) and (msg_:find('oq_user') == nil) then
         oq._bundles = oq._bundles or tbl.new()
         oq._bundles[pid_] = oq._bundles[pid_] or tbl.new()
         local t = oq._bundles[pid_]
@@ -5821,7 +5797,7 @@ function oq.BNSendWhisper_now(pid, msg, name, realm)
     if (#msg > OQ.MAX_BNET_MSG_SZ) then
         msg = msg:sub(1, OQ.MAX_BNET_MSG_SZ)
     end
-    BNSendGameData(pid, 'OQ', msg)
+    BNSendGameData(pid, OQ_HEADER, msg)
     oq.pkt_sent:inc()
 end
 
@@ -5941,7 +5917,7 @@ function oq.crack_bn_msg(msg)
     return m, name, realm, from
 end
 
-function oq.whisper_party_leader(msg)
+function oq.WhisperPartyLeader(msg)
     if ((my_group <= 0) or (oq.raid.group[my_group].member[1].name == nil) or (msg == nil)) then
         return
     end
@@ -5953,25 +5929,16 @@ function oq.whisper_party_leader(msg)
     if (lead.realm ~= player_realm) then
         name = name .. '-' .. lead.realm
     end
-    -- make sure the msg is well formed
-    if (not oq.well_formed_msg(msg)) then
-        local msg_tok = 'W' .. oq.token_gen()
-        oq.token_push(msg_tok)
-        msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
-    end
-    oq.XRealmWhisper('OQ', msg, 'WHISPER', name)
+
+    -- TODO test whether XRealmWhisper or SendAddonMessage would be better
+    -- oq.SendAddonMessage(OQ_HEADER, msg, "WHISPER", name)
+    oq.XRealmWhisper(lead.name, lead.realm, msg)
+    -- oq.XRealmWhisper(OQ_HEADER, msg, 'WHISPER', name)
 end
 
-function oq.whisper_raid_leader(msg)
+function oq.WhisperRaidLeader(msg)
     if (msg == nil or oq.raid.leader == nil or oq.raid.leader_realm == nil) then
         return
-    end
-
-    -- make sure the msg is well formed
-    if (not oq.well_formed_msg(msg)) then
-        local msg_tok = 'W' .. oq.token_gen()
-        oq.token_push(msg_tok)
-        msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
 
     oq.XRealmWhisper(oq.raid.leader, oq.raid.leader_realm, msg)
@@ -5997,7 +5964,7 @@ function oq.send_invite_accept(raid_token, group_id, slot, name, class, realm, r
                                             group_id ..
                                                 ',' .. slot .. ',' .. class .. ',' .. enc_data .. ',' .. req_token
 
-    oq.whisper_raid_leader(m)
+    oq.WhisperRaidLeader(m)
 end
 
 local _auras = nil
@@ -6467,7 +6434,7 @@ function oq.announce_relay(m, insure)
 
     -- send to raid channels
     if (oq.raid.raid_token ~= nil) then
-        oq.raid_announce_relay(m)
+        oq.SendPartyMessage(m)
     end
 
     -- send to real-id list for ppl not in the raid (hoping they will forward to their local OQGeneral channel)
@@ -6543,13 +6510,8 @@ function oq.raid_announce(msg, msg_tok)
     end
 
     local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
-    oq.raid_announce_relay(m)
-    --  oq.bn_echo_raid(m);
-end
-
-function oq.raid_announce_relay(m)
-    -- send to my own party
     oq.SendPartyMessage(m)
+    --  oq.bn_echo_raid(m);
 end
 
 function oq.raid_announce_member(group_id, slot, name, realm, class)
@@ -6584,9 +6546,9 @@ function oq.bg_announce(msg)
 
     local m = 'OQ,' .. OQ_VER .. ',' .. 'W1,' .. OQ_TTL .. ',' .. msg
     -- this should send to both parties and instance groups and fail silently if either isn't valid
-    SendAddonMessage('OQ', m, 'PARTY')
+    SendAddonMessage(OQ_HEADER, m, 'PARTY')
     oq.pkt_sent:inc()
-    SendAddonMessage('OQ', m, 'INSTANCE_CHAT')
+    SendAddonMessage(OQ_HEADER, m, 'INSTANCE_CHAT')
     oq.pkt_sent:inc()
 end
 
@@ -6715,7 +6677,7 @@ function oq.raid_ping_ack(tok, tm)
         oq.XRealmWhisper(name, realm, msg)
     else
         local m = 'ping_ack,' .. tok .. ',' .. tm .. ',' .. (my_group or 0)
-        oq.whisper_raid_leader(m)
+        oq.WhisperRaidLeader(m)
     end
 end
 
@@ -7442,7 +7404,7 @@ function oq.clear_pending()
 end
 
 function oq.check_and_send_request(raid_token)
-    local in_party = (oq.GetNumPartyMembers() > 0)
+    local in_party = (GetNumGroupMembers() > 0)
     local raid = oq.premades[raid_token]
     if (raid == nil) then
         return
@@ -7482,7 +7444,7 @@ function oq.check_and_send_request(raid_token)
 end
 
 function oq.send_req_waitlist(raid_token, pword)
-    local in_party = (oq.GetNumPartyMembers() > 0)
+    local in_party = (GetNumGroupMembers() > 0)
 
     local now = oq.utc_time()
     local req = oq.pending[raid_token]
@@ -7551,7 +7513,7 @@ function oq.send_req_waitlist(raid_token, pword)
                                             ',' ..
                                                 tostring(raid.type or 0) ..
                                                     ',' ..
-                                                        tostring(oq.GetNumPartyMembers()) ..
+                                                        tostring(GetNumGroupMembers()) ..
                                                             ',' ..
                                                                 req_token ..
                                                                     ',' ..
@@ -10736,7 +10698,7 @@ function oq.on_reload_now()
     ReloadUI()
 end
 function oq.tab3_create_activate()
-    local in_party = (oq.GetNumPartyMembers() > 0)
+    local in_party = (GetNumGroupMembers() > 0)
     if (in_party and not UnitIsGroupLeader('player')) then
         StaticPopup_Show('OQ_CannotCreatePremade', nil, nil, ndx)
         return
@@ -19337,7 +19299,7 @@ end
 
 function oq.do_reform(raid_token, group_id)
     local t = tbl.new()
-    local n = oq.GetNumPartyMembers()
+    local n = GetNumGroupMembers()
     local i, k, v
     for i = 1, n do
         local designation = 'party' .. i
@@ -22089,7 +22051,7 @@ function oq.check_party_members()
     local grp = oq.raid.group[my_group]
     local new_mem = nil
     local mem_gone = nil
-    local n_members = oq.GetNumPartyMembers()
+    local n_members = GetNumGroupMembers()
     local rost = tbl.new()
     local i, name, v
     for i = 1, 4 do
@@ -22172,7 +22134,7 @@ function oq.verify_group_members()
         return
     end
     local i, j
-    local n_members = oq.GetNumPartyMembers()
+    local n_members = GetNumGroupMembers()
     local grp = oq.raid.group[my_group]
     if (grp == nil) or (grp.member == nil) then
         return -- ??
@@ -22666,7 +22628,7 @@ end
 --  event handlers
 --------------------------------------------------------------------------
 function oq.on_addon_event(prefix, msg, channel, sender)
-    if (prefix ~= 'OQ') or (sender == player_name) or ((msg == nil) or (msg == '')) then
+    if (prefix ~= OQ_HEADER) or (sender == player_name) or ((msg == nil) or (msg == '')) then
         return
     end
     -- just process, do not send it on
@@ -22724,18 +22686,28 @@ function oq.on_received_whisper(...)
 
     _source = 'bnet'
     _ok2relay = nil
-    oq._sender = sender
-    if (oq._sender:find('-') == nil) and (player_realm) then
-        oq._sender = oq._sender .. '-' .. tostring(player_realm)
+
+    local name, realm, full
+    local pos = sender:find('-')
+    if (pos == nil and player_realm) then
+        name = sender
+        realm = player_realm
+    elseif (pos ~= nil) then
+        name = sender:sub(1, pos - 1)
+        realm = sender:sub(pos + 1, -1)
     end
+
+    oq._sender_name = name
+    oq._sender_realm = realm;
+    oq._sender = name .. '-' .. realm
 
     oq.process_msg(sender, msg)
     oq.post_process()
 end
 
-function oq.forward_msg_raid(msg)
+function oq.ForwardRaidMessage(msg)
     if (oq.iam_party_leader() and (_source == 'party')) then
-        oq.whisper_raid_leader(msg)
+        oq.WhisperRaidLeader(msg)
     elseif (oq.iam_party_leader() and (_source ~= 'party')) then
         oq.SendPartyMessage(msg)
     end
@@ -22777,13 +22749,13 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
                 end
             elseif (msg_type == 'R') then
                 -- raid msg coming from raid leader, just send to channel
-                oq.forward_msg_raid(msg)
+                oq.ForwardRaidMessage(msg)
             end
             return
         end
         -- delivered
         if (_ok2relay ~= 'bnet') then
-            oq.SendAddonMessage('OQ', msg, 'WHISPER', _to_name)
+            oq.SendAddonMessage(OQ_HEADER, msg, 'WHISPER', _to_name)
             return
         end
     end
@@ -22806,9 +22778,9 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
      then
         -- receiving msg via an alt (happens with multi-boxers); must send to raid leader
         if (sender ~= oq.raid.leader) then -- prevent back flow
-            oq.whisper_raid_leader(msg)
+            oq.WhisperRaidLeader(msg)
         end
-        oq.whisper_party_leader(msg)
+        oq.WhisperPartyLeader(msg)
     end
     if ((msg_type == 'A') or ((msg_type == 'W') and (not _received))) then
         oq.bn_echo_raid(msg)
@@ -22816,7 +22788,7 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
     elseif (msg_type == 'P') then
         oq.SendPartyMessage(msg)
     elseif (msg_type == 'R') then
-        oq.forward_msg_raid(msg)
+        oq.ForwardRaidMessage(msg)
     end
 end
 
@@ -22993,7 +22965,7 @@ function oq.check_version(vars)
     local msg_id = vars[5]
     local version = vars[6]
     local build = vars[7]
-    if (msg_id == nil) or (oq_sig ~= 'OQ') then
+    if (msg_id == nil) or (oq_sig ~= OQ_HEADER) then
         -- definitely not an OQ msg
         return
     end
@@ -23034,7 +23006,7 @@ end
 
 function oq.route_to_boss(msg)
     if (oq._sender ~= oq.raid.leader) then -- prevent back flow
-        oq.whisper_raid_leader(msg)
+        oq.WhisperRaidLeader(msg)
     end
 end
 
@@ -23126,7 +23098,7 @@ function oq.process_msg(sender, msg)
     if (_inside_bg and (oq.bg_msgids[msg_id] == nil)) or (oq._banned) then
         return
     end
-    if (oq_sig ~= 'OQ') or (oq_ver ~= OQ_VER) or (oq.toon.disabled) then
+    if (oq_sig ~= OQ_HEADER) or (oq_ver ~= OQ_VER) or (oq.toon.disabled) then
         -- not the same protocol, cannot proceed
         oq.check_version(_vars)
         return
@@ -23164,7 +23136,7 @@ function oq.process_msg(sender, msg)
             (_source == 'bnet') and (_to_name ~= nil) and (_to_name ~= player_name) and (_to_realm ~= nil) and
                 (_to_realm == player_realm)
          then
-            oq.SendAddonMessage('OQ', _core_msg, 'WHISPER', _to_name)
+            oq.SendAddonMessage(OQ_HEADER, _core_msg, 'WHISPER', _to_name)
             return
         end
         if (_source == 'bnet') and (not oq.iam_raid_leader()) and oq.iam_related_to_boss() then
@@ -23957,9 +23929,11 @@ function oq.on_party_members_changed()
     if (_inside_bg) then
         return
     end
+
     oq.clear_empty_seats()
     oq.timer('announce_leader', 4, oq.announce_raid_leader)
 
+    local groupMembers = GetNumGroupMembers()
     if (oq.iam_party_leader()) then
         lead_ticker = 1 -- force the sending of stats on the next tick
         if (my_group > 0) then
@@ -23967,21 +23941,21 @@ function oq.on_party_members_changed()
             oq.raid.group[my_group]._names = nil
         end
         if
-            ((oq.raid.raid_token ~= nil) and (oq.GetNumPartyMembers() > 0) and
-                (select(1, GetLootMethod()) ~= 'freeforall') and
-                (instance == nil) and
-                (oq.raid.type ~= OQ.TYPE_DUNGEON) and
-                (oq.raid.type ~= OQ.TYPE_CHALLENGE) and
-                (oq.raid.type ~= OQ.TYPE_QUESTS) and
-                (oq.raid.type ~= OQ.TYPE_MISC) and
-                (oq.raid.type ~= OQ.TYPE_ROLEPLAY) and
-                (oq.raid.type ~= OQ.TYPE_RAID))
+            (oq.raid.raid_token ~= nil and groupMembers > 0 and
+                select(1, GetLootMethod()) ~= 'freeforall' and
+                instance == nil and
+                oq.raid.type ~= OQ.TYPE_DUNGEON and
+                oq.raid.type ~= OQ.TYPE_CHALLENGE and
+                oq.raid.type ~= OQ.TYPE_QUESTS and
+                oq.raid.type ~= OQ.TYPE_MISC and
+                oq.raid.type ~= OQ.TYPE_ROLEPLAY and
+                oq.raid.type ~= OQ.TYPE_RAID)
          then
             SetLootMethod('freeforall')
         elseif ((oq.raid.raid_token ~= nil) and (oq.raid.type == OQ.TYPE_MISC)) then
             SetLootMethod('group')
         end
-        if (oq.GetNumPartyMembers() == 2) and (oq.iam_raid_leader()) then
+        if (groupMembers == 2 and oq.iam_raid_leader()) then
             -- make sure it's a raid if required
             if
                 (oq.raid.type == OQ.TYPE_BG) or (oq.raid.type == OQ.TYPE_RBG) or (oq.raid.type == OQ.TYPE_RAID) or
@@ -23993,9 +23967,9 @@ function oq.on_party_members_changed()
                 ConvertToParty()
             end
         end
-    elseif ((oq.GetNumPartyMembers() > 0) and (not oq.iam_raid_leader())) then
+    elseif (groupMembers > 0 and not oq.iam_raid_leader()) then
         my_group, my_slot = oq.find_my_group_id()
-    elseif ((oq.GetNumPartyMembers() == 0) and (not oq.iam_raid_leader())) then
+    elseif (groupMembers == 0 and not oq.iam_raid_leader()) then
         -- was a party member and manually left party... need to clean up
         oq.raid_cleanup()
         oq.raid_init()
@@ -24491,8 +24465,8 @@ function oq.register_events()
     oq.ui:RegisterEvent('UPDATE_BATTLEFIELD_SCORE')
     oq.ui:RegisterEvent('UPDATE_BATTLEFIELD_STATUS')
     oq.ui:RegisterEvent('WORLD_MAP_UPDATE')
-    if (RegisterAddonMessagePrefix('OQ') ~= true) then
-        print('Error:  unable to register addon prefix: OQ')
+    if (RegisterAddonMessagePrefix(OQ_HEADER) ~= true) then
+        print('Error:  unable to register addon prefix: ' .. OQ_HEADER)
     end
 end
 
@@ -24537,17 +24511,19 @@ function oq.player_died()
     oq.fog_clear()
 end
 
-function oq.player_flags_changed(unitid)
-    if (unitid == 'player') and (OQ._track_afk) then
-        if (UnitIsAFK('player')) and (oq._isAfk == nil) then
-            oq._isAfk = true
-            oq.oqgeneral_leave()
-            oq.oq_off()
-        elseif (oq._isAfk) then
-            oq._isAfk = nil
-            oq.oqgeneral_join()
-            oq.oq_on()
-        end
+function oq.player_flags_changed(unitId)
+    if (unitId ~= 'player' or not OQ._track_afk) then
+        return
+    end
+    
+    if (UnitIsAFK('player') and oq._isAfk == nil) then
+        oq._isAfk = true
+        oq.oqgeneral_leave()
+        oq.oq_off()
+    elseif (oq._isAfk) then
+        oq._isAfk = nil
+        oq.oqgeneral_join()
+        oq.oq_on()
     end
 end
 
@@ -24965,6 +24941,7 @@ function oq.on_init(now)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_SYSTEM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_CHANNEL', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER', oq.chat_filter)
+    ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER_INFORM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_INLINE_TOAST_BROADCAST', oq.chat_filter)
 
     -- first time check
@@ -25438,7 +25415,7 @@ function oq.onShow(self)
     OQTabPage6:Hide() -- waitlist
     OQTabPage7:Hide() -- banlist
 
-    if (oq.raid.raid_token == nil) and (oq.GetNumPartyMembers() > 0) then
+    if (oq.raid.raid_token == nil) and (GetNumGroupMembers() > 0) then
         -- not in an oQueue group but in a party
         local islead = UnitIsGroupLeader('player')
         if (islead) then
@@ -25449,7 +25426,7 @@ function oq.onShow(self)
             PanelTemplates_SetTab(OQMainFrame, 1)
             OQTabPage1:Show()
         end
-    elseif (oq.GetNumPartyMembers() > 0) or (oq.raid.raid_token ~= nil) then
+    elseif (GetNumGroupMembers() > 0) or (oq.raid.raid_token ~= nil) then
         -- in an oQueue group
         PanelTemplates_SetTab(OQMainFrame, 1)
         OQTabPage1:Show()
@@ -25888,19 +25865,39 @@ function OQ_ResizeMouse_up(f)
     p.__resizing = nil
 end
 
+function oq.IsMessageWellFormed(m)
+    if (m == nil) then
+        return nil
+    end
+    local str = OQ_MSGHEADER .. '' .. OQ_VER .. ','
+    if (m:sub(1, #str) == str) then
+        return true
+    end
+    str = OQSK_HEADER .. ',' .. OQSK_VER .. ','
+    if (m:sub(1, #str) == str) then
+        return true
+    end
+    return nil
+end
+
+function oq.EnsureMessageIsFormed(msg) 
+    if (not oq.IsMessageWellFormed(msg)) then
+        local token = 'W' .. oq.token_gen()
+        oq.token_push(token)
+        msg = 'OQ,' .. OQ_VER .. ',' .. token .. ',' .. OQ_TTL .. ',' .. msg
+    end
+
+    return msg
+end
 function oq.XRealmWhisper(receiverName, receiverRealm, msg)
     if (oq._isAfk) then
         return
     end
 
-    if (not oq.well_formed_msg(msg)) then
-        local messageToken = 'W' .. oq.token_gen()
-        oq.token_push(messageToken)
-        msg = 'OQ,' .. OQ_VER .. ',' .. messageToken .. ',' .. OQ_TTL .. ',' .. msg
-    end
+    msg = oq.EnsureMessageIsFormed(msg)
 
     if (player_realm == nil or player_realm == receiverRealm) then
-        SendAddonMessage('OQ', msg, 'WHISPER', receiverName)
+        SendAddonMessage(OQ_HEADER, msg, 'WHISPER', receiverName)
         oq.pkt_sent:inc()
         return
     end

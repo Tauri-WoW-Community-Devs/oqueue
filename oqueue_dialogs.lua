@@ -714,7 +714,7 @@ function oq.angry_lil_button(button)
         end
         f.hammer_down = function(self)
             local my_group, my_slot = oq.my_seat()
-            if (oq.GetNumPartyMembers() > 0) and (my_slot > 1) then
+            if (GetNumGroupMembers() > 0) and (my_slot > 1) then
                 oq.timer_oneshot(1.5, PlaySoundFile, 'Sound\\Creature\\Kologarn\\UR_Kologarn_Slay02.wav') -- you lose!
                 oq.quit_raid_now()
                 self.leaveQ(self)
