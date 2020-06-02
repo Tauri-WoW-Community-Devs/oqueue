@@ -227,7 +227,7 @@ StaticPopupDialogs['OQ_NewVersionAvailable'] = {
     hideOnEscape = true,
     OnShow = function(self, data)
         self.editBox:SetWidth(275)
-        self.editBox:SetText('https://github.com/Tauri-WoW-Community-Devs/oQueue-Tauri')
+        self.editBox:SetText('https://github.com/Tauri-WoW-Community-Devs/oqueue/releases')
         self.editBox:SetFocus()
         -- fanfare for new version
         oq.excited_cheer()

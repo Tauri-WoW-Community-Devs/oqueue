@@ -359,16 +359,10 @@ OQ.DEATHMATCH_BEGINS = 'WPvP Death Match has begun!  Get to the spine in Pandari
 OQ.WONTHEMATCH = 'won the match!'
 
 OQ.LABEL_VENTRILO = 'Ventrilo'
-OQ.LABEL_SKYPE = 'Skype'
 OQ.LABEL_TEAMSPEAK = 'Teamspeak'
-OQ.LABEL_DOLBYAXON = 'Dolby Axon'
 OQ.LABEL_DISCORD = 'Discord'
-OQ.LABEL_RAIDCALL = 'RaidCall'
-OQ.LABEL_RAZOR = 'Razer'
-OQ.LABEL_MUMBLE = 'Mumble'
 OQ.LABEL_UNSPECIFIED = 'Unspecified'
 OQ.LABEL_NOVOICE = 'No voice'
-OQ.LABEL_WOWVOIP = 'WoW in-game voip'
 
 OQ.LABEL_US_ENGLISH = 'English (US)'
 OQ.LABEL_UK_ENGLISH = 'English (UK)'
