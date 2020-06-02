@@ -89,7 +89,6 @@ local _msg_type = nil
 local _msg_id = nil
 local _oq_note = nil
 local _oq_msg = nil
-local _dest_realm = nil
 local _core_msg = nil
 local _to_name = nil
 local _to_realm = nil
@@ -3088,9 +3087,9 @@ end
 
 function oq.iam_party_leader()
     if (oq.iam_in_a_party()) then
-        return ((my_group ~= 0) and (my_slot == 1))
+        return my_group ~= 0 and my_slot == 1
     else
-        return (my_slot == 1)
+        return my_slot == 1
     end
 end
 
@@ -3110,7 +3109,7 @@ function oq.iam_alone()
 end
 
 function oq.iam_raid_leader()
-    return ((oq.raid.leader ~= nil) and (player_name == oq.raid.leader))
+    return (oq.raid.leader ~= nil and player_name == oq.raid.leader)
 end
 
 function oq.has_lead_popped()
@@ -5616,26 +5615,6 @@ function oq.raid_create()
     return 1
 end
 
--- if same realm, will whisper
--- if real-id friend, will bnwhisper
--- if not same realm and not friend, will bnfriendinvite with msg in note
---
-function oq.realid_msg(to_name, to_realm, real_id, msg, insure)
-    if (msg == nil) then
-        return
-    end
-    local rc = 0
-    if (to_name == nil or to_name == '-' or to_realm == nil) then
-        return
-    end
-    if (to_name == player_name and to_realm == player_realm) then
-        -- sending to myself?
-        return
-    end
-
-    oq.XRealmWhisper(to_name, to_realm, msg)
-end
-
 function oq.bnbackflow(msg, to_pid)
     -- ie: "OQ,0A,P477389297,G17613410,name,1,3,Tinymasher,Magtheridon"
     local tok = msg:sub(7, 16)
@@ -5780,25 +5759,6 @@ function oq.send_queued_msgs()
         oq.BNSendQ_pop()
         cnt = cnt + 1
     end
-end
-
-function oq.BNSendWhisper(pid, msg, name, realm)
-    oq.BNSendQ_push(oq.BNSendWhisper_now, pid, msg, name, realm)
-end
-
-function oq.BNSendWhisper_now(pid, msg, name, realm)
-    print("BNSendWhisper_now was called, but regular whisper should be used")
-    if (pid == 0) or (msg == nil) or (oq.toon.disabled) or (oq._isAfk) then
-        return
-    end
-    
-    -- oq.pkt_sent:noop()
-    -- return
-    if (#msg > OQ.MAX_BNET_MSG_SZ) then
-        msg = msg:sub(1, OQ.MAX_BNET_MSG_SZ)
-    end
-    BNSendGameData(pid, OQ_HEADER, msg)
-    oq.pkt_sent:inc()
 end
 
 function oq.get_field(m, fld)
@@ -5953,16 +5913,16 @@ function oq.send_invite_accept(raid_token, group_id, slot, name, class, realm, r
     local m =
         'OQ,' ..
         OQ_VER ..
-            ',' ..
-                msg_tok ..
-                    ',' ..
-                        OQ_TTL ..
-                            ',' ..
-                                'invite_accepted,' ..
-                                    raid_token ..
-                                        ',' ..
-                                            group_id ..
-                                                ',' .. slot .. ',' .. class .. ',' .. enc_data .. ',' .. req_token
+        ',' ..
+        msg_tok ..
+        ',' ..
+        OQ_TTL ..
+        ',' ..
+        'invite_accepted,' ..
+        raid_token ..
+        ',' ..
+        group_id ..
+        ',' .. slot .. ',' .. class .. ',' .. enc_data .. ',' .. req_token
 
     oq.WhisperRaidLeader(m)
 end
@@ -6177,7 +6137,7 @@ function oq.bn_echo_msg(name, realm, msg)
         return
     end
     if (oq.bn_ok2send(msg, pid)) then
-        oq.BNSendWhisper(pid, msg, name, realm)
+        oq.XRealmWhisper(name, realm, msg)
     end
 end
 
@@ -6420,62 +6380,6 @@ function oq.announce_relay(m, insure)
     -- send to raid channels
     if (oq.raid.raid_token ~= nil) then
         oq.SendPartyMessage(m)
-    end
-
-    -- send to real-id list for ppl not in the raid (hoping they will forward to their local OQGeneral channel)
-    if (_dest_realm == nil) or (_dest_realm ~= player_realm) then
-        oq.bnfriends_relay(m, insure)
-    end
-end
-
-function oq.bnfriends_relay(m, insure, xrealm)
-    local dt = 0.1
-    tbl.clear(_tags)
-    tbl.clear(_realms)
-    local target_faction = player_faction
-    if (xrealm) and (player_faction == 'H') then
-        target_faction = 'A'
-    elseif (xrealm) then
-        target_faction = 'H'
-    end
-    local cnt = 1
-    local i, v
-    for i, v in pairs(OQ_data.bn_friends) do
-        if
-            (v.isOnline and v.oq_enabled and v.toonName and v.realm and (_realms[v.realm] == nil) and
-                (v.realm ~= player_realm) and
-                (v.realm ~= oq._sender_realm) and
-                (v.faction == target_faction))
-         then
-            _tags[cnt] = v
-            cnt = cnt + 1
-            _realms[v.realm] = true
-        end
-    end
-    if (cnt <= OQ_MAX_RELAY_REALMS) then
-        for i, v in pairs(_tags) do
-            if (insure) then
-                oq.BNSendWhisper_now(v.toon_id, m, v.toonName, v.realm)
-            else
-                oq.BNSendWhisper(v.toon_id, m, v.toonName, v.realm)
-            end
-        end
-    else
-        tbl.clear(_names)
-        i = 0
-        while (i < OQ_MAX_RELAY_REALMS) do
-            local ndx = oq.random(1, cnt)
-            local v = _tags[ndx]
-            if (v ~= nil) and (v.toonName ~= nil) and (_names[v.toonName] == nil) then
-                i = i + 1
-                _names[v.toonName] = true
-                if (insure) then
-                    oq.BNSendWhisper_now(v.toon_id, m, v.toonName, v.realm)
-                else
-                    oq.BNSendWhisper(v.toon_id, m, v.toonName, v.realm)
-                end
-            end
-        end
     end
 end
 
@@ -7278,10 +7182,9 @@ function oq.send_removed_notice(token)
     if (r ~= nil) then
         oq.timer_oneshot(
             1,
-            oq.realid_msg,
+            oq.XRealmWhisper,
             r.name,
             r.realm,
-            r.realid,
             OQ_MSGHEADER ..
                 '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'removed_from_waitlist,' .. oq.raid.raid_token .. ',' .. token
         )
@@ -7366,14 +7269,8 @@ function oq.send_leave_waitlist(raid_token)
         oq.set_premade_pending(raid_token, nil)
         oq.pending[raid_token] = tbl.delete(oq.pending[raid_token])
     else
-        oq.realid_msg(
-            raid.leader,
-            raid.leader_realm,
-            raid.leader_rid,
-            OQ_MSGHEADER ..
-                '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'leave_waitlist,' .. raid_token .. ',' .. req.req_token,
-            true -- send immediately
-        )
+        local msg = OQ_MSGHEADER .. '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'leave_waitlist,' .. raid_token .. ',' .. req.req_token;
+        oq.XRealmWhisper(raid.leader, raid.leader_realm, msg)
     end
 end
 
@@ -7453,13 +7350,13 @@ function oq.send_req_waitlist(raid_token, pword)
     oq.gather_my_stats()
     local flags = OQ.FLAG_ONLINE
     local raid = oq.premades[raid_token]
-    _dest_realm = raid.leader_realm
+    local dest_realm = raid.leader_realm
 
     if (raid == nil) then
         return
     end
 
-    if (player_realm ~= _dest_realm) and (not oq.valid_rid(player_realid)) then
+    if (player_realm ~= dest_realm) and (not oq.valid_rid(player_realid)) then
         message(OQ.BAD_REALID .. ' ' .. tostring(player_realid))
         return
     end
@@ -7483,29 +7380,26 @@ function oq.send_req_waitlist(raid_token, pword)
             0
         )
         local enc_data = oq.encode_data('abc123', player_name, player_realm, player_realid)
-        oq.realid_msg(
-            raid.leader,
-            raid.leader_realm,
-            raid.leader_rid,
-            OQ_MSGHEADER ..
-                '' ..
-                    OQ_VER ..
-                        ',' ..
-                            'W1,' ..
-                                '0,' ..
-                                    'ri,' ..
-                                        raid_token ..
-                                            ',' ..
-                                                tostring(raid.type or 0) ..
-                                                    ',' ..
-                                                        tostring(GetNumGroupMembers()) ..
-                                                            ',' ..
-                                                                req_token ..
-                                                                    ',' ..
-                                                                        enc_data ..
-                                                                            ',' ..
-                                                                                stats .. ',' .. oq.encode_pword(pword)
-        )
+        local msg = OQ_MSGHEADER ..
+        '' ..
+        OQ_VER ..
+        ',' ..
+        'W1,' ..
+        '0,' ..
+        'ri,' ..
+        raid_token ..
+        ',' ..
+        tostring(raid.type or 0) ..
+        ',' ..
+        tostring(GetNumGroupMembers()) ..
+        ',' ..
+        req_token ..
+        ',' ..
+        enc_data ..
+        ',' ..
+        stats .. ',' .. oq.encode_pword(pword)
+
+        oq.XRealmWhisper(raid.leader, raid.leader_realm, msg)
     else
         local mmr = oq.get_best_mmr(raid.type)
         local pvppower = oq.get_pvppower()
@@ -7516,31 +7410,29 @@ function oq.send_req_waitlist(raid_token, pword)
         if (pdata == '') then
             pdata = 'AAA'
         end
-        oq.realid_msg(
-            raid.leader,
-            raid.leader_realm,
-            raid.leader_rid,
-            OQ_MSGHEADER ..
-                '' ..
-                    OQ_VER ..
-                        ',' ..
-                            'W1,' ..
-                                '0,' ..
-                                    'ri,' ..
-                                        raid_token ..
+
+        local msg = OQ_MSGHEADER ..
+        '' ..
+            OQ_VER ..
+                ',' ..
+                    'W1,' ..
+                        '0,' ..
+                            'ri,' ..
+                                raid_token ..
+                                    ',' ..
+                                        tostring(raid.type or 0) ..
                                             ',' ..
-                                                tostring(raid.type or 0) ..
-                                                    ',' ..
-                                                        '1,' ..
-                                                            req_token ..
+                                                '1,' ..
+                                                    req_token ..
+                                                        ',' ..
+                                                            enc_data ..
                                                                 ',' ..
-                                                                    enc_data ..
+                                                                    stats ..
                                                                         ',' ..
-                                                                            stats ..
-                                                                                ',' ..
-                                                                                    oq.encode_pword(pword) ..
-                                                                                        ',' .. pdata
-        )
+                                                                            oq.encode_pword(pword) ..
+                                                                                ',' .. pdata
+
+        oq.XRealmWhisper(raid.leader, raid.leader_realm, msg)
     end
 end
 
@@ -8179,7 +8071,7 @@ end
 
 -- TODO remove this, since we will always operate on either only char_name or char_name-realm_short
 function oq.InviteUnit(name, realm, req_token, ok2remove)
-    print("oq.InviteUnit - please convert to InviteUnitRealID");
+    oq.log(true, "oq.InviteUnit - please convert to InviteUnitRealID");
     if (realm == nil) or (realm == player_realm) then
         InviteUnit(name)
     else
@@ -8199,6 +8091,10 @@ function oq.InviteUnit(name, realm, req_token, ok2remove)
 end
 
 function oq.InviteUnitRealID(realId, reqToken, okToremove)
+    if (realId == nil or realId == '' or strlower(realId) == 'nil') then
+        return
+    end
+
     InviteUnit(realId)
     oq.waitlist_clear_token(reqToken)
 
@@ -8262,8 +8158,6 @@ function oq.group_invite_slot(req_token, group_id, slot)
 
     r._expires = oq.utc_time() + 10 -- invite expires in 10 seconds
 
-    print(oq.raid.type, group_id, slot, r.name, r.realm, r.realid, req_token);
-
     if (
         (oq.raid.type ~= OQ.TYPE_BG) and 
         (oq.raid.type ~= OQ.TYPE_RBG) and 
@@ -8272,7 +8166,6 @@ function oq.group_invite_slot(req_token, group_id, slot)
         (group_id ~= my_group)
     )
      then
-        print("inv")
         -- proxy_invite needed
         oq.proxy_invite(group_id, slot, r.name, r.realm, r.realid, req_token)
         oq.timer('brief_leader', 2.5, oq.brief_group_lead, nil, group_id)
@@ -8318,7 +8211,7 @@ function oq.group_invite_slot(req_token, group_id, slot)
     local enc_data_ = oq.encode_data('abc123', r.name, r.realm, r.realid)
     oq.reform_keep(r.name, r.realm, enc_data_, req_token)
 
-    oq.realid_msg(r.name, r.realm, r.realid, msg, true)
+    oq.XRealmWhisper(r.name, r.realm, msg)
     oq.timer_oneshot(1.0, oq.InviteUnitRealID, r.realid, req_token)
 end
 
@@ -8410,7 +8303,7 @@ function oq.remove_member(g_id, slot)
         oq.UninviteUnit(n)
     elseif (oq.raid.type == OQ.TYPE_BG) and (slot == 1) then
         local m = oq.raid.group[g_id].member[slot]
-        oq.realid_msg(m.name, m.realm, m.realid, 'remove,' .. tostring(g_id) .. ',' .. tostring(slot), true)
+        oq.XRealmWhisper(m.name, m.realm, 'remove,' .. tostring(g_id) .. ',' .. tostring(slot))
     end
     -- incase the slot if a group lead that is offline
     oq.on_remove(g_id, slot)
@@ -11650,7 +11543,7 @@ function oq.on_bounty(contract, tm, pname)
         pname = nil
     end
     oq.bounty_update(bid, type, start, dur, h_reward, a_reward, flags, h_x, a_x, t1, pname)
-    oq.send_xrealm(_msg)
+    oq.SendOQChannelMessage(_msg)
 end
 
 function oq.show_the_book()
@@ -11770,7 +11663,7 @@ function oq.on_thebook(n, start_tm, ...)
         bb:top()
     end
     oq.update_bounty_page()
-    oq.send_xrealm(_msg)
+    oq.SendOQChannelMessage(_msg)
 end
 
 function oq.encode_bounty_collection(b, now)
@@ -15842,22 +15735,19 @@ function oq.send_pending_note(self)
     if (txt ~= r._my_note) then
         r._my_note = txt
         -- send note
-        oq.realid_msg(
-            r.leader,
-            r.leader_realm,
-            r.leader_rid,
-            OQ_MSGHEADER ..
-                '' ..
-                    OQ_VER ..
-                        ',' ..
-                            'W1,' ..
-                                '0,' ..
-                                    'pending_note,' ..
-                                        raid_token ..
-                                            ',' ..
-                                                tostring(player_realid) ..
-                                                    ',' .. oq.encode_note(txt) .. ',' .. tostring(req.req_token)
-        )
+        local msg = OQ_MSGHEADER ..
+        '' ..
+            OQ_VER ..
+                ',' ..
+                    'W1,' ..
+                        '0,' ..
+                            'pending_note,' ..
+                                raid_token ..
+                                    ',' ..
+                                        tostring(player_realid) ..
+                                            ',' .. oq.encode_note(txt) .. ',' .. tostring(req.req_token)
+
+        oq.XRealmWhisper(r.leader, r.leader_realm, msg)
     end
     oq.set_premade_pending(raid_token, r.pending, true) -- force update for the icon
     oq.hide_shade()
@@ -17487,12 +17377,8 @@ function oq.on_proxy_invite(group_id, slot_, enc_data_, req_token_)
     local name, realm, rid_, realmid_ = oq.decode_data('abc123', enc_data_)
     oq.reform_keep(name, realm, enc_data_, req_token_)
 
-    if (realm == player_realm) then
-        -- on my realm, let player know he's in my group then invite him
-        oq.realid_msg(name, realm, rid_, msg, true)
-        oq.timer_oneshot(1.0, oq.InviteUnitRealID, rid_, req_token_)
-        return
-    end
+    oq.XRealmWhisper(name, realm, msg)
+    oq.timer_oneshot(1.0, oq.InviteUnitRealID, rid_, req_token_)
 
     local key = rid_
 
@@ -17505,9 +17391,6 @@ function oq.on_proxy_invite(group_id, slot_, enc_data_, req_token_)
     oq.pending_invites[key].req_token = req_token_
 
     oq.names[strlower(key)] = rid_
-    
-    oq.realid_msg(name, realm, rid_, msg, true)
-    oq.timer_oneshot(1.0, oq.InviteUnitRealID, rid_, req_token_)
 end
 
 --
@@ -17524,6 +17407,7 @@ function oq.on_proxy_target(group_id, slot, enc_data, raid_token, req_token)
     local gl_name, gl_realm, gl_rid, gl_realmid_ = oq.decode_data('abc123', enc_data)
     my_group = group_id
     my_slot = slot
+
     oq.ui_player()
 
     oq.clear_pending()
@@ -17818,7 +17702,7 @@ function oq.on_invite_accepted(raid_token, group_id, slot, class, enc_data, req_
     end
 
     -- invite (by proxy if needed)
-    if ((realm == player_realm) and (group_id == my_group)) then
+    if (realm == player_realm and group_id == my_group) then
         -- direct invite ok
         local enc = oq.encode_data('abc123', name, realm, rid) -- rid not needed, as the invite goes to this realm
         oq.on_proxy_invite(group_id, slot, enc, req_token)
@@ -17902,6 +17786,7 @@ function oq.on_party_join(group_id, raid_name, raid_leader_class, enc_data, raid
     raid_notes = oq.decode_note(raid_notes)
 
     my_group, my_slot = oq.find_my_group_id()
+
     oq.raid.name = raid_name
     oq.raid.leader = raid_leader
     oq.raid.leader_class = raid_leader_class
@@ -18053,13 +17938,7 @@ function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
 
     if (g_id == 1) and (my_group ~= 1) and (my_slot == 1) then
         -- connect with oq-leader
-        if (realm ~= player_realm) then
-            local pid = oq.bnpresence(name .. '-' .. realm)
-            if (pid == 0) then
-                -- real-id the oq-leader
-                oq.realid_msg(name, realm, lead_rid, '#tok:' .. req_token .. ',#lead')
-            end
-        end
+        oq.XRealmWhisper(name, realm, '#tok:' .. req_token .. ',#lead')
         -- push info
         lead_ticker = 0
         oq.timer_oneshot(1, oq.force_stats)
@@ -18105,14 +17984,9 @@ function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
             oq.ui_raidleader()
         end
 
-        -- connect with oq-leader
-        if (player_realm ~= leader_realm) and (g_id ~= 1) then
+        if (g_id ~= 1) then
             local r = oq.raid.group[1].member[1]
-            local pid = oq.bnpresence(r.name .. '-' .. r.realm)
-            if (pid == 0) then
-                -- real-id the oq-leader
-                oq.realid_msg(r.name, r.realm, lead_rid, '#tok:' .. req_token .. ',#lead')
-            end
+            oq.XRealmWhisper(r.name, r.realm, '#tok:' .. req_token .. ',#lead')
         end
         -- push info
         lead_ticker = 0
@@ -19070,10 +18944,9 @@ function oq.send_invite_response(name, realm, realid, raid_token, req_token, ans
     end
     oq.timer_oneshot(
         2,
-        oq.realid_msg,
+        oq.XRealmWhisper,
         name,
         realm,
-        realid,
         OQ_MSGHEADER ..
             '' ..
                 OQ_VER ..
@@ -19242,15 +19115,7 @@ function oq.reform_group(g_id)
         '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'reform,' .. tostring(oq.raid.raid_token) .. ',' .. tostring(g_id)
 
     local lead = oq.raid.group[g_id].member[1]
-    if (lead.realm == player_realm) then
-        -- on my realm, let player know he's in my group then invite him
-        oq.realid_msg(lead.name, lead.realm, lead.realid, msg, true)
-    end
-
-    local presenceID = oq.bnpresence(lead.name .. '-' .. lead.realm)
-    if (presenceID) and (presenceID > 0) then
-        oq.BNSendWhisper_now(presenceID, msg, lead.name, lead.realm)
-    end
+    oq.XRealmWhisper(lead.name, lead.realm, msg)
 end
 
 function oq.on_reform(raid_token, group_id)
@@ -20738,13 +20603,8 @@ function oq.on_scores(enc_data, sk_time, curr_oq_version, xdata, officers, xreal
 
     -- check current version against sk version
     oq.verify_version(OQ_VER, curr_oq_version)
-    oq.send_xrealm(_msg)
+    oq.SendOQChannelMessage(_msg)
     tbl.delete(_f)
-end
-
-function oq.send_xrealm(m)
-    oq.SendOQChannelMessage(m)
-    -- oq.bnfriends_relay(m, nil, true)
 end
 
 function oq.verify_version(proto_version, oq_version)
@@ -22503,33 +22363,6 @@ end
 -- in-raid only procs
 --
 function oq.procs_join_raid()
-    --[[ no raid required
-  oq.proc[ "boss"                  ] = oq.on_boss ;
-  oq.proc[ "contract"              ] = oq.on_bounty ; -- was "bounty"
-  oq.proc[ "btags"                 ] = oq.on_btags ;
-  oq.proc[ "disband"               ] = oq.on_disband ;
-  oq.proc[ "invite_accepted"       ] = oq.on_invite_accepted ;
-  oq.proc[ "invite_group"          ] = oq.on_invite_group ;
-  oq.proc[ "invite_req_response"   ] = oq.on_invite_req_response ;
-  oq.proc[ "k3"                    ] = oq.on_karma ;
-  oq.proc[ "leave_waitlist"        ] = oq.on_leave_waitlist ;  
-  oq.proc[ "mbox_bn_enable"        ] = oq.on_mbox_bn_enable ;
-  oq.proc[ "oq_user"               ] = oq.on_oq_user ;   
-  oq.proc[ "oq_user_ack"           ] = oq.on_oq_user ;   
-  oq.proc[ "oq_version"            ] = oq.on_oq_version ;   
-  oq.proc[ "party_join"            ] = oq.on_party_join ;
-  oq.proc[ "pending_note"          ] = oq.on_pending_note ;
-  oq.proc[ "p8"                    ] = oq.on_premade ;
-  oq.proc[ "proxy_invite"          ] = oq.on_proxy_invite ;
-  oq.proc[ "proxy_target"          ] = oq.on_proxy_target ;
-  oq.proc[ "removed_from_waitlist" ] = oq.on_removed_from_waitlist ;
-  oq.proc[ "report_recvd"          ] = oq.on_report_recvd ;
-  oq.proc[ "ri"                    ] = oq.on_req_invite ; -- was "req_invite"
-  oq.proc[ "scores"                ] = oq.on_scores ;
-  oq.proc[ "bb"                    ] = oq.on_thebook ;  -- was "thebook"
-  oq.proc[ "tops_recvd"            ] = oq.on_tops_recvd ;
-  oq.proc[ "v8"                    ] = oq.on_vlist ;
-]]
     -- raid required procs
     --
     oq.proc['brb'] = oq.on_brb
@@ -22742,11 +22575,7 @@ function oq.forward_msg(source, sender, msg_type, msg_id, msg)
     if (not _ok2relay) then
         return
     end
-    if (_ok2relay == 'bnet') then
-        oq.bnfriends_relay(msg)
-        _ok2relay = nil -- it's been sent via bnfriends, stop it there
-        return
-    end
+
     if (oq.iam_raid_leader()) and ((msg_type == 'B') or (msg_type == 'R')) then
         -- relay to group leads
         oq.SendPartyMessage(msg)
@@ -22807,17 +22636,8 @@ function oq.ping_oq_toon(toon_pid, toonName, realmName, ts, ack)
     if (ack) then
         msg = msg .. ',ack'
     end
-    -- old way was immediate send.  was told by lore b.net could handle it and there is no real limitation
-    -- just incase that's not quite accurate, moving to queue'd msg'ing
-    --
-    --  BNSendGameData(toon_pid, "OQ", msg);
-    --  oq.pkt_sent:inc();
 
-    -- push msg into queue based sending to insure we don't exceed the per sec limit
-    -- if lots of friends come online at once, it could happen
-    -- downside is the pkt could get dropped if it's in the queue longer then 2 seconds
-    --
-    oq.BNSendWhisper(toon_pid, msg)
+    oq.XRealmWhisper(toonName, toonRealm, msg)
 end
 
 function oq.tid2pid(tid)
@@ -23267,7 +23087,6 @@ function oq.post_process()
     oq._sender_toonid = nil
     _source = nil
     _ok2relay = 1
-    _dest_realm = nil
     _msg_type = nil
     _msg_id = nil
     _core_msg = nil
@@ -23885,19 +23704,19 @@ function oq.find_my_group_id()
         end
         return 1, 1
     end
-    local i, slot, g
+    local i, slot, group
     slot = 0
-    g = 0
+    group = 0
     for i = 1, n do
-        local name_, _, gid = GetRaidRosterInfo(i)
+        local name_, _, subgroup = GetRaidRosterInfo(i)
         local name, realm = oq.crack_name(name_)
-        if (gid ~= g) then
-            g = gid
+        if (subgroup ~= group) then
+            group = subgroup
             slot = 0
         end
         slot = slot + 1
         if (name == player_name) then
-            return gid, slot
+            return subgroup, slot
         end
     end
     return 0, 0
@@ -25316,13 +25135,17 @@ function oq.on_party_invite_request(leader_name)
     if (my_group <= 0) then
         return
     end
+
     local grp_lead = oq.raid.group[my_group].member[1]
     local n = grp_lead.name
+    
     if (grp_lead == nil) or (grp_lead.realm == nil) then
         return
     end
+        
     if (grp_lead.realm ~= player_realm) then
-        n = n .. '-' .. grp_lead.realm
+        local realmShort = oq.FindRealmNameShort(grp_lead.realm)
+        n = n .. '-' .. realmShort
     end
 
     if (n == leader_name) then
@@ -25871,6 +25694,15 @@ function oq.EnsureMessageIsFormed(msg)
 end
 function oq.XRealmWhisper(receiverName, receiverRealm, msg)
     if (oq._isAfk) then
+        return
+    end
+
+    if (receiverName == nil or receiverName == '-') then
+        return
+    end
+
+    -- Sending to myself
+    if (receiverName == player_name and receiverRealm == player_realm) then
         return
     end
 
