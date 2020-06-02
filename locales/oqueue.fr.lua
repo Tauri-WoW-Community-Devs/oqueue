@@ -351,7 +351,6 @@ OQ.CONTRACT_CLAIMED02 = '%s claimed contract #%s and won %s'
 OQ.TARGET_MARK = "You've targeted a bounty target! (contract#%s)"
 OQ.BOUNTY_TARGET = "You've killed a bounty target! (contract#%s)"
 OQ.DEATHMATCH_SCORE = 'Score!'
-OQ.FRIEND_REQUEST = '%s-%s veut devenir votre ami'
 OQ.ALREADY_FRIENDED = 'Vous êtes déja ami battle-net avec %s'
 OQ.TT_FRIEND_REQUEST = 'Requête amie'
 OQ.DEATHMATCH_BEGINS = 'WPvP Death Match has begun!  Get to the spine in Pandaria and defend your pvp vendors!'

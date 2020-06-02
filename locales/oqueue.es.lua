@@ -339,7 +339,6 @@ OQ.CONTRACT_CLAIMED02 = '%s reclama el contrato #%s y gana %s'
 OQ.TARGET_MARK = '¡Has establecido como objetivo un objetivo con recompensa! (contrato#%s)'
 OQ.BOUNTY_TARGET = '¡Has matado un objetivo con recompensa! (contrato#%s)'
 OQ.DEATHMATCH_SCORE = '¡Punto!'
-OQ.FRIEND_REQUEST = '%s-%s quiere ser tu amigo'
 OQ.ALREADY_FRIENDED = 'ya eres amigo de battle-net con %s'
 OQ.TT_FRIEND_REQUEST = 'añadir amigo'
 OQ.DEATHMATCH_BEGINS =

@@ -6061,37 +6061,22 @@ function oq.get_toon_pid(friendId, name_, realm_)
     return 0
 end
 
-function oq.is_bnfriend(btag_, name_, realm_)
-    if (btag_ == nil) then
+function oq.IsFriend(realId)
+    if (realId == nil) then
         return nil, nil
     end
-    btag_ = strlower(btag_) -- just to make sure
-    name_ = strlower(name_ or '')
-    realm_ = strlower(realm_ or '')
-    local ntotal, nonline = GetNumFriends()
-    local friendId
-    for friendId = 1, ntotal do
-        tbl.fill(_f, GetFriendInfo(friendId))
 
-        local presenceID = _f[1]
-        local btag = _f[3]
-        local client = _f[7]
-        local online = _f[8]
-        if (btag) and (btag_ == strlower(btag)) then
-            if online then
-                local pid = oq.get_toon_pid(friendId, name_, realm_)
-                if (pid ~= 0) then
-                    return pid, true
-                elseif (client == 'WoW') then
-                    return presenceID, true
-                else
-                    return 0, nil
-                end
-            else
-                return 0, nil
-            end
+    realId = strlower(realId)
+    local total = GetNumFriends()
+    local i
+    for i = 1, total do
+        local friendName, _, _, _, isOnline = GetFriendInfo(i)
+
+        if (friendName and realId == strlower(friendName)) then
+            return true, isOnline
         end
     end
+
     return nil, nil
 end
 
@@ -8633,11 +8618,11 @@ function oq.on_classdot_menu_select(g_id, slot, action)
         oq.karma_vote(g_id, slot, -1)
     elseif (action == 'friend') then
         local m = oq.raid.group[tonumber(g_id)].member[tonumber(slot)]
-        local pid, is_online = oq.is_bnfriend(m.realid)
-        if (pid ~= nil) then
+        local isFriend = oq.IsFriend(m.realid)
+        if (isFriend) then
             print(OQ.LILTRIANGLE_ICON .. ' ' .. string.format(OQ.ALREADY_FRIENDED, m.realid))
         else
-            BNSendFriendInvite(m.realid, string.format(OQ.FRIEND_REQUEST, player_name, player_realm))
+            AddFriend(m.realid)
         end
     elseif (action == 'kick') then
         oq.remove_member(g_id, slot)
@@ -22903,7 +22888,7 @@ function oq.on_oq_user(toonName, realmName, faction, btag, ts_, is_ack)
     if (_source ~= 'bnet') then
         return
     end
-    print("on_oq_user")
+
     local ts = oq.decode_mime64_digits(ts_)
     local name_ndx = strlower(tostring(toonName) .. '-' .. tostring(realmName))
     local friend = OQ_data.bn_friends[name_ndx]
@@ -24510,7 +24495,7 @@ function oq.player_flags_changed(unitId)
     if (unitId ~= 'player' or not OQ._track_afk) then
         return
     end
-    
+
     if (UnitIsAFK('player') and oq._isAfk == nil) then
         oq._isAfk = true
         oq.oqgeneral_leave()
@@ -24655,22 +24640,22 @@ function oq.FindRealmNameShort(name)
     return nil
 end
 
-function oq.btag_hyperlink_action(btag, action)
-    if (btag == nil) or (btag == '') or (btag == 'nil') then
+function oq.btag_hyperlink_action(realId, action)
+    if (realId == nil) or (realId == '') or (realId == 'nil') then
         return
     end
     if (action == 'upvote') then
-        oq.karma_vote_btag(btag, 1)
+        oq.karma_vote_btag(realId, 1)
     elseif (action == 'dnvote') then
-        oq.karma_vote_btag(btag, -1)
+        oq.karma_vote_btag(realId, -1)
     elseif (action == 'ban') then
-        oq.ban_user(btag)
+        oq.ban_user(realId)
     elseif (action == 'friend') then
-        local pid, is_online = oq.is_bnfriend(btag)
-        if (pid ~= nil) then
-            print(OQ.LILTRIANGLE_ICON .. ' ' .. string.format(OQ.ALREADY_FRIENDED, btag))
+        local isFriend = oq.IsFriend(realId)
+        if (isFriend) then
+            print(OQ.LILTRIANGLE_ICON .. ' ' .. string.format(OQ.ALREADY_FRIENDED, realId))
         else
-            BNSendFriendInvite(btag, string.format(OQ.FRIEND_REQUEST, player_name, player_realm))
+            AddFriend(realid)
         end
     end
 end
