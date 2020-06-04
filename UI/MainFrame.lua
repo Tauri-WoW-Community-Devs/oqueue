@@ -4,8 +4,9 @@ local _
 
 local AceGUI = LibStub('AceGUI-3.0')
 
-function OQ:Init_MainFrame()local frame = AceGUI:Create("Frame")
-    frame:SetTitle(OQ.TITLE_LEFT .. OQUEUE_VERSION .. OQ.TITLE_RIGHT)
+function OQ:Init_MainFrame()
+    local frame = AceGUI:Create("Frame")
+    frame:SetTitle(OQ.TITLE_LEFT .. "TODO VERSION" .. OQ.TITLE_RIGHT)
     frame:SetStatusText("Premades: 0/0")
     frame:SetLayout("Fill")
     frame:Hide()
@@ -44,11 +45,10 @@ function OQ:Init_MainFrame()local frame = AceGUI:Create("Frame")
         {text="Ban list", value="tabBanList"},
         {text="Waitlist", value="tabWaitList"},
     })
-    
-    -- Register callback
+
     tab:SetCallback("OnGroupSelected", OnTabChange)
-    -- Set initial Tab (this will fire the OnGroupSelected callback)
     tab:SelectTab("tabPremadeCreate")
-    -- add to the frame container
+
     frame:AddChild(tab)
+    return frame
 end

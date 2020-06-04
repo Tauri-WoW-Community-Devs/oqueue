@@ -42,6 +42,7 @@ oqueue_ui_tools.lua
 
 -- UI rewrite
 UI\UI_Utils.lua
+UI\MainFrame.lua
 UI\Tab_BanList.lua
 UI\Tab_PremadeCreate.lua
 UI\Tab_PremadeList.lua
