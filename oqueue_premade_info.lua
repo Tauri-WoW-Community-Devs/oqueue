@@ -633,20 +633,20 @@ function oq.get_raid_bosses_killed(name)
 end
 
 function oq.get_raid_id(raid_name)
-    local i, v
-    for i, v in pairs(OQ.raid_ids) do
-        if (i == raid_name) then
-            return v
+    local id, name
+    for id, name in pairs(OQ.raids) do
+        if (name == raid_name) then
+            return id
         end
     end
     return 0
 end
 
 function oq.get_raid_name(raid_id)
-    local i, v
-    for i, v in pairs(OQ.raid_ids) do
-        if (v == raid_id) then
-            return i
+    local id, name
+    for id, name in pairs(OQ.raids) do
+        if (id == raid_id) then
+            return name
         end
     end
     return nil

@@ -356,23 +356,21 @@ OQ.CLASS_COLORS = {
     ['LK'] = {r = 0.58, g = 0.51, b = 0.79},
     ['WA'] = {r = 0.78, g = 0.61, b = 0.43},
     ['XX'] = {r = 0.20, g = 0.20, b = 0.00},
-    ['YY'] = {r = 0.20, g = 0.20, b = 0.00},
-    ['ZZ'] = {r = 0.20, g = 0.20, b = 0.00}
 }
 
 OQ.ROLES = {
-    ['DAMAGER'] = 1,
+    ['TANK'] = 1,
     ['HEALER'] = 2,
-    ['NONE'] = 3,
-    ['TANK'] = 4,
-    [1] = 'DAMAGER',
+    ['DPS'] = 3,
+    ['NONE'] = 4,
+    [1] = 'TANK',
     [2] = 'HEALER',
-    [3] = 'NONE',
-    [4] = 'TANK',
-    ['D'] = 1,
+    [3] = 'DPS',
+    [4] = 'NONE',
+    ['T'] = 1,
     ['H'] = 2,
-    ['N'] = 3,
-    ['T'] = 4
+    ['D'] = 3,
+    ['N'] = 4
 }
 
 OQ.ROLE_FLAG = {
@@ -424,8 +422,21 @@ OQ.LONG_CLASS = {
     ['LK'] = 'WARLOCK',
     ['WA'] = 'WARRIOR',
     ['XX'] = 'NONE',
-    ['YY'] = 'UNK',
-    ['ZZ'] = 'UNK'
+}
+
+OQ.CLASSES = {
+    ['DK'] = 'Death Knight',
+    ['DR'] = 'Druid',
+    ['HN'] = 'Hunter',
+    ['MG'] = 'Mage',
+    ['MK'] = 'Monk',
+    ['PA'] = 'Paladin',
+    ['PR'] = 'Priest',
+    ['RO'] = 'Rogue',
+    ['SH'] = 'Shaman',
+    ['LK'] = 'Warlock',
+    ['WA'] = 'Warrior',
+    ['XX'] = 'None',
 }
 
 OQ.TINY_CLASS = {
@@ -441,8 +452,6 @@ OQ.TINY_CLASS = {
     ['LK'] = 'J',
     ['WA'] = 'K',
     ['XX'] = 'L',
-    ['YY'] = 'M',
-    ['ZZ'] = 'N',
     ['A'] = 'DK',
     ['B'] = 'DR',
     ['C'] = 'HN',
@@ -455,8 +464,6 @@ OQ.TINY_CLASS = {
     ['J'] = 'LK',
     ['K'] = 'WA',
     ['L'] = 'XX',
-    ['M'] = 'YY',
-    ['N'] = 'ZZ'
 }
 
 OQ.CLASS_FLAG = {

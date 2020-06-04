@@ -8,6 +8,8 @@
 ## DefaultState: enabled
 ## SavedVariables: OQ_data
 
+embeds.xml
+
 oqueue.defines.lua 
 
 locales\oqueue.en.lua
@@ -22,8 +24,10 @@ locales\oqueue.ru.lua
 region\realms.us.lua
 region\realms.eu.lua
 
-Libs\LibStub\LibStub.lua
-Libs\LibBossIDs-1.0\lib.xml
+libs\LibStub\LibStub.lua
+libs\LibBossIDs-1.0\lib.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
 
 oqueue.lua
 oqueue_tables.lua
@@ -36,6 +40,16 @@ oqueue_timers.lua
 oqueue_tooltips.lua
 oqueue_ui_tools.lua
 
+-- UI rewrite
+UI\UI_Utils.lua
+UI\Tab_BanList.lua
+UI\Tab_PremadeCreate.lua
+UI\Tab_PremadeList.lua
+UI\Tab_PremadeMy.lua
+UI\Tab_Score.lua
+UI\Tab_Settings.lua
+UI\Tab_WaitList.lua
+
 -- battleground timers
 battlegrounds\fog_of_war.lua
 battlegrounds\alterac_valley.lua
@@ -45,5 +59,3 @@ battlegrounds\eye_of_the_storm.lua
 battlegrounds\isle_of_conquest.lua
 battlegrounds\twin_peaks.lua
 battlegrounds\warsong_gulch.lua
-
-oqueue.xml

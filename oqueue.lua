@@ -1,5 +1,10 @@
 ﻿local addonName, OQ = ...
 local L = OQ._T -- for literal string translations
+local AceGUI = LibStub("AceGUI-3.0")
+
+LibStub("AceAddon-3.0"):NewAddon(OQ, addonName, "AceConsole-3.0", "AceEvent-3.0")
+-- local L = LibStub("AceLocale-3.0"):GetLocale("oQueue", true)
+
 if (OQ.table == nil) then
     OQ.table = {}
 end
@@ -185,6 +190,31 @@ local oq = {
     [2] = { name = 'hack' , class = 'rogue', realm = '', realid = '', level = '84', ilevel = '390', resil = '4200', realid = '' },
   },
 ]]
+
+
+function OQ:OnInitialize()
+    -- self.db = LibStub("AceDB-3.0"):New(addonName .. "DB")
+
+    OQ:RegisterChatCommand("oq", "ProcessChatCommand")
+    OQ:RegisterChatCommand("oqueue", "ProcessChatCommand")
+    -- self:RegisterChatCommand("bounty", "oq.toggle_bounty_board")
+    -- self:RegisterChatCommand("bb", "oq.toggle_bounty_board")
+
+    local frame = OQ:Init_MainFrame()
+    oq.ui = frame
+
+    OQ:RegisterEvents()
+    OQ:OnAddonLoaded()
+end
+
+function OQ:OnEnable()
+    -- Called when the addon is enabled
+end
+
+function OQ:OnDisable()
+    -- Called when the addon is disabled
+end
+
 local dtp = oq
 function OQ:mod()
     return oq
@@ -250,9 +280,7 @@ end
 --   slash commands
 -------------------------------------------------------------------------------
 
-SLASH_OQUEUE1 = '/oqueue'
-SLASH_OQUEUE2 = '/oq'
-SlashCmdList['OQUEUE'] = function(msg, editbox)
+function OQ:ProcessChatCommand(msg, editbox)
     if (msg == nil) or (msg == '') then
         oq.ui_toggle()
         return
@@ -266,6 +294,12 @@ SlashCmdList['OQUEUE'] = function(msg, editbox)
     if (oq.options[arg1] ~= nil) then
         oq.options[arg1](opts)
     end
+end
+
+SLASH_OQUEUE1 = '/oqueue'
+SLASH_OQUEUE2 = '/oq'
+SlashCmdList['OQUEUE'] = function(msg, editbox)
+    oQueue:ProcessChatCommand()
 end
 
 SLASH_BOUNTY1 = '/bounty'
@@ -1487,25 +1521,6 @@ function oq.reposition_ui()
     end
 end
 
-function oq.frame_resize()
-    local cy = OQ_data._height or OQ.MIN_FRAME_HEIGHT
-    local dy = cy - OQMainFrame:GetHeight()
-    OQTabPage1:SetHeight(OQTabPage1:GetHeight() + dy)
-    OQTabPage1:_resize()
-    OQTabPage2:SetHeight(OQTabPage2:GetHeight() + dy)
-    OQTabPage2:_resize()
-    OQTabPage3:SetHeight(OQTabPage3:GetHeight() + dy)
-    OQTabPage3:_resize()
-    OQTabPage5:SetHeight(OQTabPage6:GetHeight() + dy)
-    OQTabPage5:_resize()
-    OQTabPage6:SetHeight(OQTabPage6:GetHeight() + dy)
-    OQTabPage6:_resize()
-    OQTabPage7:SetHeight(OQTabPage7:GetHeight() + dy)
-    OQTabPage7:_resize()
-
-    oq.reshuffle_premades()
-end
-
 function oq.set_params(opt)
     if (opt == nil) then
         return
@@ -1517,7 +1532,6 @@ function oq.set_params(opt)
     elseif (opt:find('height')) then
         OQ_data._height = min(1000, max(OQ.MIN_FRAME_HEIGHT, tonumber(opt:sub(opt:find(' ') or -1, -1)) or 0))
         oq.ui:SetHeight(OQ_data._height or OQ.MIN_FRAME_HEIGHT)
-        oq.frame_resize()
     end
 end
 
@@ -1557,14 +1571,10 @@ function oq.show_data(opt)
         oq.show_count()
     elseif (opt == 'date') then
         oq.toggle_datestamp()
-    elseif (opt:find('frames') == 1) then
-        oq.frame_report(opt)
     elseif (opt == 'globals') then
         oq.dump_globals()
     elseif (opt == 'income') then
         oq.check_currency()
-    elseif (opt:find('inuse') == 1) then
-        oq.frames_inuse_report(opt)
     elseif (opt == 'locals') then
         oq.show_locals()
     elseif (opt:find('premades') == 1) then
@@ -6123,10 +6133,6 @@ function oq.cmdline_clear(opt)
     if (opt == 'exclusions') then
         oq.clear_exclusions()
         return
-    elseif (opt == 'height') then
-        OQ_data._height = nil
-        oq.frame_resize()
-        return
     elseif (opt == 'premades') then
         oq.remove_all_premades()
         return
@@ -6147,7 +6153,7 @@ function oq.invert_exclusions()
     for i, v in pairs(OQ.lang_selections) do
         oq.set_lang_filter(i, true, true)
     end
-    for i, v in pairs(OQ.findpremade_types) do
+    for i, v in pairs(OQ._premade_types) do
         oq.on_premade_filter(i, v, true, true)
     end
     oq.tab2._filter._edit:SetText('')
@@ -9980,21 +9986,21 @@ function oq.pause_bar_render(self)
 end
 
 function oq.hook_modifier(f)
-    f:RegisterEvent('MODIFIER_STATE_CHANGED')
-    f:SetScript(
-        'OnEvent',
-        function(self, event, ...)
-            if self[event] then
-                return self[event](...)
-            end
-        end
-    )
-    function f.MODIFIER_STATE_CHANGED(...)
-        local key, state = ...
-        if (f:IsVisible()) and (key == 'LSHIFT' or key == 'RSHIFT') then
-            oq.toggle_raid_scroll(state)
-        end
-    end
+    -- f:RegisterEvent('MODIFIER_STATE_CHANGED')
+    -- f:SetScript(
+    --     'OnEvent',
+    --     function(self, event, ...)
+    --         if self[event] then
+    --             return self[event](...)
+    --         end
+    --     end
+    -- )
+    -- function f.MODIFIER_STATE_CHANGED(...)
+    --     local key, state = ...
+    --     if (f:IsVisible()) and (key == 'LSHIFT' or key == 'RSHIFT') then
+    --         oq.toggle_raid_scroll(state)
+    --     end
+    -- end
 end
 
 function oq.unhook_modifier(f)
@@ -13632,12 +13638,12 @@ function oq.premade_difficulty_selection(id)
 end
 
 OQ.difficulty_selections = {
-    [3] = L['10N'],
-    [4] = L['25N'],
-    [5] = L['10H'],
-    [6] = L['25H'],
-    [7] = L['LFR'],
-    [14] = L['flex']
+    [3] = L['Normal 10'],
+    [4] = L['Normal 25'],
+    [5] = L['Heroic 10'],
+    [6] = L['Heroic 25'],
+    [7] = L['Looking For Raid'],
+    [14] = L['Flexible']
 }
 
 function oq.make_dropdown_difficulty_filter()
@@ -13708,7 +13714,7 @@ function oq.make_dropdown_premade_subtype_selector()
         end
     )
 
-    for raid_id, text in tbl.orderedByValuePairs(OQ.raid_ids) do
+    for raid_id, text in tbl.orderedByValuePairs(OQ.raids) do
         if (raid_id ~= L['World Boss']) then
             oq.menu_add(
                 raid_id,
@@ -14047,16 +14053,20 @@ function oq.make_dropdown_lang_filter()
     return m
 end
 
+--
+-- good page for docs:
+-- http://www.wowpedia.org/API_UIDropDownMenu_AddButton
+--
 OQ._premade_types = {
     [OQ.TYPE_NONE] = OQ.LABEL_ALL,
     [OQ.TYPE_ARENA] = OQ.LABEL_ARENAS,
     [OQ.TYPE_BG] = OQ.LABEL_BGS,
+    [OQ.TYPE_CHALLENGE] = OQ.LABEL_CHALLENGES,
     [OQ.TYPE_DUNGEON] = OQ.LABEL_DUNGEONS,
     [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTERS,
     [OQ.TYPE_RBG] = OQ.LABEL_RBGS,
     [OQ.TYPE_RAID] = OQ.LABEL_RAIDS,
     [OQ.TYPE_SCENARIO] = OQ.LABEL_SCENARIOS,
-    [OQ.TYPE_CHALLENGE] = OQ.LABEL_CHALLENGES,
     [OQ.TYPE_MISC] = OQ.LABEL_MISC,
     [OQ.TYPE_ROLEPLAY] = OQ.LABEL_ROLEPLAY
 }
@@ -14064,28 +14074,11 @@ function oq.get_premade_type_desc(t)
     return OQ._premade_types[t] or ''
 end
 
---
--- good page for docs:
--- http://www.wowpedia.org/API_UIDropDownMenu_AddButton
---
-OQ.findpremade_types = {
-    [OQ.TYPE_NONE] = OQ.LABEL_ALL,
-    [OQ.TYPE_ARENA] = OQ.LABEL_ARENAS,
-    [OQ.TYPE_BG] = OQ.LABEL_BGS,
-    [OQ.TYPE_CHALLENGE] = OQ.LABEL_CHALLENGES,
-    [OQ.TYPE_DUNGEON] = OQ.LABEL_DUNGEONS,
-    [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTERS,
-    [OQ.TYPE_RBG] = OQ.LABEL_RBGS,
-    [OQ.TYPE_RAID] = OQ.LABEL_RAIDS,
-    [OQ.TYPE_SCENARIO] = OQ.LABEL_SCENARIOS,
-    [OQ.TYPE_MISC] = OQ.LABEL_MISC,
-    [OQ.TYPE_ROLEPLAY] = OQ.LABEL_ROLEPLAY
-}
 
 function oq.get_premade_type_id(text)
     if (text) then
         local i, v
-        for i, v in pairs(OQ.findpremade_types) do
+        for i, v in pairs(OQ._premade_types) do
             if (text:find(v)) then
                 return i
             end
@@ -14125,7 +14118,7 @@ function oq.make_dropdown_premade_filter()
             oq.on_premade_filter(arg1, arg2, (button == 'RightButton'))
         end
     )
-    for arg, text in tbl.orderedByValuePairs(OQ.findpremade_types) do
+    for arg, text in tbl.orderedByValuePairs(OQ._premade_types) do
         if (arg ~= OQ.TYPE_NONE) then
             oq.add_premade_suboption(
                 m,
@@ -14523,17 +14516,6 @@ function oq.create_tab3()
     oq.label(OQTabPage3, x, y, 100, cy, OQ.NOTES)
     y = y + 3 * cy + 4
     oq.label(OQTabPage3, x, y, 100, cy, OQ.PASSWORD)
-
-    -- set faciton emblem
-    local txt
-    if (player_faction == 'A') then
-        txt = 'Interface\\FriendsFrame\\PlusManz-Alliance'
-    else
-        txt = 'Interface\\FriendsFrame\\PlusManz-Horde'
-    end
-    oq.tab3._faction_emblem = oq.tab3:CreateTexture(nil, 'OVERLAY')
-    oq.setpos(oq.tab3._faction_emblem, 375, 55, 160, 160)
-    oq.tab3._faction_emblem:SetTexture(txt)
 
     -- set level range
     x = floor(oq.tab3:GetWidth() - 280)
@@ -23364,31 +23346,29 @@ function oq.load_toon_info()
     oq.toon = OQ_data.toon[name]
 end
 
-function oq.on_addon_loaded(name)
-    if (name == 'oqueue' or name == 'oQueue') then
-        local retOK, rc =
-            pcall(
-            function()
-                oq.load_oq_data()
-                oq.load_toon_info()
-                oq.init_locals()
-                oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
-                oq.ui.closepb:SetScript(
-                    'OnHide',
-                    function(self)
-                        oq.onHide(self)
-                    end
-                )
-                oq.init_if_good_region()
-            end
-        )
-        if (retOK ~= true) then
-            print(OQ.LILREDX_ICON)
-            print(OQ.LILREDX_ICON .. L['  OQ error initializing'])
-            print(OQ.LILREDX_ICON .. L['  realmList: '] .. tostring(GetCVar('realmList')))
-            print(OQ.LILREDX_ICON .. L['  error: '] .. tostring(rc))
-            print(OQ.LILREDX_ICON)
+function OQ:OnAddonLoaded()
+    local retOK, rc =
+        pcall(
+        function()
+            oq.load_oq_data()
+            oq.load_toon_info()
+            oq.init_locals()
+            oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
+            oq.ui.closepb:SetScript(
+                'OnHide',
+                function(self)
+                    oq.onHide(self)
+                end
+            )
+            oq.init_if_good_region()
         end
+    )
+    if (retOK ~= true) then
+        print(OQ.LILREDX_ICON)
+        print(OQ.LILREDX_ICON .. L['  OQ error initializing'])
+        print(OQ.LILREDX_ICON .. L['  realmList: '] .. tostring(GetCVar('realmList')))
+        print(OQ.LILREDX_ICON .. L['  error: '] .. tostring(rc))
+        print(OQ.LILREDX_ICON)
     end
 end
 
@@ -23442,13 +23422,6 @@ end
 --------------------------------------------------------------------------
 -- initialization functions & event handlers
 --------------------------------------------------------------------------
-function oq.on_event(self, event, ...)
-    if (oq.msg_handler[event] ~= nil) then
-        oq._event = event
-        oq.msg_handler[event](...)
-    end
-end
-
 function oq.get_seat(name)
     if (name:find('-')) then
         name = name:sub(1, (name:find('-') or 0) - 1)
@@ -23635,14 +23608,14 @@ end
 
 function oq.turnon_CLEU_ifneeded()
     if (oq._inside_instance == 1) and (oq._instance_type == 'pve') then
-        oq.ui:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+        OQ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED', oq.on_combat_log_event_unfiltered)
     else
         oq.CLEU_world_mode()
     end
 end
 
 function oq.CLEU_world_mode()
-    oq.ui:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+    OQ:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 end
 
 function oq.toggle_premade_ads(cb)
@@ -23992,55 +23965,39 @@ end
 function oq.on_group_roster_update()
 end
 
-function oq.register_base_events()
-    oq.msg_handler = tbl.new()
-    oq.msg_handler['ADDON_LOADED'] = oq.on_addon_loaded
-    oq.ui:RegisterEvent('ADDON_LOADED')
-    oq.ui:SetScript('OnEvent', oq.on_event)
-end
+function OQ:RegisterEvents()
+    self:RegisterEvent('ADDON_LOADED', 'OnAddonLoaded')
+    self:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED', oq.get_player_role)
+    self:RegisterEvent('CHANNEL_ROSTER_UPDATE', oq.on_channel_roster_update)
+    self:RegisterEvent('CHAT_MSG_ADDON', oq.on_addon_event)
+    self:RegisterEvent('CHAT_MSG_CHANNEL', oq.on_channel_msg)
+    self:RegisterEvent('CHAT_MSG_BG_SYSTEM_NEUTRAL', oq.on_bg_neutral_event)
+    self:RegisterEvent('CHAT_MSG_WHISPER', oq.on_received_whisper)
+    self:RegisterEvent('ENCOUNTER_END', oq.on_encounter_end)
+    self:RegisterEvent('ENCOUNTER_START', oq.on_encounter_start)
+    self:RegisterEvent('PARTY_INVITE_REQUEST', oq.on_party_invite_request)
+    self:RegisterEvent('PARTY_LOOT_METHOD_CHANGED', oq.verify_loot_rules_acceptance)
+    self:RegisterEvent('PARTY_MEMBER_DISABLE', oq.on_party_member_disable)
+    self:RegisterEvent('GROUP_ROSTER_UPDATE', oq.on_party_members_changed)
+    self:RegisterEvent('PLAYER_DEAD', oq.player_died)
+    -- self:RegisterEvent('PLAYER_ENTERING_BATTLEGROUND', oq.bg_start)
+    self:RegisterEvent('PLAYER_ENTERING_WORLD', oq.on_player_enter_world)
+    self:RegisterEvent('PLAYER_FLAGS_CHANGED', oq.player_flags_changed)
+    self:RegisterEvent('PLAYER_LEVEL_UP', oq.player_new_level)
+    self:RegisterEvent('PLAYER_LOGOUT', oq.on_logout)
+    self:RegisterEvent('PLAYER_TARGET_CHANGED', oq.on_player_target_change)
+    self:RegisterEvent('PVPQUEUE_ANYWHERE_SHOW', oq.on_bg_event)
+    self:RegisterEvent('PVP_RATED_STATS_UPDATE', oq.on_player_mmr_change)
+    self:RegisterEvent('ROLE_CHANGED_INFORM', oq.check_my_role)
+    -- self:RegisterEvent('UNIT_AURA', oq.check_for_deserter)
+    self:RegisterEvent('UPDATE_BATTLEFIELD_SCORE', oq.on_bg_score_update)
+    self:RegisterEvent('UPDATE_BATTLEFIELD_STATUS', oq.on_bg_status_update)
+    self:RegisterEvent('WORLD_MAP_UPDATE', oq.on_world_map_change)
 
-function oq.register_events()
-    oq.msg_handler['ACTIVE_TALENT_GROUP_CHANGED'] = oq.get_player_role
-    oq.msg_handler['CHAT_MSG_ADDON'] = oq.on_addon_event
-    oq.msg_handler['CHAT_MSG_BG_SYSTEM_NEUTRAL'] = oq.on_bg_neutral_event
-    oq.msg_handler['CHAT_MSG_CHANNEL'] = oq.on_channel_msg
-    oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
-    oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
-    oq.msg_handler['ENCOUNTER_START'] = oq.on_encounter_start
-    oq.msg_handler['PARTY_INVITE_REQUEST'] = oq.on_party_invite_request
-    oq.msg_handler['PARTY_LOOT_METHOD_CHANGED'] = oq.verify_loot_rules_acceptance
-    oq.msg_handler['PARTY_MEMBER_DISABLE'] = oq.on_party_member_disable
-    oq.msg_handler['GROUP_ROSTER_UPDATE'] = oq.on_party_members_changed
-    --  oq.msg_handler[ "PARTY_MEMBERS_CHANGED"         ] = oq.on_party_members_changed ;
-    --  oq.msg_handler[ "PLAYER_ENTERING_BATTLEGROUND"  ] = oq.bg_start ;
-    oq.msg_handler['PLAYER_DEAD'] = oq.player_died
-    oq.msg_handler['PLAYER_FLAGS_CHANGED'] = oq.player_flags_changed
-    oq.msg_handler['PLAYER_LEVEL_UP'] = oq.player_new_level
-    oq.msg_handler['PLAYER_LOGOUT'] = oq.on_logout
-    oq.msg_handler['PLAYER_ENTERING_WORLD'] = oq.on_player_enter_world
-    oq.msg_handler['PLAYER_TARGET_CHANGED'] = oq.on_player_target_change
-    oq.msg_handler['PVP_RATED_STATS_UPDATE'] = oq.on_player_mmr_change
-
-    oq.msg_handler['PVPQUEUE_ANYWHERE_SHOW'] = oq.on_bg_event
-    oq.msg_handler['ROLE_CHANGED_INFORM'] = oq.check_my_role
-    -- too many messages for what i need.  changed to a check every 3-5 seconds via check_stats
-    --  oq.msg_handler[ "UNIT_AURA"                     ] = oq.check_for_deserter ;
-    oq.msg_handler['UPDATE_BATTLEFIELD_SCORE'] = oq.on_bg_score_update
-    oq.msg_handler['UPDATE_BATTLEFIELD_STATUS'] = oq.on_bg_status_update
-    --  oq.msg_handler[ "UPDATE_INSTANCE_INFO"          ] = oq.on_update_instance_info ;
-    oq.msg_handler['WORLD_MAP_UPDATE'] = oq.on_world_map_change
-    oq.msg_handler['CHANNEL_ROSTER_UPDATE'] = oq.on_channel_roster_update
-    oq.msg_handler['COMBAT_LOG_EVENT_UNFILTERED'] = oq.on_combat_log_event_unfiltered
+    -- self:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED', oq.on_combat_log_event_unfiltered)
 
     oq.combat_handler = tbl.new()
     oq.combat_handler['PARTY_KILL'] = oq.on_party_kill
-
-    oq.ui:SetScript(
-        'OnShow',
-        function(self)
-            oq.onShow(self)
-        end
-    )
 
     -- hook the world map show method so we can bring the OQ UI back up if it was forced-hidden
     hooksecurefunc(
@@ -24054,36 +24011,7 @@ function oq.register_events()
     ------------------------------------------------------------------------
     --  register for events
     ------------------------------------------------------------------------
-    oq.ui:RegisterEvent('PVPQUEUE_ANYWHERE_SHOW')
-    oq.ui:RegisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-    oq.ui:RegisterEvent('CHANNEL_ROSTER_UPDATE')
-    oq.ui:RegisterEvent('CHAT_MSG_ADDON')
-    oq.ui:RegisterEvent('CHAT_MSG_CHANNEL')
-    oq.ui:RegisterEvent('CHAT_MSG_BG_SYSTEM_NEUTRAL')
-    oq.ui:RegisterEvent('CHAT_MSG_WHISPER')
-    oq.ui:RegisterEvent('CLOSE_WORLD_MAP')
-    oq.ui:RegisterEvent('ENCOUNTER_END')
-    oq.ui:RegisterEvent('ENCOUNTER_START')
-    oq.ui:RegisterEvent('INSPECT_READY')
-    oq.ui:RegisterEvent('PARTY_INVITE_REQUEST')
-    oq.ui:RegisterEvent('PARTY_LOOT_METHOD_CHANGED')
-    oq.ui:RegisterEvent('PARTY_MEMBER_DISABLE')
-    oq.ui:RegisterEvent('GROUP_ROSTER_UPDATE')
-    oq.ui:RegisterEvent('PLAYER_DEAD')
-    oq.ui:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
-    oq.ui:RegisterEvent('PLAYER_ENTERING_BATTLEGROUND')
-    oq.ui:RegisterEvent('PLAYER_ENTERING_WORLD')
-    oq.ui:RegisterEvent('PLAYER_FLAGS_CHANGED')
-    oq.ui:RegisterEvent('PLAYER_LEVEL_UP')
-    oq.ui:RegisterEvent('PLAYER_LOGOUT')
-    oq.ui:RegisterEvent('PLAYER_TARGET_CHANGED')
-    oq.ui:RegisterEvent('PVP_RATED_STATS_UPDATE')
-    oq.ui:RegisterEvent('ROLE_CHANGED_INFORM')
-    oq.ui:RegisterEvent('SOCKET_INFO_UPDATE')
-    oq.ui:RegisterEvent('UNIT_AURA')
-    oq.ui:RegisterEvent('UPDATE_BATTLEFIELD_SCORE')
-    oq.ui:RegisterEvent('UPDATE_BATTLEFIELD_STATUS')
-    oq.ui:RegisterEvent('WORLD_MAP_UPDATE')
+
     if (RegisterAddonMessagePrefix(OQ_HEADER) ~= true) then
         print('Error:  unable to register addon prefix: ' .. OQ_HEADER)
     end
@@ -24217,7 +24145,7 @@ function oq.init_locals()
     oq._hyperlinks['log'] = oq.onHyperlink_log
     oq._hyperlinks['oqueue'] = oq.onHyperlink_oqueue
 
-    oq.register_events()
+    OQ:RegisterEvents()
 
     oq.scores_init()
     oq.scores.officers = {
@@ -24519,7 +24447,7 @@ function oq.on_init(now)
     if (oq.toon) and (oq.toon.raid) and (oq.toon.raid.type) then
         oq.raid.type = oq.toon.raid.type
     end
-    oq.create_main_ui()
+    -- oq.create_main_ui()
     oq.ui:SetFrameStrata('MEDIUM')
     oq.marquee = oq.create_marquee()
 
@@ -24961,11 +24889,6 @@ function oq.ui_toggle()
             oq.oq_on()
         end
     end
-end
-
-function OQ_onLoad(self)
-    oq.ui = self
-    oq.register_base_events()
 end
 
 function oq.onHide(self)
@@ -25421,13 +25344,11 @@ function oq.hook_ui_resize()
         end
     )
     OQMainFrame:SetHeight(OQ_data._height or OQ.MIN_FRAME_HEIGHT)
-    oq.frame_resize()
 end
 
 function OQ_OnSizeChanged(f)
     if (f) and (f.__resizing) and (OQTabPage2) and (OQTabPage2._resize) then
         OQ_data._height = min(1000, max(OQ.MIN_FRAME_HEIGHT, floor(f:GetHeight()) or 0))
-        oq.frame_resize()
     else
         local cy = floor(f:GetHeight())
         if (cy ~= OQ_data._height) then
@@ -25496,15 +25417,16 @@ function oq.XRealmWhisper(receiverName, receiverRealm, msg)
 
     oq.SendChatMessage(msg, 'WHISPER', nil, receiverName .. '-' .. receiverRealm)
 end
--- function oq.debug(msg, ...)
---   if type(msg) == "table" then
---     for k, v in pairs(msg) do
---         print("KEY")
---         print(k)
---         oq.debug(v)
---     end
---   else
---     print("VAL")
---     print(msg)
---   end
--- end
+
+function oq.debug(msg, ...)
+  if type(msg) == "table" then
+    for k, v in pairs(msg) do
+        print("KEY")
+        print(k)
+        oq.debug(v)
+    end
+  else
+    print("VAL")
+    print(msg)
+  end
+end

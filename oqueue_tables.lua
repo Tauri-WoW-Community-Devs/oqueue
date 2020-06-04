@@ -2,6 +2,26 @@ local addonName, OQ = ...
 local L = OQ._T -- for literal string translations
 local tbl = OQ.table
 
+function OQ:TableLength(table)
+    local count = 0
+    for _ in pairs(table) do count = count + 1 end
+    return count
+end
+function OQ:TableCopy(src, dest)
+    if (dest == nil) then
+        dest = {}
+    end
+    
+    local i, v
+    for i, v in pairs(src) do
+        if (type(v) == 'table') then
+            dest[i] = OQ:TableCopy(v, dest[i])
+        else
+            dest[i] = v
+        end
+    end
+    return dest
+end
 function tbl.clear(t, deep)
     if (t) then
         if (deep) then
