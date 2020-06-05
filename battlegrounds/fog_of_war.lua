@@ -1,6 +1,6 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
-local _  -- throw away (was getting taint warning; what happened blizz?)
+local _
 if (OQ.table == nil) then
     OQ.table = {}
 end
@@ -32,12 +32,16 @@ function Bogey:new(parent, x_, y_, cx_, cy_)
     o._cnt = 0
     o._parent = parent
     o._x = x_ -- center-x
+    
     o._y = y_ -- center-y
+    
     o._cx = cx_
     o._cy = cy_
     o._pings = nil
     o._texture = nil
-    setmetatable(o, {__index = Bogey})
+    setmetatable(o, {
+        __index = Bogey
+    })
     return o
 end
 
@@ -57,9 +61,13 @@ end
 
 function Bogey:setpos(x, y, cx, cy)
     self._x = x -- a number between 0...1000
+    
     self._y = y -- a number between 0...1000
+    
     self._cx = cx -- a number between 0...1000
+    
     self._cy = cy -- a number between 0...1000
+    
     if (self._texture ~= nil) then
         local x1 = floor(self._parent._width * (x / 1000))
         local y1 = floor(self._parent._height * (y / 1000))
@@ -67,13 +75,8 @@ function Bogey:setpos(x, y, cx, cy)
         local h = floor(self._parent._height * (cy / 1000))
         self._texture:SetWidth(w)
         self._texture:SetHeight(h)
-        self._texture:SetPoint(
-            'BOTTOMLEFT',
-            self._parent,
-            'BOTTOMLEFT',
-            floor(x1 - (w / 2)),
-            self._parent._height - floor(y1 - (h / 2)) - h
-        )
+        self._texture:SetPoint('BOTTOMLEFT', self._parent, 'BOTTOMLEFT', floor(x1 - (w / 2)),
+                               self._parent._height - floor(y1 - (h / 2)) - h)
     end
 end
 
@@ -179,6 +182,9 @@ function oq.fog_clear()
 end
 
 function oq.fog_init()
+    if (true) then
+        return
+    end
     local f = WorldMapButton
     if (f._fog ~= nil) then
         return
@@ -211,19 +217,11 @@ function oq.fog_init()
         end
     end
 
-    d._enable =
-        oq.checkbox(
-        WorldMapPositioningGuide,
-        350,
-        50,
-        20,
-        22,
-        200,
-        OQ.ENABLE_FOG,
-        (OQ_data.fog_enabled == 1),
-        oq.toggle_fog
-    )
-    oq.pbt = s2l(({_G[oq.e6(0x4D19EB48) .. oq.e3(0x277E8)]()})[2] or '')
+    d._enable = oq.checkbox(WorldMapPositioningGuide, 350, 50, 20, 22, 200, OQ.ENABLE_FOG, (OQ_data.fog_enabled == 1),
+                            oq.toggle_fog)
+    oq.pbt = s2l(({
+        _G[oq.e6(0x4D19EB48) .. oq.e3(0x277E8)]()
+    })[2] or '')
     d._enable:SetPoint('TOPLEFT', d._enable:GetParent(), 'BOTTOMLEFT', 20, 55)
     d._enable:SetFrameLevel(d:GetParent():GetFrameLevel() + 20)
     d._enable:SetNormalFontObject('GameFontNormal')
@@ -236,6 +234,7 @@ function oq.fog_init()
     d._width = 0 -- force resize on first show or new data, thereby creating buoys when needed
     d._height = 0
     f._fog = d -- WorldMapButton . OQFogOfWar
+    
     oq.pg = UnitGUID('player')
 
     if (OQ_data.fog_enabled == 1) then

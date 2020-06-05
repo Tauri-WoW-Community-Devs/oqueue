@@ -35,7 +35,7 @@ function OQ:CreateDropdown(optionTable, onChange)
         onChange(value)
     end
 
-    local SetMSValue = function (self, value)
+    local SetMSValue = function(self, value)
         if (not self:GetMultiselect()) then
             self:SetValue(value)
             return

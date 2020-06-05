@@ -101,7 +101,7 @@ function OQ:InitTab_PremadeCreate(tab)
     txtTitle:SetLabel("Title")
     txtTitle:SetRelativeWidth(0.75)
     txtTitle:SetText(form.title)
-    txtTitle:SetCallback("OnEnterPressed", function (_, _, value)
+    txtTitle:SetCallback("OnEnterPressed", function(_, _, value)
         form.title = value
     end)
     gTitlePass:AddChild(txtTitle)
@@ -110,7 +110,7 @@ function OQ:InitTab_PremadeCreate(tab)
     txtPassword:SetLabel("Password")
     txtPassword:SetRelativeWidth(0.25)
     txtPassword:SetText(form.password)
-    txtPassword:SetCallback("OnEnterPressed", function (_, _, value)
+    txtPassword:SetCallback("OnEnterPressed", function(_, _, value)
         form.password = value
     end)
     gTitlePass:AddChild(txtPassword)
@@ -120,7 +120,7 @@ function OQ:InitTab_PremadeCreate(tab)
     txtDesc:SetNumLines(4)
     txtDesc:SetFullWidth(true)
     txtDesc:SetText(form.description or "")
-    txtDesc:SetCallback("OnEnterPressed", function (_, _, value)
+    txtDesc:SetCallback("OnEnterPressed", function(_, _, value)
         form.description = value
     end)
     scroll:AddChild(txtDesc)
@@ -128,7 +128,7 @@ function OQ:InitTab_PremadeCreate(tab)
     local txtILvl = AceGUI:Create("EditBox")
     txtILvl:SetLabel("Min. item level")
     txtILvl:SetText(form.ilvl)
-    txtILvl:SetCallback("OnEnterPressed", function (_, _, value)
+    txtILvl:SetCallback("OnEnterPressed", function(_, _, value)
         form.ilvl = value
     end)
     scroll:AddChild(txtILvl)
@@ -142,7 +142,7 @@ function OQ:InitTab_PremadeCreate(tab)
     txtPvPPower:SetLabel("PvP Power")
     txtPvPPower:SetRelativeWidth(0.5)
     txtPvPPower:SetText(form.pvpPower)
-    txtPvPPower:SetCallback("OnEnterPressed", function (_, _, value)
+    txtPvPPower:SetCallback("OnEnterPressed", function(_, _, value)
         form.pvpPower = value
     end)
     groupPvP:AddChild(txtPvPPower)
@@ -151,7 +151,7 @@ function OQ:InitTab_PremadeCreate(tab)
     txtMMR:SetLabel("MMR")
     txtMMR:SetRelativeWidth(0.5)
     txtMMR:SetText(form.mmr)
-    txtMMR:SetCallback("OnEnterPressed", function (_, _, value)
+    txtMMR:SetCallback("OnEnterPressed", function(_, _, value)
         form.mmr = value
     end)
     groupPvP:AddChild(txtMMR)
@@ -217,7 +217,7 @@ function RolesFormatValues()
     return {
         [1] = oq.get_role_icon("T", 16, 16) .. OQ.ROLES[1],
         [2] = oq.get_role_icon("H", 16, 16) .. OQ.ROLES[2],
-        [3] = oq.get_role_icon("D", 16, 16) .. OQ.ROLES[3],
+        [3] = oq.get_role_icon("D", 16, 16) .. OQ.ROLES[3]
     }
 end
 
@@ -293,8 +293,6 @@ function UpdatePvPFields()
 end
 
 function SubmitPremade()
-    -- oq.debug(form)
-
     local rc = nil
     if (oq.raid == nil) then
         rc = oq.raid_create()
@@ -305,4 +303,6 @@ function SubmitPremade()
     else
         rc = oq.update_premade_note()
     end
+
+    OQ:BuildTabs()
 end

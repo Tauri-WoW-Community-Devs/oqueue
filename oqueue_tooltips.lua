@@ -1,7 +1,8 @@
 local addonName, OQ = ...
 local L = OQ._T -- for literal string translations
+
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
-local _  -- throw away (was getting taint warning; what happened blizz?)
+local _
 local tbl = OQ.table
 
 OQ.EMPTY_SQUARE = 'Interface\\Addons\\oqueue\\art\\square_middle.tga'
@@ -35,6 +36,9 @@ function oq.tooltip_create()
         return oq.tooltip
     end
     local tooltip = oq.CreateFrame('FRAME', 'OQTooltip', UIParent, nil)
+    if (true) then
+        return tooltip
+    end
     if (oq.__backdrop20 == nil) then
         oq.__backdrop20 = {
             bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
@@ -42,7 +46,12 @@ function oq.tooltip_create()
             tile = true,
             tileSize = 16,
             edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
+            insets = {
+                left = 4,
+                right = 3,
+                top = 4,
+                bottom = 3
+            }
         }
     end
     tooltip:SetBackdrop(oq.__backdrop20)
@@ -146,7 +155,7 @@ end
 function oq.make_achieve_icon(id)
     if (id == 0) then
         return '|T' .. OQ.EMPTY_SQUARE .. ':24:24:0:0|t'
-    --    return "|T".. OQ.EMPTY_GEMSLOTS["Blue"] ..":24:24:0:0|t" ;
+        --    return "|T".. OQ.EMPTY_GEMSLOTS["Blue"] ..":24:24:0:0|t" ;
     end
     return '|T' .. select(10, GetAchievementInfo(id)) .. '.blp:24:24:0:0|t'
 end
@@ -154,7 +163,7 @@ end
 function oq.make_achieve_icon_if(id, b, mask)
     if (id == 0) or (oq.is_set(b, mask) == nil) then
         return '|T' .. OQ.EMPTY_SQUARE .. ':24:24:0:0|t'
-    --    return "|T".. OQ.EMPTY_GEMSLOTS["Blue"] ..":24:24:0:0|t" ;
+        --    return "|T".. OQ.EMPTY_GEMSLOTS["Blue"] ..":24:24:0:0|t" ;
     end
     return '|T' .. select(10, GetAchievementInfo(id)) .. '.blp:24:24:0:0|t'
 end
@@ -481,6 +490,9 @@ function oq.long_tooltip_create()
         return oq.long_tooltip
     end
     local tooltip = oq.CreateFrame('FRAME', 'OQLongTooltip', UIParent, nil)
+    if (true) then
+        return tooltip
+    end
     if (oq.__backdrop21 == nil) then
         oq.__backdrop21 = {
             bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
@@ -488,7 +500,12 @@ function oq.long_tooltip_create()
             tile = true,
             tileSize = 16,
             edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
+            insets = {
+                left = 4,
+                right = 3,
+                top = 4,
+                bottom = 3
+            }
         }
     end
     tooltip:SetBackdrop(oq.__backdrop21)
@@ -611,6 +628,9 @@ function oq.gen_tooltip_create()
     end
     local tooltip
     tooltip = oq.CreateFrame('FRAME', 'OQGenTooltip', UIParent, nil)
+    if (true) then
+        return tooltip
+    end
     if (oq.__backdrop22 == nil) then
         oq.__backdrop22 = {
             bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
@@ -618,7 +638,12 @@ function oq.gen_tooltip_create()
             tile = true,
             tileSize = 16,
             edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
+            insets = {
+                left = 4,
+                right = 3,
+                top = 4,
+                bottom = 3
+            }
         }
     end
     tooltip:SetBackdrop(oq.__backdrop22)
@@ -682,6 +707,9 @@ function oq.pm_tooltip_create()
         return pm_tooltip
     end
     pm_tooltip = oq.CreateFrame('FRAME', 'OQPMTooltip', UIParent, nil)
+    if (true) then
+        return pm_tooltip
+    end
     if (oq.__backdrop23 == nil) then
         oq.__backdrop23 = {
             bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
@@ -689,7 +717,12 @@ function oq.pm_tooltip_create()
             tile = true,
             tileSize = 16,
             edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
+            insets = {
+                left = 4,
+                right = 3,
+                top = 4,
+                bottom = 3
+            }
         }
     end
     pm_tooltip:SetBackdrop(oq.__backdrop23)
@@ -716,7 +749,7 @@ function oq.pm_tooltip_create()
 
     pm_tooltip.nRows = 15
     pm_tooltip:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
-    pm_tooltip:SetWidth(210) --220
+    pm_tooltip:SetWidth(210) -- 220
     pm_tooltip:SetHeight(12 + pm_tooltip.nRows * 16)
     pm_tooltip:SetMovable(true)
     pm_tooltip:SetAlpha(1.0)
@@ -985,17 +1018,13 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.left[pm_tooltip.nRows - 5]:SetText('|cFFFFD331' .. OQ.LABEL_RAIDS .. '|r')
         pm_tooltip.right[pm_tooltip.nRows - 5]:SetText('')
         pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(OQ.RAID_TOES)
-        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
-            oq.pm_tooltip_get_xpbar(raids:sub(1, 1), raids:sub(2, 2), nil, 4)
-        )
+        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(oq.pm_tooltip_get_xpbar(raids:sub(1, 1), raids:sub(2, 2), nil, 4))
         pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(OQ.RAID_HOF)
-        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
-            oq.pm_tooltip_get_xpbar(raids:sub(3, 3), raids:sub(4, 4), nil, 6, 3, nil)
-        ) -- last 2 params: break insert
+        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(oq.pm_tooltip_get_xpbar(raids:sub(3, 3), raids:sub(4, 4), nil, 6,
+                                                                               3, nil)) -- last 2 params: break insert
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(OQ.RAID_MV)
-        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(
-            oq.pm_tooltip_get_xpbar(raids:sub(5, 5), raids:sub(6, 6), nil, 6, 3, nil)
-        ) -- last 2 params: break insert
+        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(oq.pm_tooltip_get_xpbar(raids:sub(5, 5), raids:sub(6, 6), nil, 6,
+                                                                               3, nil)) -- last 2 params: break insert
 
         pm_tooltip.left[pm_tooltip.nRows - 1]:SetText(OQ.RAID_TOT)
         dots = oq.pm_tooltip_get_xpbar(raids:sub(7, 7), raids:sub(9, 9), nil, 6, 3, 6)
@@ -1029,31 +1058,24 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.left[pm_tooltip.nRows - 6]:SetText(L['best mmr'])
         pm_tooltip.right[pm_tooltip.nRows - 6]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(2, 4)))
 
-        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(
-            '2v2  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(19, 19))] or ''
-        )
-        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
-            oq.decode_mime64_digits(raid.leader_xp:sub(20, 22)) ..
-                ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(23, 25))
-        )
-        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(
-            '3v3  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(12, 12))] or ''
-        )
-        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
-            oq.decode_mime64_digits(raid.leader_xp:sub(13, 15)) ..
-                ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(16, 18))
-        )
-        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(
-            '5v5  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(5, 5))] or ''
-        )
-        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(
-            oq.decode_mime64_digits(raid.leader_xp:sub(6, 8)) ..
-                ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(9, 11))
-        )
+        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText('2v2  ' ..
+                                                          OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(
+                                                              raid.leader_xp:sub(19, 19))] or '')
+        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(20, 22)) .. ' - ' ..
+                                                           oq.decode_mime64_digits(raid.leader_xp:sub(23, 25)))
+        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText('3v3  ' ..
+                                                          OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(
+                                                              raid.leader_xp:sub(12, 12))] or '')
+        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(13, 15)) .. ' - ' ..
+                                                           oq.decode_mime64_digits(raid.leader_xp:sub(16, 18)))
+        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText('5v5  ' ..
+                                                          OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(
+                                                              raid.leader_xp:sub(5, 5))] or '')
+        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(6, 8)) .. ' - ' ..
+                                                           oq.decode_mime64_digits(raid.leader_xp:sub(9, 11)))
 
         pm_tooltip.right[pm_tooltip.nRows - 0]:SetText(
-            OQ.ARENA_RANKS[oq.decode_mime64_digits(raid.leader_xp:sub(1, 1))] or ''
-        )
+            OQ.ARENA_RANKS[oq.decode_mime64_digits(raid.leader_xp:sub(1, 1))] or '')
     end
 
     -- set dragon

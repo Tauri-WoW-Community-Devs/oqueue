@@ -1,7 +1,9 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
-local _  -- throw away (was getting taint warning; what happened blizz?)
+local _
 local tbl = OQ.table
+
+local AceGUI = LibStub("AceGUI-3.0")
 
 OQ.MENU_DISPLAY_TM = 3
 OQ.BUTTON_SZ = 32
@@ -23,45 +25,39 @@ function oq.save_position(f)
 end
 
 function oq.make_frame_moveable(f)
+    if (true) then
+        return
+    end
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag('LeftButton')
     f:SetScript('OnDragStart', f.StartMoving)
     f:SetScript('OnDragStop', f.StopMovingOrSizing)
-    f:SetScript(
-        'OnMouseDown',
-        function(self, button)
-            if (button == 'LeftButton') and (not self.isMoving) then
-                self:StartMoving()
-                self.isMoving = true
-            elseif (button == 'LeftButton') then
-                -- try to recover from odd double left-down with no left-up
-                self:StopMovingOrSizing()
-                self.isMoving = false
-            end
+    f:SetScript('OnMouseDown', function(self, button)
+        if (button == 'LeftButton') and (not self.isMoving) then
+            self:StartMoving()
+            self.isMoving = true
+        elseif (button == 'LeftButton') then
+            -- try to recover from odd double left-down with no left-up
+            self:StopMovingOrSizing()
+            self.isMoving = false
         end
-    )
-    f:SetScript(
-        'OnMouseUp',
-        function(self, button)
-            if (button == 'LeftButton') and self.isMoving then
-                if (f._save_position) then
-                    f._save_position(f)
-                end
-                self:StopMovingOrSizing()
-                self.isMoving = false
+    end)
+    f:SetScript('OnMouseUp', function(self, button)
+        if (button == 'LeftButton') and self.isMoving then
+            if (f._save_position) then
+                f._save_position(f)
             end
+            self:StopMovingOrSizing()
+            self.isMoving = false
         end
-    )
-    f:SetScript(
-        'OnHide',
-        function(self)
-            if (self.isMoving) then
-                self:StopMovingOrSizing()
-                self.isMoving = false
-            end
+    end)
+    f:SetScript('OnHide', function(self)
+        if (self.isMoving) then
+            self:StopMovingOrSizing()
+            self.isMoving = false
         end
-    )
+    end)
 end
 
 function oq.moveto(f, x, y)
@@ -107,21 +103,6 @@ function oq.setpos(f, x, y, cx, cy)
     return f
 end
 
-function oq.set_tab_order(a, b)
-    a.next_edit = b
-    b.prev_edit = a
-    a:SetScript(
-        'OnTabPressed',
-        function(self)
-            if (IsShiftKeyDown() == 1) and (self.prev_edit ~= nil) then
-                self.prev_edit:SetFocus()
-            elseif (self.next_edit ~= nil) then
-                self.next_edit:SetFocus()
-            end
-        end
-    )
-end
-
 -- dump a count of frame types ready for reuse
 --
 function oq.frame_report(opt)
@@ -164,21 +145,11 @@ function oq.frames_inuse_report(opt)
                 local p = oq.premades[i.raid_token]
                 if (p) then
                     if (p._row) then
-                        print(
-                            ' ' ..
-                                tostring(v) ..
-                                    '  ' ..
-                                        tostring(i) ..
-                                            '  tok(' ..
-                                                tostring(i.raid_token) ..
-                                                    ') ' .. ' |cFF20F020' .. tostring(p._row) .. '|r '
-                        )
+                        print(' ' .. tostring(v) .. '  ' .. tostring(i) .. '  tok(' .. tostring(i.raid_token) .. ') ' ..
+                                  ' |cFF20F020' .. tostring(p._row) .. '|r ')
                     else
-                        print(
-                            ' ' ..
-                                tostring(v) ..
-                                    '  ' .. tostring(i) .. '  tok(' .. tostring(i.raid_token) .. ') ' .. ' no row'
-                        )
+                        print(' ' .. tostring(v) .. '  ' .. tostring(i) .. '  tok(' .. tostring(i.raid_token) .. ') ' ..
+                                  ' no row')
                     end
                 else
                     print(' ' .. tostring(v) .. '  ' .. tostring(i) .. '  tok(' .. tostring(i.raid_token) .. ') ')
@@ -207,32 +178,36 @@ function oq.DeleteFrame(f)
 end
 
 function oq.CreateFrame(type_, name, parent, template)
-    type_ = strlower(type_)
-    name = strlower(name)
-
-    if (oq.__frame_pool[name] == nil) then
-        oq.__frame_pool[name] = tbl.new()
-        tbl.clear(oq.__frame_pool[name])
-        oq.__frame_pool[name][0] = 0
-    end
-
-    local pool = oq.__frame_pool[name]
-    local ndx = tbl.next(pool)
-    local f = nil
-    if (ndx) and (pool[ndx]) and (type(pool[ndx]) == 'table') and (pool[ndx].SetParent) then
-        f = pool[ndx]
-        pool[ndx] = nil
-        f:SetParent(parent)
-    else
-        f = CreateFrame(type_, name, parent, template)
-        pool[0] = (pool[0] or 0) + 1
-    end
-    oq.__frame_pool['#check'][f] = name -- track the checked out frames
-
-    if (parent ~= nil) then
-        f:SetFrameLevel(parent:GetFrameLevel() + 1)
-    end
+    local f = AceGUI:Create(type_)
     return f
+
+    -- type_ = strlower(type_)
+    -- name = strlower(name)
+
+    -- if (oq.__frame_pool[name] == nil) then
+    --     oq.__frame_pool[name] = tbl.new()
+    --     tbl.clear(oq.__frame_pool[name])
+    --     oq.__frame_pool[name][0] = 0
+    -- end
+
+    -- local pool = oq.__frame_pool[name]
+    -- local ndx = tbl.next(pool)
+    -- local f = nil
+    -- if (ndx) and (pool[ndx]) and (type(pool[ndx]) == 'table') and (pool[ndx].SetParent) then
+    --     f = pool[ndx]
+    --     pool[ndx] = nil
+    --     f:SetParent(parent)
+    -- else
+    --     f = AceGUI:Create(type_)
+    --     -- parent:AddChild(f)
+    --     pool[0] = (pool[0] or 0) + 1
+    -- end
+    -- oq.__frame_pool['#check'][f] = name -- track the checked out frames
+
+    -- if (parent ~= nil) then
+    --     f:SetFrameLevel(parent:GetFrameLevel() + 1)
+    -- end
+    -- return f
 end
 
 function oq.editline(parent, name, x, y, cx, cy, max_chars)
@@ -246,21 +221,15 @@ function oq.editline(parent, name, x, y, cx, cy, max_chars)
     e:SetCursorPosition(0)
     e:SetTextColor(0.9, 0.9, 0.9, 1)
     e.str = ''
-    e:SetScript(
-        'OnTextChanged',
-        function(self)
-            self.str = self:GetText() or ''
-            if (self.func ~= nil) then
-                self.func(self.str)
-            end
+    e:SetScript('OnTextChanged', function(self)
+        self.str = self:GetText() or ''
+        if (self.func ~= nil) then
+            self.func(self.str)
         end
-    )
-    e:SetScript(
-        'OnEscapePressed',
-        function(self)
-            self:ClearFocus()
-        end
-    )
+    end)
+    e:SetScript('OnEscapePressed', function(self)
+        self:ClearFocus()
+    end)
     oq.setpos(e, x, y, cx, cy)
     e:Show()
     return e
@@ -274,21 +243,15 @@ function oq.editbox(parent, name, x, y, cx, cy, max_chars, func, init_val)
     e:SetPoint('BOTTOMRIGHT', parent, 'TOPLEFT', x + cx, -y - cy)
     e.str = init_val or ''
     e.func = func
-    e:SetScript(
-        'OnTextChanged',
-        function(self)
-            self.str = self:GetText() or ''
-            if (self.func ~= nil) then
-                self.func(self, self.str)
-            end
+    e:SetScript('OnTextChanged', function(self)
+        self.str = self:GetText() or ''
+        if (self.func ~= nil) then
+            self.func(self, self.str)
         end
-    )
-    e:SetScript(
-        'OnEscapePressed',
-        function(self)
-            self:ClearFocus()
-        end
-    )
+    end)
+    e:SetScript('OnEscapePressed', function(self)
+        self:ClearFocus()
+    end)
     e:SetText(init_val or '')
     if (oq.__backdrop17 == nil) then
         oq.__backdrop17 = {
@@ -297,7 +260,12 @@ function oq.editbox(parent, name, x, y, cx, cy, max_chars, func, init_val)
             tile = true,
             tileSize = 16,
             edgeSize = 16,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
+            insets = {
+                left = 1,
+                right = 1,
+                top = 1,
+                bottom = 1
+            }
         }
     end
     e:SetBackdrop(oq.__backdrop17)
@@ -334,18 +302,12 @@ function oq.checkbox(parent, x, y, cx, cy, text_cx, text, is_checked, on_click_f
     button:SetChecked(is_checked)
     oq.moveto(button, x, y)
     button:Show()
-    button:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.hint(self, self.tt, true)
-        end
-    )
-    button:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.hint(self, self.tt, nil)
-        end
-    )
+    button:SetScript('OnEnter', function(self, ...)
+        oq.hint(self, self.tt, true)
+    end)
+    button:SetScript('OnLeave', function(self, ...)
+        oq.hint(self, self.tt, nil)
+    end)
     return button
 end
 
@@ -363,12 +325,9 @@ function oq.radiobutton(parent, x, y, cx, cy, text_cx, text, value, on_click_fun
     button:SetHighlightFontObject('GameFontHighlightSmall')
     button:SetDisabledFontObject('GameFontDisableSmall')
     button:SetText(text)
-    button:SetScript(
-        'OnClick',
-        function(self)
-            on_click_func(self)
-        end
-    )
+    button:SetScript('OnClick', function(self)
+        on_click_func(self)
+    end)
     button:SetChecked(nil)
     oq.moveto(button, x, y)
     button:Show()
@@ -475,26 +434,20 @@ function oq.texture_button(parent, x, y, cx, cy, up_texture, dn_texture, disable
     f._up_texture = up_texture
     f._disable_texture = disable_texture
     f:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-    f:SetScript(
-        'OnMouseDown',
-        function(self, button)
-            if (self._dn_texture) and (self:IsEnabled()) then
-                self.texture:SetTexture(self._dn_texture)
-            elseif (self.texture) then
-                self.texture:SetTexCoord(3 / 64, 61 / 64, 3 / 64, 61 / 64)
-            end
+    f:SetScript('OnMouseDown', function(self, button)
+        if (self._dn_texture) and (self:IsEnabled()) then
+            self.texture:SetTexture(self._dn_texture)
+        elseif (self.texture) then
+            self.texture:SetTexCoord(3 / 64, 61 / 64, 3 / 64, 61 / 64)
         end
-    )
-    f:SetScript(
-        'OnMouseUp',
-        function(self, button)
-            if (self._up_texture) and (self:IsEnabled()) then
-                self.texture:SetTexture(self._up_texture)
-            elseif (self.texture) then
-                self.texture:SetTexCoord(0 / 64, 64 / 64, 0 / 64, 64 / 64)
-            end
+    end)
+    f:SetScript('OnMouseUp', function(self, button)
+        if (self._up_texture) and (self:IsEnabled()) then
+            self.texture:SetTexture(self._up_texture)
+        elseif (self.texture) then
+            self.texture:SetTexCoord(0 / 64, 64 / 64, 0 / 64, 64 / 64)
         end
-    )
+    end)
     f:SetScript('OnClick', click_func)
 
     local t = f:CreateTexture(nil, 'BACKGROUND')
@@ -509,33 +462,15 @@ function oq.texture_button(parent, x, y, cx, cy, up_texture, dn_texture, disable
 end
 
 function oq.next_button(parent, x, y, func)
-    local f =
-        oq.texture_button(
-        parent,
-        x,
-        y,
-        OQ.BUTTON_SZ,
-        OQ.BUTTON_SZ,
-        OQ.BUTTON_NEXT_UP,
-        OQ.BUTTON_NEXT_DN,
-        OQ.BUTTON_NEXT_DISABLED
-    )
+    local f = oq.texture_button(parent, x, y, OQ.BUTTON_SZ, OQ.BUTTON_SZ, OQ.BUTTON_NEXT_UP, OQ.BUTTON_NEXT_DN,
+                                OQ.BUTTON_NEXT_DISABLED)
     f:SetScript('OnClick', func)
     return f
 end
 
 function oq.prev_button(parent, x, y, func)
-    local f =
-        oq.texture_button(
-        parent,
-        x,
-        y,
-        OQ.BUTTON_SZ,
-        OQ.BUTTON_SZ,
-        OQ.BUTTON_PREV_UP,
-        OQ.BUTTON_PREV_DN,
-        OQ.BUTTON_PREV_DISABLED
-    )
+    local f = oq.texture_button(parent, x, y, OQ.BUTTON_SZ, OQ.BUTTON_SZ, OQ.BUTTON_PREV_UP, OQ.BUTTON_PREV_DN,
+                                OQ.BUTTON_PREV_DISABLED)
     f:SetScript('OnClick', func)
     return f
 end
@@ -568,18 +503,12 @@ function oq.button(parent, x, y, cx, cy, text, on_click_func)
     button:SetScript('OnClick', on_click_func)
     oq.moveto(button, x, y)
     button:Show()
-    button:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.hint(self, self.tt, true)
-        end
-    )
-    button:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.hint(self, self.tt, nil)
-        end
-    )
+    button:SetScript('OnEnter', function(self, ...)
+        oq.hint(self, self.tt, true)
+    end)
+    button:SetScript('OnLeave', function(self, ...)
+        oq.hint(self, self.tt, nil)
+    end)
 
     return button
 end
@@ -599,18 +528,12 @@ function oq.button2(parent, x, y, cx, cy, text, font_sz, on_click_func)
     button:SetScript('OnClick', on_click_func)
     oq.moveto(button, x, y)
     button:Show()
-    button:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.hint(self, self.tt, true)
-        end
-    )
-    button:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.hint(self, self.tt, nil)
-        end
-    )
+    button:SetScript('OnEnter', function(self, ...)
+        oq.hint(self, self.tt, true)
+    end)
+    button:SetScript('OnLeave', function(self, ...)
+        oq.hint(self, self.tt, nil)
+    end)
     return button
 end
 
@@ -620,12 +543,9 @@ function oq.closebox(parent, on_close)
     closepb:SetHeight(25)
     closepb:SetPoint('TOPRIGHT', parent, 'TOPRIGHT', -7, -7)
     if (on_close == nil) then
-        closepb:SetScript(
-            'OnClick',
-            function(self)
-                self:GetParent():Hide()
-            end
-        )
+        closepb:SetScript('OnClick', function(self)
+            self:GetParent():Hide()
+        end)
     else
         closepb:SetScript('OnClick', on_close)
     end
@@ -659,33 +579,29 @@ function oq.menu_create()
                 tile = true,
                 tileSize = 16,
                 edgeSize = 16,
-                insets = {left = 1, right = 1, top = 1, bottom = 2}
+                insets = {
+                    left = 1,
+                    right = 1,
+                    top = 1,
+                    bottom = 2
+                }
             }
         end
         oq.__menu:SetBackdrop(oq.__backdrop18)
         oq.__menu:SetBackdropColor(1, 0, 0)
         oq.__menu:SetAlpha(1.0)
         oq.__menu._cy = 18
-        oq.__menu:SetScript(
-            'OnShow',
-            function(self, ...)
-                self._last_move_tm = GetTime()
+        oq.__menu:SetScript('OnShow', function(self, ...)
+            self._last_move_tm = GetTime()
+        end)
+        oq.__menu:SetScript('OnHide', function(self, ...)
+            self._last_move_tm = nil
+        end)
+        oq.__menu:SetScript('OnUpdate', function(self, ...)
+            if ((self._last_move_tm) and (abs(GetTime() - self._last_move_tm) > OQ.MENU_DISPLAY_TM)) then
+                self:Hide()
             end
-        )
-        oq.__menu:SetScript(
-            'OnHide',
-            function(self, ...)
-                self._last_move_tm = nil
-            end
-        )
-        oq.__menu:SetScript(
-            'OnUpdate',
-            function(self, ...)
-                if ((self._last_move_tm) and (abs(GetTime() - self._last_move_tm) > OQ.MENU_DISPLAY_TM)) then
-                    self:Hide()
-                end
-            end
-        )
+        end)
 
         local y = 8
         local i
@@ -698,7 +614,12 @@ function oq.menu_create()
                     tile = true,
                     tileSize = 16,
                     edgeSize = 16,
-                    insets = {left = 1, right = 1, top = 1, bottom = 1}
+                    insets = {
+                        left = 1,
+                        right = 1,
+                        top = 1,
+                        bottom = 1
+                    }
                 }
             end
             m:SetBackdrop(oq.__backdrop19)
@@ -718,42 +639,33 @@ function oq.menu_create()
             m._highlight = t
             m._label = oq.label(m, 18, 3, 160, oq.__menu._cy, '')
             m._label:SetTextColor(1, 1, 1, 1)
-            m:SetScript(
-                'OnEnter',
-                function(self, ...)
-                    if (self._func) then
-                        self._highlight:Show()
-                    end
-                    if (self:GetParent()) then
-                        self:GetParent()._last_move_tm = GetTime()
-                    end
+            m:SetScript('OnEnter', function(self, ...)
+                if (self._func) then
+                    self._highlight:Show()
                 end
-            )
-            m:SetScript(
-                'OnLeave',
-                function(self, ...)
-                    if (self._func) then
-                        self._highlight:Hide()
-                    end
-                    if (self:GetParent()) then
-                        self:GetParent()._last_move_tm = GetTime()
-                    end
+                if (self:GetParent()) then
+                    self:GetParent()._last_move_tm = GetTime()
                 end
-            )
+            end)
+            m:SetScript('OnLeave', function(self, ...)
+                if (self._func) then
+                    self._highlight:Hide()
+                end
+                if (self:GetParent()) then
+                    self:GetParent()._last_move_tm = GetTime()
+                end
+            end)
             m:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-            m:SetScript(
-                'OnClick',
-                function(self, button)
-                    local stay_open = nil
-                    if (self._func) then
-                        stay_open = self._func(self:GetParent():GetParent(), self._arg1, self._arg2, button)
-                        PlaySound('igMainMenuOptionCheckBoxOff')
-                    end
-                    if (not stay_open) then
-                        self:GetParent():Hide()
-                    end
+            m:SetScript('OnClick', function(self, button)
+                local stay_open = nil
+                if (self._func) then
+                    stay_open = self._func(self:GetParent():GetParent(), self._arg1, self._arg2, button)
+                    PlaySound('igMainMenuOptionCheckBoxOff')
                 end
-            )
+                if (not stay_open) then
+                    self:GetParent():Hide()
+                end
+            end)
             oq.__menu_options[i] = m
         end
     end
@@ -865,19 +777,16 @@ function oq.combo_box(parent, x, y, edit_cx, cy, populate_list_func, init_text)
     cb._edit:SetFrameLevel(parent:GetFrameLevel() + 5)
     cb._edit:SetWidth(edit_cx)
     cb.__width = edit_cx + 22
-    cb:SetScript(
-        'OnClick',
-        function(self, button)
-            if (oq.menu_is_visible()) then
-                oq.menu_hide()
-            else
-                if (self._populate) then
-                    self._populate()
-                end
-                oq.menu_show(self._edit, 'TOPLEFT', 0, -25, 'BOTTOMLEFT', self.__width or (self._edit:GetWidth() + 22))
+    cb:SetScript('OnClick', function(self, button)
+        if (oq.menu_is_visible()) then
+            oq.menu_hide()
+        else
+            if (self._populate) then
+                self._populate()
             end
+            oq.menu_show(self._edit, 'TOPLEFT', 0, -25, 'BOTTOMLEFT', self.__width or (self._edit:GetWidth() + 22))
         end
-    )
+    end)
     return cb
 end
 
@@ -889,51 +798,31 @@ function oq.button_pulldown(parent, x, y, cx, cy, populate_list_func, init_textu
         cb._selected.texture:SetTexture(OQ.PLACEHOLDER)
     end
     cb._populate = populate_list_func
-    cb:SetScript(
-        'OnClick',
-        function(self, button)
-            if (oq.menu_is_visible()) then
-                oq.menu_hide()
-            else
-                if (self._populate) then
-                    self._populate()
-                end
-                oq.menu_show(
-                    self._selected,
-                    'TOPLEFT',
-                    0,
-                    -25,
-                    'BOTTOMLEFT',
-                    self._selected:GetWidth() * 2 + (self.__width or 130)
-                )
+    cb:SetScript('OnClick', function(self, button)
+        if (oq.menu_is_visible()) then
+            oq.menu_hide()
+        else
+            if (self._populate) then
+                self._populate()
             end
+            oq.menu_show(self._selected, 'TOPLEFT', 0, -25, 'BOTTOMLEFT',
+                         self._selected:GetWidth() * 2 + (self.__width or 130))
         end
-    )
+    end)
     return cb
 end
 
 function oq.pushbutton_pulldown(parent, x, y, cx, cy, populate_list_func, init_texture)
-    local cb =
-        oq.texture_button(
-        parent,
-        x,
-        y,
-        cx,
-        cy,
-        init_texture,
-        init_texture,
-        nil,
-        function(self, button)
-            if (oq.menu_is_visible()) then
-                oq.menu_hide()
-            else
-                if (self._populate) then
-                    self._populate()
-                end
-                oq.menu_show(self, 'TOPLEFT', 0, -25, 'BOTTOMLEFT', self:GetWidth() * 2 + (self.__width or 130))
+    local cb = oq.texture_button(parent, x, y, cx, cy, init_texture, init_texture, nil, function(self, button)
+        if (oq.menu_is_visible()) then
+            oq.menu_hide()
+        else
+            if (self._populate) then
+                self._populate()
             end
+            oq.menu_show(self, 'TOPLEFT', 0, -25, 'BOTTOMLEFT', self:GetWidth() * 2 + (self.__width or 130))
         end
-    )
+    end)
     cb:SetFrameLevel(parent:GetFrameLevel() + 5)
     if (init_texture == nil) then
         cb.texture:SetTexture(OQ.PLACEHOLDER)

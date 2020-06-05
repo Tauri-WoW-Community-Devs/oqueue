@@ -1,7 +1,7 @@
 ﻿local addonName, OQ = ...
 local L = OQ._T -- for literal string translations
 
-LibStub("AceAddon-3.0"):NewAddon(OQ, addonName, "AceConsole-3.0", "AceEvent-3.0")
+LibStub("AceAddon-3.0"):NewAddon(OQ, addonName, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("oQueue", true)
 
 if (OQ.table == nil) then
@@ -607,16 +607,6 @@ function oq.create_loot_rule_contract()
         end
     )
 
-    f.closepb =
-        oq.closebox(
-        f,
-        function(self)
-            self:GetParent():Hide()
-        end
-    )
-    f.closepb:SetPoint('TOPRIGHT', f, 'TOPRIGHT', -15, -8)
-    f.closepb:Show()
-
     local s = f:CreateTexture(nil, 'BORDER')
     s:SetTexture('INTERFACE/LFGFRAME/UI-LFG-SCENARIO-Random.png')
     s:SetTexCoord(0 / 512, 325 / 512, 0 / 512, 326 / 512)
@@ -821,52 +811,37 @@ function oq.utimer_frame()
     if (oq._utimer_frame ~= nil) then
         return oq._utimer_frame
     end
-    local d = oq.CreateFrame('FRAME', 'OQUserTimerFrame', UIParent)
-    d:SetBackdropColor(0.6, 0.6, 0.6, 1.0)
-    d:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.utimer_frame_transit(self, 1)
-        end
-    )
-    d:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.utimer_frame_transit(self, nil)
-        end
-    )
+    local d = oq.CreateFrame('Frame', 'OQUserTimerFrame', UIParent)
+    -- d:SetBackdropColor(0.6, 0.6, 0.6, 1.0)
+    -- d:SetScript(
+    --     'OnEnter',
+    --     function(self, ...)
+    --         oq.utimer_frame_transit(self, 1)
+    --     end
+    -- )
+    -- d:SetScript(
+    --     'OnLeave',
+    --     function(self, ...)
+    --         oq.utimer_frame_transit(self, nil)
+    --     end
+    -- )
 
-    oq.setpos(d, 300, 300, OQ_data.timer_width or 200, 200)
-    local t = d:CreateTexture(nil, 'BACKGROUND')
-    t:SetTexture(nil)
-    t:SetPoint('TOPLEFT', d, 'TOPLEFT', 16, 0)
-    t:SetPoint('BOTTOMRIGHT', d, 'TOPRIGHT', 0, -18)
-    t:SetAlpha(0.8)
-    d.texture = t
+    -- oq.setpos(d, 300, 300, OQ_data.timer_width or 200, 200)
+    d:SetTitle("Timers")
+    -- d.label = oq.label(d, 0, 0, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, 'timers', 'TOP', 'LEFT')
+    -- d.label:SetPoint('TOPLEFT', d, 'TOPLEFT', 5 + 16, -4)
+    -- d.label:SetTextColor(1, 1, 1)
 
-    d.label = oq.label(d, 0, 0, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, 'timers', 'TOP', 'LEFT')
-    d.label:SetPoint('TOPLEFT', d, 'TOPLEFT', 5 + 16, -4)
-    d.label:SetTextColor(1, 1, 1)
-
-    oq.make_frame_moveable(d)
-    d.closepb =
-        oq.closebox(
-        d,
-        function(self)
-            self:GetParent():Hide()
-            OQ_data.timer_show = 0
-        end
-    )
-    d.closepb:SetPoint('TOPRIGHT', d, 'TOPRIGHT', 3, 3)
+    -- oq.make_frame_moveable(d)
     d._save_position = function(self)
         OQ_data.utimer_x = max(0, floor(self:GetLeft()))
         OQ_data.utimer_y = max(0, floor(self:GetTop()))
     end
     d:Hide() -- require caller to explicitly show it
 
-    if (OQ_data.utimer_x or OQ_data.utimer_y) then
-        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.utimer_x, OQ_data.utimer_y)
-    end
+    -- if (OQ_data.utimer_x or OQ_data.utimer_y) then
+    --     d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.utimer_x, OQ_data.utimer_y)
+    -- end
     oq._utimer_frame = d
     oq.utimer_frame_transit(d, nil) -- hide certain bits
     return oq._utimer_frame
@@ -1054,78 +1029,72 @@ end
 function oq.utimer_create(parent, handle, x, y, cx, cy)
     oq.nlistings = oq.nlistings + 1
     local d = oq.CreateFrame('FRAME', 'OQUserTimer', parent)
-    d:SetBackdropColor(0.8, 0.8, 0.8, 1.0)
-    oq.setpos(d, x, y, cx + 1, cy)
-    local b = d:CreateTexture(nil, 'BACKGROUND')
-    b:SetTexture(0.2, 0.2, 0.2, 0.4)
-    b:SetAllPoints(d)
-    b:SetWidth(cx)
-    b:SetPoint('TOPLEFT', d, 'TOPLEFT', 16, 0)
-    d.backdrop = b
+    -- d:SetBackdropColor(0.8, 0.8, 0.8, 1.0)
+    -- oq.setpos(d, x, y, cx + 1, cy)
 
-    local i = d:CreateTexture(nil, 'LOW')
-    i:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    i:SetWidth(16)
-    i:SetHeight(16)
-    i:SetPoint('TOPLEFT', d, 'TOPLEFT', 0, -2)
-    i:SetAlpha(1.0)
-    d.icon = i
+    -- local i = d:CreateTexture(nil, 'LOW')
+    -- i:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
+    -- i:SetWidth(16)
+    -- i:SetHeight(16)
+    -- i:SetPoint('TOPLEFT', d, 'TOPLEFT', 0, -2)
+    -- i:SetAlpha(1.0)
+    -- d.icon = i
 
-    local t = d:CreateTexture(nil, 'LOW')
-    t:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    t:SetAllPoints(d)
-    t:SetPoint('TOPLEFT', d, 'TOPLEFT', 16 + 1, 0)
-    t:SetAlpha(0.6)
-    d.texture = t
+    -- local t = d:CreateTexture(nil, 'LOW')
+    -- t:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
+    -- t:SetAllPoints(d)
+    -- t:SetPoint('TOPLEFT', d, 'TOPLEFT', 16 + 1, 0)
+    -- t:SetAlpha(0.6)
+    -- d.texture = t
 
-    d.label =
-        oq.label(d, 16 + 5, 2, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.label:SetTextColor(1, 1, 1)
+    -- d.label =
+    --     oq.label(d, 16 + 5, 2, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
+    -- d.label:SetTextColor(1, 1, 1)
 
-    d.count = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.count:SetTextColor(1, 1, 1)
-    d.count:SetPoint('TOPLEFT', d, 'TOPLEFT', -60, -2)
-    d.count:SetJustifyH('RIGHT')
+    -- d.count = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
+    -- d.count:SetTextColor(1, 1, 1)
+    -- d.count:SetPoint('TOPLEFT', d, 'TOPLEFT', -60, -2)
+    -- d.count:SetJustifyH('RIGHT')
 
-    d.ressers = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.ressers:SetTextColor(1, 1, 1)
-    d.ressers:SetPoint('TOPLEFT', d, 'TOPRIGHT', 2, -2)
-    d.ressers:SetJustifyH('LEFT')
+    -- d.ressers = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
+    -- d.ressers:SetTextColor(1, 1, 1)
+    -- d.ressers:SetPoint('TOPLEFT', d, 'TOPRIGHT', 2, -2)
+    -- d.ressers:SetJustifyH('LEFT')
 
-    d.time = oq.label(d, d:GetWidth() - 50 - 5, 2, 50, d:GetHeight() - 2 * 2, '0:00', 'MIDDLE', 'RIGHT', nil, 'MEDIUM')
-    d.time:SetTextColor(1, 1, 1)
-    d.time:SetPoint('TOPLEFT', d, 'TOPRIGHT', -60, -2)
-    d._start = 0
-    d._end = 0
-    d._handle = handle
-    d._type = 1 -- standard count down
-    d:SetScript(
-        'OnUpdate',
-        function(self, elapsed)
-            oq.utimer_update(self)
-        end
-    )
+    -- d.time = oq.label(d, d:GetWidth() - 50 - 5, 2, 50, d:GetHeight() - 2 * 2, '0:00', 'MIDDLE', 'RIGHT', nil, 'MEDIUM')
+    -- d.time:SetTextColor(1, 1, 1)
+    -- d.time:SetPoint('TOPLEFT', d, 'TOPRIGHT', -60, -2)
+    -- d._start = 0
+    -- d._end = 0
+    -- d._handle = handle
+    -- d._type = 1 -- standard count down
+    -- d:SetScript(
+    --     'OnUpdate',
+    --     function(self, elapsed)
+    --         oq.utimer_update(self)
+    --     end
+    -- )
 
-    d:SetMovable(false)
-    d:EnableMouse(true)
-    d:SetScript(
-        'OnMouseUp',
-        function(self, button)
-            if (button == 'LeftButton') and (self._type == 1) and (_inside_bg) then
-                oq.SendChatMessage(self.label:GetText() .. '   ' .. self.time:GetText(), 'INSTANCE_CHAT')
-            end
-        end
-    )
-    d:Hide()
+    -- d:SetMovable(false)
+    -- d:EnableMouse(true)
+    -- d:SetScript(
+    --     'OnMouseUp',
+    --     function(self, button)
+    --         if (button == 'LeftButton') and (self._type == 1) and (_inside_bg) then
+    --             oq.SendChatMessage(self.label:GetText() .. '   ' .. self.time:GetText(), 'INSTANCE_CHAT')
+    --         end
+    --     end
+    -- )
+    -- d:Hide()
 
-    d.set_width = function(self, w)
-        local x, y = self:GetLeft(), self:GetTop()
-        x = abs(x - self:GetParent():GetLeft())
-        y = abs(y - self:GetParent():GetTop())
-        self:SetPoint('TOPLEFT', self:GetParent(), 'TOPLEFT', x, -1 * y)
-        self:SetWidth(w)
-        self.backdrop:SetWidth(w)
-    end
+    -- d.set_width = function(self, w)
+    --     local x, y = self:GetLeft(), self:GetTop()
+    --     x = abs(x - self:GetParent():GetLeft())
+    --     y = abs(y - self:GetParent():GetTop())
+    --     self:SetPoint('TOPLEFT', self:GetParent(), 'TOPLEFT', x, -1 * y)
+    --     self:SetWidth(w)
+    --     self.backdrop:SetWidth(w)
+    -- end
     return d
 end
 
@@ -3862,6 +3831,7 @@ function oq.battleground_spy(opt)
 end
 
 function oq.calc_pkt_stats()
+    if (true) then oq.log(true, "TODO calc_pkt_stats"); return end
     if
         (not OQTabPage5:IsVisible()) or (oq.pkt_recv == nil) or (oq.pkt_processed == nil) or (oq.pkt_sent == nil) or
             (oq.send_q == nil)
@@ -6014,6 +5984,7 @@ function oq.get_nConnections()
 end
 
 function oq.n_connections()
+    if (true) then oq.log(true, "TODO n_connections"); return end
     local nOQlocals, nOQfriends = 0
     if (oq.loaded) then
         oq.tab2._connection:SetText(string.format(OQ.CONNECTIONS, nOQlocals, nOQfriends))
@@ -10821,13 +10792,6 @@ function oq.create_bounty_board(parent)
                        OQ_data.bounty_y = max(0,floor(self:GetTop())); 
                      end ;
 
-  local pb = oq.closebox(d);
-  pb:SetPoint("TOPRIGHT", d, "TOPRIGHT", -25, -85);
-  d:SetPoint("TOPLEFT", 100, -100);
-  d:SetWidth (400);
-  d:SetHeight(500);
-  d:SetFrameLevel(max( OQ_MinimapButton:GetFrameLevel(), parent:GetFrameLevel()) + 10 );
-
   local back = d:CreateTexture(nil, "BACKGROUND");
   back:SetTexture("INTERFACE/BarberShop/UI-BARBERSHOP");
   back:SetTexCoord(5/512, 265/512, 1/512, 312/512);
@@ -12193,7 +12157,6 @@ function oq.create_log_button(parent)
 
     d:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
     oq.make_frame_moveable(d)
-    oq.closebox(d)
     d:SetScript(
         'OnShow',
         function(self)
@@ -14895,15 +14858,6 @@ function oq.create_tab3()
     )
     oq.tab3._create_but.string:SetFont(OQ.FONT, 14, '')
 
-    -- tabbing order
-    oq.set_tab_order(oq.tab3_raid_name, oq.tab3_min_ilevel)
-    oq.set_tab_order(oq.tab3_min_ilevel, oq.tab3_min_resil)
-    oq.set_tab_order(oq.tab3_min_resil, oq.tab3_min_mmr)
-    oq.set_tab_order(oq.tab3_min_mmr, oq.tab3_bgs)
-    oq.set_tab_order(oq.tab3_bgs, oq.tab3_notes)
-    oq.set_tab_order(oq.tab3_notes, oq.tab3_pword)
-    oq.set_tab_order(oq.tab3_pword, oq.tab3_raid_name)
-
     oq.tab3._resize = function(self)
         local cy = self:GetHeight()
         oq.move_y(self._create_but, cy - 70)
@@ -15700,12 +15654,6 @@ function oq.create_pending_note(parent, token)
     f:SetBackdrop(oq.__backdrop08)
     f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
     f:SetAlpha(1.0)
-    oq.closebox(
-        f,
-        function(self)
-            oq.hide_shade()
-        end
-    )
     f:SetScript('OnShow', oq.on_edit_pending_note)
 
     local x, y
@@ -16932,12 +16880,6 @@ function oq.create_tab3_notice(parent)
     f:SetBackdrop(oq.__backdrop11)
     f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
     f:SetAlpha(1.0)
-    oq.closebox(
-        f,
-        function(self)
-            self:GetParent():GetParent():Hide()
-        end
-    )
 
     local x = 15
     local y = 20
@@ -19274,6 +19216,7 @@ function oq.insert_waitlist_item(x, y, req_token, n_members_, name_, realm_, m)
 end
 
 function oq.update_wait_times()
+    if (true) then oq.log(true, "TODO update_wait_times"); return end
     local now = oq.utc_time()
     local i, v
     for i, v in pairs(oq.tab7.waitlist) do
@@ -20631,6 +20574,8 @@ function oq.get_crowns(n, sz_)
 end
 
 function oq.update_scores()
+    if (true) then return end
+
     if (oq.scores.start_round_tm == nil) or (oq.scores.end_round_tm == nil) then
         if (oq.scores.timeleft == nil) then
             oq.scores.timeleft = 1 * 60 * 60
@@ -23169,13 +23114,6 @@ function OQ:OnAddonLoaded()
             oq.load_oq_data()
             oq.load_toon_info()
             oq.init_locals()
-            oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
-            oq.ui.closepb:SetScript(
-                'OnHide',
-                function(self)
-                    oq.onHide(self)
-                end
-            )
             oq.init_if_good_region()
         end
     )
@@ -24222,6 +24160,7 @@ function oq.blizz_workarounds()
 end
 
 function oq.on_init(now)
+    oq.log(true, "on init", oq._initialized, oq.ui)
     if (oq._initialized) then
         return
     end
@@ -24264,8 +24203,8 @@ function oq.on_init(now)
         oq.raid.type = oq.toon.raid.type
     end
     -- oq.create_main_ui()
-    oq.ui:SetFrameStrata('MEDIUM')
-    oq.marquee = oq.create_marquee()
+    -- oq.ui:SetFrameStrata('MEDIUM')
+    -- oq.marquee = oq.create_marquee()
 
     ChatFrame_AddMessageEventFilter('CHAT_MSG_SYSTEM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_CHANNEL', oq.chat_filter)
@@ -24275,7 +24214,6 @@ function oq.on_init(now)
 
     -- first time check
     oq.timer_oneshot(2, oq.hook_error_frame)
-    oq.timer_oneshot(2, oq.hook_ui_resize)
     oq.timer_oneshot(2.5, oq.recover_premades)
     oq.timer_oneshot(2.7, oq.init_complete)
     oq.timer_oneshot(3, oq.fog_init)
@@ -24323,18 +24261,18 @@ function oq.on_init(now)
                                     '' .. tostring(OQ_SPECIAL_TAG or '') .. ' (' .. tostring(OQ.REGION) .. ')|r'
     )
 
-    if (oq.toon.marquee_hide) then
-        oq.marquee:Hide()
-    else
-        oq.marquee:Show()
-    end
+    -- if (oq.toon.marquee_hide) then
+    --     oq.marquee:Hide()
+    -- else
+    --     oq.marquee:Show()
+    -- end
 
-    OQ_MinimapButton_Reposition()
-    if (oq.toon.mini_hide) then
-        OQ_MinimapButton:Hide()
-    else
-        OQ_MinimapButton:Show()
-    end
+    -- OQ_MinimapButton_Reposition()
+    -- if (oq.toon.mini_hide) then
+    --     OQ_MinimapButton:Hide()
+    -- else
+    --     OQ_MinimapButton:Show()
+    -- end
 
     if (oq.toon.my_toons == nil) then
         oq.toon.my_toons = tbl.new()
@@ -24567,6 +24505,8 @@ function oq.attempt_group_recovery()
     OQ_data.leader['pve.challenge'] = OQ_data.leader['pve.challenge'] or {nBosses = 0, pts = 0}
     OQ_data.leader['pve.scenario'] = OQ_data.leader['pve.scenario'] or {nBosses = 0, pts = 0}
 
+    if (true) then return end
+    
     oq.tab3_enforce:SetChecked((oq.raid.enforce_levels == 1))
 
     local instance, instanceType = IsInInstance()
@@ -24955,16 +24895,6 @@ function oq.create_marquee()
     f.label:SetTextColor(1, 1, 1)
     f.label:Hide()
 
-    f.closepb =
-        oq.closebox(
-        f,
-        function(self)
-            oq.toggle_marquee()
-        end
-    )
-    f.closepb:SetPoint('TOPRIGHT', f, 'TOPRIGHT', 3, 20)
-    f.closepb:Hide()
-
     oq.marquee_frame_transit(f, nil) -- hide certain bits
     -- /transit bits
 
@@ -24988,6 +24918,8 @@ function oq.toggle_marquee()
 end
 
 function oq.delayed_button_load()
+    if (true) then return end
+
     oq.mini:RegisterForClicks('AnyUp')
     oq.mini:RegisterForDrag('LeftButton', 'RightButton')
     if (oq.toon.mini_hide) then
@@ -25152,16 +25084,6 @@ function OQ_hide_menu_popup()
     oq.menu_hide()
 end
 
-function oq.hook_ui_resize()
-    oq.ui:SetScript(
-        'OnSizeChanged',
-        function(self)
-            OQ_OnSizeChanged(self)
-        end
-    )
-    OQMainFrame:SetHeight(OQ_data._height or OQ.MIN_FRAME_HEIGHT)
-end
-
 function OQ_OnSizeChanged(f)
     if (f) and (f.__resizing) and (OQTabPage2) and (OQTabPage2._resize) then
         OQ_data._height = min(1000, max(OQ.MIN_FRAME_HEIGHT, floor(f:GetHeight()) or 0))
@@ -25237,12 +25159,10 @@ end
 function oq.debug(msg, ...)
   if type(msg) == "table" then
     for k, v in pairs(msg) do
-        print("KEY")
-        print(k)
+        print("Key: ", k)
         oq.debug(v)
     end
   else
-    print("VAL")
-    print(msg)
+    print("Value: ", msg)
   end
 end
