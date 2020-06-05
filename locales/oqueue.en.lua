@@ -715,106 +715,107 @@ L['Zesqua'] = nil
 L['Dread Ship Vazuvius'] = nil
 L['Chelon'] = nil
 L['Spectral Pirate'] = nil
---
+
+
+OQ.RAID_CLASSIC_START = 2
+OQ.RAID_TBC_START = 6
+OQ.RAID_WOTLK_START = 14
+OQ.RAID_CATACLYSM_START = 23
+OQ.RAID_MOP_START = 29
+OQ.RAID_LAST = 32
+OQ.RAID_ALLOW_10_25_START = 13
+OQ.RAID_ALLOW_10_25_HC_START = 18
+OQ.RAID_ALLOW_LFR_START = 27
+OQ.RAID_ALLOW_FLEX_START = 32
+
 OQ.raids = {
     -- Classic
-    [3] = L['Molten Core'],
+    [1] = L['Molten Core'],
     [2] = L['Blackwing Lair'],
-    [5] = L["Ruins of Ahn'Qiraj"],
-    [1] = L["Ahn'Qiraj Temple"],
+    [3] = L["Ruins of Ahn'Qiraj"],
+    [4] = L["Ahn'Qiraj Temple"],
     -- TBC
-    [8] = L['Karazhan'],
-    [7] = L["Gruul's Lair"],
-    [9] = L["Magtheridon's Lair"],
-    [10] = L['Serpentshrine Cavern'],
-    [11] = L['Tempest Keep'],
-    [6] = L['Black Temple'],
-    [12] = L['The Battle for Mount Hyjal'],
-    [13] = L['Sunwell Plateu'],
+    [5] = L['Karazhan'],
+    [6] = L["Gruul's Lair"],
+    [7] = L["Magtheridon's Lair"],
+    [8] = L['Serpentshrine Cavern'],
+    [9] = L['Tempest Keep'],
+    [10] = L['Black Temple'],
+    [11] = L['The Battle for Mount Hyjal'],
+    [12] = L['Sunwell Plateu'],
     -- WotLK
-    [14] = L['Icecrown Citadel'],
-    [15] = L['Naxxramas'],
-    [16] = L["Onyxia's Lair"],
-    [17] = L['The Eye of Eternity'],
-    [18] = L['The Obsidian Sanctum'],
-    [19] = L['The Ruby Sanctum'],
-    [20] = L['Trial of the Crusader'],
-    [21] = L['Ulduar'],
-    [22] = L['Vault of Archavon'],
-    [23] = L['Baradin Hold'],
-    [24] = L['Blackwing Descent'],
-    [25] = L['Dragon Soul'],
+    [13] = L['Naxxramas'],
+    [14] = L['The Obsidian Sanctum'],
+    [15] = L['The Eye of Eternity'],
+    [16] = L['Vault of Archavon'],
+    [17] = L['Ulduar'],
+    [18] = L['Trial of the Crusader'],
+    [19] = L["Onyxia's Lair"],
+    [20] = L['Icecrown Citadel'],
+    [21] = L['The Ruby Sanctum'],
+    -- Cataclysm
+    [22] = L['Blackwing Descent'],
+    [23] = L['The Bastion of Twilight'],
+    [24] = L['Throne of the Four Winds'],
+    [25] = L['Baradin Hold'],
     [26] = L['Firelands'],
-    [27] = L['The Bastion of Twilight'],
-    [28] = L['Throne of the Four Winds'],
+    [27] = L['Dragon Soul'],
+    -- MoP
+    [28] = L["Mogu'shan Vaults"],
     [29] = L['Heart of Fear'],
-    [30] = L["Mogu'shan Vaults"],
-    [31] = L['Siege of Orgrimmar'],
-    [32] = L['Terrace of Endless Spring'],
-    [33] = L['Throne of Thunder'],
-    [63] = L['World Boss'],
+    [30] = L['Terrace of Endless Spring'],
+    [31] = L['Throne of Thunder'],
+    [32] = L['Siege of Orgrimmar'],
+    -- Generic
+    [80] = L['World Boss'],
 }
 
 OQ.raid_abbrevation = {
-    [1] = L['AQ'], -- Ahn'Qiraj temple
+    -- Classic
+    [1] = L['MC'], -- molten core
     [2] = L['BWL'], -- blackwing lair
-    [3] = L['MC'], -- molten core
-    [4] = L['Ony'], -- onyxia's lair
-    [5] = L['AQ20'], -- ruins of ahn'qiraj
-    [6] = L['BT'], -- black temple
-    [7] = L['Gruul'], -- gruul's lair
-    [8] = L['Kara'], -- karazhan
-    [9] = L['Mag'], -- magtheridon's lair
-    [10] = L['SSC'], -- serpentshrine cavern
-    [11] = L['TK'], -- tempest keep
-    [12] = L['Hyjal'], -- the battle for mount hyjal
-    [13] = L['SWP'], -- the sunwell
-    [14] = L['ICC'], -- icecrown citadel
-    [15] = L['Naxx'], -- naxxramas
-    [16] = L['Ony'], -- onyxia's lair
-    [17] = L['EoE'], -- the eye of eternity
-    [18] = L['OS'], -- the obsidian sanctum
-    [19] = L['RS'], -- the ruby sanctum
-    [20] = L['ToC'], -- trail of the crusader
-    [21] = L['Uld'], -- ulduar
-    [22] = L['VoA'], -- vault of archavon
-    [23] = L['BH'], -- baradin hold
-    [24] = L['BWD'], -- blackwing descent
-    [25] = L['DS'], -- dragon soul
+    [3] = L['AQ20'], -- ruins of ahn'qiraj
+    [4] = L['AQ'], -- Ahn'Qiraj temple
+    -- TBC
+    [5] = L['Kara'], -- karazhan
+    [6] = L['Gruul'], -- gruul's lair
+    [7] = L['Mag'], -- magtheridon's lair
+    [8] = L['SSC'], -- serpentshrine cavern
+    [9] = L['TK'], -- tempest keep
+    [10] = L['BT'], -- black temple
+    [11] = L['Hyjal'], -- the battle for mount hyjal
+    [12] = L['SWP'], -- the sunwell
+    -- WotLK
+    [13] = L['Naxx'], -- naxxramas
+    [14] = L['OS'], -- the obsidian sanctum
+    [15] = L['EoE'], -- the eye of eternity
+    [16] = L['VoA'], -- vault of archavon
+    [17] = L['Uld'], -- ulduar
+    [18] = L['ToC'], -- trail of the crusader
+    [19] = L['Ony'], -- onyxia's lair
+    [20] = L['ICC'], -- icecrown citadel
+    [21] = L['RS'], -- the ruby sanctum
+    -- Cataclysm
+    [22] = L['BWD'], -- blackwing descent
+    [23] = L['BoT'], -- the bastion of twilight
+    [24] = L['4Winds'], -- throne of the four winds
+    [25] = L['BH'], -- baradin hold
     [26] = L['FL'], -- firelands
-    [27] = L['BoT'], -- the bastion of twilight
-    [28] = L['4Winds'], -- throne of the four winds
+    [27] = L['DS'], -- dragon soul
+    -- MoP
+    [28] = L['MSV'], -- mogu'shan vaults
     [29] = L['HoF'], -- heart of fear
-    [30] = L['MSV'], -- mogu'shan vaults
-    [31] = L['SoO'], -- siege of orgrimmar
-    [32] = L['ToES'], -- terrace of endless spring
-    [33] = L['ToT'], -- throne of thunder
-    [63] = L['Boss'] -- world boss
+    [30] = L['ToES'], -- terrace of endless spring
+    [31] = L['ToT'], -- throne of thunder
+    [32] = L['SoO'], -- siege of orgrimmar
+    -- Generic
+    [80] = L['Boss'] -- world boss
 }
 
 OQ.raid_bosses = {
+    -- Classic
+    -- Molten Core
     [1] = {
-        [1] = L['The Prophet Skeram'],
-        [2] = L['Silithid Royalty'],
-        [3] = L['Battlegaurd Sartura'],
-        [4] = L['Fankriss the Unyielding'],
-        [5] = L['Viscidus'],
-        [6] = L['Princess Huhuran'],
-        [7] = L['Twin Emperors'],
-        [8] = L['Ouro'],
-        [9] = L["C'Thun"]
-    },
-    [2] = {
-        [1] = L['Razorgore the Untamed'],
-        [2] = L['Vaelastrasz the Corrupt'],
-        [3] = L['Broodlord Lashlayer'],
-        [4] = L['Firemaw'],
-        [5] = L['Ebonroc'],
-        [6] = L['Flamegor'],
-        [7] = L['Chromaggus'],
-        [8] = L['Nefarian']
-    },
-    [3] = {
         [1] = L['Lucifron'],
         [2] = L['Magmadar'],
         [3] = L['Gehennas'],
@@ -826,10 +827,19 @@ OQ.raid_bosses = {
         [9] = L['Majordomo Executus'],
         [10] = L['Ragnaros']
     },
-    [4] = {
-        [1] = L['Onyxia']
+    -- Blackwing Lair
+    [2] = {
+        [1] = L['Razorgore the Untamed'],
+        [2] = L['Vaelastrasz the Corrupt'],
+        [3] = L['Broodlord Lashlayer'],
+        [4] = L['Firemaw'],
+        [5] = L['Ebonroc'],
+        [6] = L['Flamegor'],
+        [7] = L['Chromaggus'],
+        [8] = L['Nefarian']
     },
-    [5] = {
+    -- Ruins of Ahn'Qiraj
+    [3] = {
         [1] = L['Kurinnaxx'],
         [2] = L['General Rajaxx'],
         [3] = L['Moam'],
@@ -837,22 +847,22 @@ OQ.raid_bosses = {
         [5] = L['Ayamiss the Hunter'],
         [6] = L['Ossirian the Unscarred']
     },
-    [6] = {
-        [1] = L["High Warlord Naj'entus"],
-        [2] = L['Supremus'],
-        [3] = L['Shade of Akama'],
-        [4] = L['Teron Gorefiend'],
-        [5] = L['Gurtogg Bloodboil'],
-        [6] = L['Reliquary of Souls'],
-        [7] = L['Mother of Shahraz'],
-        [8] = L['The Illidari Council'],
-        [9] = L['Illidan Stormrage']
+    -- Ahn'Qiraj Temple
+    [4] = {
+        [1] = L['The Prophet Skeram'],
+        [2] = L['Silithid Royalty'],
+        [3] = L['Battlegaurd Sartura'],
+        [4] = L['Fankriss the Unyielding'],
+        [5] = L['Viscidus'],
+        [6] = L['Princess Huhuran'],
+        [7] = L['Twin Emperors'],
+        [8] = L['Ouro'],
+        [9] = L["C'Thun"]
     },
-    [7] = {
-        [1] = L['High King Maulgar'],
-        [2] = L['Gruul the Dragonkiller']
-    },
-    [8] = {
+
+    -- TBC
+    -- Karazhan
+    [5] = {
         [1] = L['Attumen the Huntsman'],
         [2] = L['Moroes'],
         [3] = L['Maiden of Virtue'],
@@ -865,10 +875,17 @@ OQ.raid_bosses = {
         [10] = L['Prince Malchezaar'],
         [11] = L['Nightbane']
     },
-    [9] = {
+    -- Gruul's Lair
+    [6] = {
+        [1] = L['High King Maulgar'],
+        [2] = L['Gruul the Dragonkiller']
+    },
+    -- Magtheridon's Lair
+    [7] = {
         [1] = L['Magtheridon']
     },
-    [10] = {
+    -- Serpentshrine Cavern
+    [8] = {
         [1] = L['Hydross the Unstable'],
         [2] = L['The Lurker Below'],
         [3] = L['Leotheras the Blind'],
@@ -876,20 +893,35 @@ OQ.raid_bosses = {
         [5] = L['Morogrim Tidewalker'],
         [6] = L['Lady Vashj']
     },
-    [11] = {
+    -- Tempest Keep
+    [9] = {
         [1] = L["Al'ar"],
         [2] = L['Void Reaver'],
         [3] = L['High Astromancer Solarian'],
         [4] = L["Kael'thas Sunstrider"]
     },
-    [12] = {
+    -- Black Temple
+    [10] = {
+        [1] = L["High Warlord Naj'entus"],
+        [2] = L['Supremus'],
+        [3] = L['Shade of Akama'],
+        [4] = L['Teron Gorefiend'],
+        [5] = L['Gurtogg Bloodboil'],
+        [6] = L['Reliquary of Souls'],
+        [7] = L['Mother of Shahraz'],
+        [8] = L['The Illidari Council'],
+        [9] = L['Illidan Stormrage']
+    },
+    -- The Battle for Mount Hyjal
+    [11] = {
         [1] = L['Rage Winterchill'],
         [2] = L['Anetheron'],
         [3] = L["Kaz'rogal"],
         [4] = L['Azgalor'],
         [5] = L['Archimonde']
     },
-    [13] = {
+    -- Sunwell Plateu
+    [12] = {
         [1] = L['Kalecgos'],
         [2] = L['Brutallus'],
         [3] = L['Felmyst'],
@@ -897,21 +929,10 @@ OQ.raid_bosses = {
         [5] = L["M'uru"],
         [6] = L["Kil'jaeden"]
     },
-    [14] = {
-        [1] = L['Lord Marrowgar'],
-        [2] = L['Lady Deathwhisper'],
-        [3] = L['Icecrown Gunship Battle'],
-        [4] = L['Deathbringer Saurfang'],
-        [5] = L['Rotface'],
-        [6] = L['Festergut'],
-        [7] = L['Professor Putricide'],
-        [8] = L['Blood Council'],
-        [9] = L["Queen Lana'thel"],
-        [10] = L['Valithria Dreamwalker'],
-        [11] = L['Sindragosa'],
-        [12] = L['The Lich King']
-    },
-    [15] = {
+
+    -- WotLK
+    -- Naxxramas
+    [13] = {
         [1] = L["Anub'Rekhan"],
         [2] = L['Grand Widow Faerlina'],
         [3] = L['Maexxna'],
@@ -928,26 +949,23 @@ OQ.raid_bosses = {
         [14] = L['Sapphiron'],
         [15] = L["Kel'Thuzad"]
     },
-    [16] = {
-        [1] = L['Onyxia']
-    },
-    [17] = {
-        [1] = L['Malygos']
-    },
-    [18] = {
+    -- The Obsidian Sanctum
+    [14] = {
         [1] = L['Sartharion']
     },
-    [19] = {
-        [1] = L['Halion']
+    -- The Eye of Eternity
+    [15] = {
+        [1] = L['Malygos']
     },
-    [20] = {
-        [1] = L['Northrend Beasts'],
-        [2] = L['Lord Jaraxxus'],
-        [3] = L['Faction Champions'],
-        [4] = L["Val'kyr Twins"],
-        [5] = L["Anub'arak"]
+    -- Vault of Archavon
+    [16] = {
+        [1] = L['Archavon the Stone Watcher'],
+        [2] = L['Emalon the Storm Watcher'],
+        [3] = L['Koralon the Flame Watcher'],
+        [4] = L['Toravon the Ice Watcher']
     },
-    [21] = {
+    -- Ulduar
+    [17] = {
         [1] = L['Flame Leviathan'],
         [2] = L['Ignis the Furnance Master'],
         [3] = L['Razorscale'],
@@ -963,18 +981,41 @@ OQ.raid_bosses = {
         [13] = L['Yogg-Saron'],
         [14] = L['Algalon the Observer']
     },
+    -- Trial of the Crusader
+    [18] = {
+        [1] = L['Northrend Beasts'],
+        [2] = L['Lord Jaraxxus'],
+        [3] = L['Faction Champions'],
+        [4] = L["Val'kyr Twins"],
+        [5] = L["Anub'arak"]
+    },
+    -- Onyxia's Lair
+    [19] = {
+        [1] = L['Onyxia']
+    },
+    -- Icecrown Citadel
+    [20] = {
+        [1] = L['Lord Marrowgar'],
+        [2] = L['Lady Deathwhisper'],
+        [3] = L['Icecrown Gunship Battle'],
+        [4] = L['Deathbringer Saurfang'],
+        [5] = L['Rotface'],
+        [6] = L['Festergut'],
+        [7] = L['Professor Putricide'],
+        [8] = L['Blood Council'],
+        [9] = L["Queen Lana'thel"],
+        [10] = L['Valithria Dreamwalker'],
+        [11] = L['Sindragosa'],
+        [12] = L['The Lich King']
+    },
+    -- The Ruby Sanctum
+    [21] = {
+        [1] = L['Halion']
+    },
+
+    -- Cataclysm
+    -- Blackwing Descent
     [22] = {
-        [1] = L['Archavon the Stone Watcher'],
-        [2] = L['Emalon the Storm Watcher'],
-        [3] = L['Koralon the Flame Watcher'],
-        [4] = L['Toravon the Ice Watcher']
-    },
-    [23] = {
-        [1] = L['Argaloth'],
-        [2] = L["Occu'thar"],
-        [3] = L['Alizabal']
-    },
-    [24] = {
         [1] = L['Magmaw'],
         [2] = L['Omnotron Defense System'],
         [3] = L['Maloriak'],
@@ -982,16 +1023,26 @@ OQ.raid_bosses = {
         [5] = L['Chimaeron'],
         [6] = L['Nefarian']
     },
-    [25] = {
-        [1] = L['Morchok'],
-        [2] = L["Warlord Zon'ozz"],
-        [3] = L["Yor'sahj the Unsleeping"],
-        [4] = L['Hagara the Stormbinder'],
-        [5] = L['Ultraxion'],
-        [6] = L['Warmaster Blackhorn'],
-        [7] = L['Spine of Deathwing'],
-        [8] = L['Madness of Deathwing']
+    -- The Bastion of Twilight
+    [23] = {
+        [1] = L['Halfus Wyrmbreaker'],
+        [2] = L['Theralion and Valiona'],
+        [3] = L['Ascendant Council'],
+        [4] = L["Cho'gall"],
+        [5] = L['Sinestra']
     },
+    -- Throne of the Four Winds
+    [24] = {
+        [1] = L['Conclave of Wind'],
+        [2] = L["Al'Akir"]
+    },
+    -- Baradin Hold
+    [25] = {
+        [1] = L['Argaloth'],
+        [2] = L["Occu'thar"],
+        [3] = L['Alizabal']
+    },
+    -- Firelands
     [26] = {
         [1] = L['Shannox'],
         [2] = L['Lord Rhyolith'],
@@ -1001,17 +1052,29 @@ OQ.raid_bosses = {
         [6] = L['Majordomo Staghelm'],
         [7] = L['Ragnaros']
     },
+    -- Dragon Soul
     [27] = {
-        [1] = L['Halfus Wyrmbreaker'],
-        [2] = L['Theralion and Valiona'],
-        [3] = L['Ascendant Council'],
-        [4] = L["Cho'gall"],
-        [5] = L['Sinestra']
+        [1] = L['Morchok'],
+        [2] = L["Warlord Zon'ozz"],
+        [3] = L["Yor'sahj the Unsleeping"],
+        [4] = L['Hagara the Stormbinder'],
+        [5] = L['Ultraxion'],
+        [6] = L['Warmaster Blackhorn'],
+        [7] = L['Spine of Deathwing'],
+        [8] = L['Madness of Deathwing']
     },
+
+    -- MoP
+    -- Mogu'shan Vaults
     [28] = {
-        [1] = L['Conclave of Wind'],
-        [2] = L["Al'Akir"]
+        [1] = L['The Stone Guard'],
+        [2] = L['Feng the Accursed'],
+        [3] = L["Gara'jal the Spiritbinder"],
+        [4] = L['The Spirit Kings'],
+        [5] = L['Elegon'],
+        [6] = L['Will of the Emperor']
     },
+    -- Heart of Fear
     [29] = {
         [1] = L["Impreial Vizier Zor'lok"],
         [2] = L["Blade Lord Ta'yak"],
@@ -1020,15 +1083,31 @@ OQ.raid_bosses = {
         [5] = L["Amber-Shaper Un'sok"],
         [6] = L["Grand Empress Shek'zeer"]
     },
+    -- Terrace of Endless Spring
     [30] = {
-        [1] = L['The Stone Guard'],
-        [2] = L['Feng the Accursed'],
-        [3] = L["Gara'jal the Spiritbinder"],
-        [4] = L['The Spirit Kings'],
-        [5] = L['Elegon'],
-        [6] = L['Will of the Emperor']
+        [1] = L['Protectors of the Endless'],
+        [2] = L['Tsulong'],
+        [3] = L['Lei Shi'],
+        [4] = L['Sha of Fear']
     },
+    -- Throne of Thunder
     [31] = {
+        [1] = L["Jin'rokh the Breaker"],
+        [2] = L['Horridon'],
+        [3] = L['Council of Elders'],
+        [4] = L['Tortos'],
+        [5] = L['Megaera'],
+        [6] = L['Ji-Kun'],
+        [7] = L['Durumu the Forgotten'],
+        [8] = L['Primordius'],
+        [9] = L['Dark Animus'],
+        [10] = L['Iron Qon'],
+        [11] = L['Twin Consorts'],
+        [12] = L['Lei Shen'],
+        [13] = L['Ra-den']
+    },
+    -- Siege of Orgrimmar
+    [32] = {
         [1] = L['Immerseus'],
         [2] = L['The Fallen Protectors'],
         [3] = L['Norushen'],
@@ -1044,28 +1123,10 @@ OQ.raid_bosses = {
         [13] = L['Paragons of the Klaxxi'],
         [14] = L['Garrosh Hellscream']
     },
-    [32] = {
-        [1] = L['Protectors of the Endless'],
-        [2] = L['Tsulong'],
-        [3] = L['Lei Shi'],
-        [4] = L['Sha of Fear']
-    },
-    [33] = {
-        [1] = L["Jin'rokh the Breaker"],
-        [2] = L['Horridon'],
-        [3] = L['Council of Elders'],
-        [4] = L['Tortos'],
-        [5] = L['Megaera'],
-        [6] = L['Ji-Kun'],
-        [7] = L['Durumu the Forgotten'],
-        [8] = L['Primordius'],
-        [9] = L['Dark Animus'],
-        [10] = L['Iron Qon'],
-        [11] = L['Twin Consorts'],
-        [12] = L['Lei Shen'],
-        [13] = L['Ra-den']
-    },
-    [63] = {
+
+    -- Generic
+    -- World Boss
+    [80] = {
         [1] = L['Omen'],
         [2] = L['Galleon'],
         [3] = L['Sha of Anger'],

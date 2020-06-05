@@ -1,6 +1,5 @@
 ﻿local addonName, OQ = ...
 local L = OQ._T -- for literal string translations
-local AceGUI = LibStub("AceGUI-3.0")
 
 LibStub("AceAddon-3.0"):NewAddon(OQ, addonName, "AceConsole-3.0", "AceEvent-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("oQueue", true)
