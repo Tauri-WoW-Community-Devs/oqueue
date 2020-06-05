@@ -25,8 +25,6 @@ function OQ:InitTab_Settings(tab)
     local gLeft = AceGUI:Create("InlineGroup")
     gLeft:SetLayout("List")
     gLeft:SetTitle("?")
-    -- gLeft:SetRelativeWidth(0.5)
-    -- gLeft:SetFullHeight(true)
     gLeft:SetFullWidth(true)
     table:AddChild(gLeft)
 

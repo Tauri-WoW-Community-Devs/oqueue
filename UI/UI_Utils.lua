@@ -70,3 +70,47 @@ end
 function OQ:SetFormValue(form, key, value)
     form[key] = value
 end
+
+function OQ:SimpleLabel(parent, text)
+    local label = AceGUI:Create("Label")
+    label:SetText(text)
+    label:SetFullWidth(true)
+    label:SetFont(STANDARD_TEXT_FONT, 11, nil)
+
+    return label
+end
+
+function OQ:ClickableLabel(text, onClickFunc, ...)
+    local idleColor = {
+        255,
+        209,
+        0
+    }
+    local highlightColor = {
+        255,
+        255,
+        255
+    }
+
+    local label = AceGUI:Create("InteractiveLabel")
+    label:SetText(text)
+    label:SetFullWidth(true)
+    label:SetFont(STANDARD_TEXT_FONT, 12, nil)
+    label:SetColor(idleColor[1], idleColor[2], idleColor[3])
+
+    local args = ...;
+    local onClick = function()
+        onClickFunc(args)
+    end
+    local addHighlight = function()
+        label:SetColor(highlightColor[1], highlightColor[2], highlightColor[3])
+    end
+    local removeHighlight = function()
+        label:SetColor(idleColor[1], idleColor[2], idleColor[3])
+    end
+
+    label:SetCallback("OnClick", onClick)
+    label:SetCallback("OnEnter", addHighlight)
+    label:SetCallback("OnLeave", removeHighlight)
+    return label
+end
