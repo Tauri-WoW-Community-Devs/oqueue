@@ -1,5 +1,6 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
+local tbl = OQ.table
 
 local ALLIANCE_WIN = 'Interface/Icons/INV_BannerPVP_02.blp'
 local HORDE_WIN = 'Interface/Icons/INV_BannerPVP_01.blp'
@@ -85,7 +86,7 @@ local ResPerSec = {
     [5] = 30
 }
 
-local units = {}
+local units = tbl.new()
 
 local function get_score()
     if (AlwaysUpFrame1Text == nil) or (AlwaysUpFrame2Text == nil) then
@@ -173,16 +174,16 @@ local function utimer_init_AB()
     for i, v in pairs(scores) do
         scores[i] = 0
     end
-    units = {}
+    tbl.clear(units)
     _init = 1
 end
 
-local dead_count = {}
-local node_count = {}
+local dead_count = tbl.new()
+local node_count = tbl.new()
 local function check_ressers()
     -- Grab our data
-    dead_count = {}
-    node_count = {}
+    tbl.clear(dead_count)
+    tbl.clear(node_count)
     local i, v
     for i = 1, GetNumGroupMembers() do
         local name = GetUnitName('raid' .. i, true)
@@ -221,8 +222,8 @@ local function check_ressers()
         end
     end
 
-    dead_count = {} -- clean it out
-    node_count = {} -- clean it out
+    tbl.clear(dead_count)
+    tbl.clear(node_count)
 end
 
 local function ab_utimer_check()
@@ -325,10 +326,10 @@ local function ab_shuffle()
     local cy = 20
     local n = 0
     local i, v
-    oq._utimer_bosses = {}
-    oq._utimer_items = {}
-    oq._utimer_gys = {}
-    oq._utimer_controlled = {}
+    oq._utimer_bosses = (oq._utimer_bosses and tbl.clear(oq._utimer_bosses)) or tbl.new()
+    oq._utimer_items = (oq._utimer_items and tbl.clear(oq._utimer_items)) or tbl.new()
+    oq._utimer_gys = (oq._utimer_gys and tbl.clear(oq._utimer_gys)) or tbl.new()
+    oq._utimer_controlled = (oq._utimer_controlled and tbl.clear(oq._utimer_controlled)) or tbl.new()
     for i, v in pairs(oq._utimers) do
         if (v._start ~= 0) then
             if (v._type == 1) then
@@ -433,6 +434,7 @@ end
 
 local function ab_close()
     _init = nil
+    local i, v
     for i, v in pairs(objectives) do
         objectives[i] = 0
     end

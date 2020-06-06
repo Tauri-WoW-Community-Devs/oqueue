@@ -247,13 +247,16 @@ StaticPopupDialogs['OQ_NewVersionAvailable'] = {
 StaticPopupDialogs['OQ_NotPartyLead'] = {
     preferredIndex = STATICPOPUPS_NUMDIALOGS,
     text = OQ.DLG_08,
-    button1 = OQ.DLG_OK,
+    button1 = OQ.DLG_YES,
+    button2 = OQ.DLG_NO,
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
     OnShow = function(self, data)
     end,
     OnAccept = function(self, data, data2)
+        LeaveParty()
+        oq.timer_oneshot(1.5, oq.check_and_send_request, self._token)
         self:Hide()
     end,
     OnCancel = function(self, data, data2)
@@ -442,7 +445,7 @@ StaticPopupDialogs['OQ_QuitRaidConfirm'] = {
     OnShow = function(self, data)
     end,
     OnAccept = function(self, data, data2)
-        if (not oq.iam_raid_leader()) and (not oq.iam_party_leader()) then
+        if (not oq.iam_raid_leader()) then
             oq.member_quit_raid()
         else
             oq.leader_quit_raid()
@@ -483,24 +486,6 @@ StaticPopupDialogs['OQ_ReadyCheck'] = {
         self:Hide()
     end,
     hasEditBox = false
-}
-
-StaticPopupDialogs['OQ_ReformGroup'] = {
-    preferredIndex = STATICPOPUPS_NUMDIALOGS,
-    text = 'Reform',
-    button1 = OQ.DLG_OK,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = true,
-    OnShow = function(self, data)
-        self.editBox:SetText('')
-        self.editBox:SetFocus()
-    end,
-    OnAccept = function(self, data, data2)
-        self:Hide()
-        oq.do_reform(data, data2)
-    end,
-    hasEditBox = nil
 }
 
 StaticPopupDialogs['OQ_ReloadUI'] = {
@@ -654,8 +639,8 @@ function oq.angry_lil_button(button)
 
         f.adjust = function(self) --
             --[[
-                 self.ok.string:SetFont(OQ.FONT, self.ok.font_sz);
-                 oq.setpos(self.ok, 20, 20, self:GetWidth() - 2*20, self:GetHeight() - 2*20);
+                 self.ok.string:SetFont( OQ.FONT, self.ok.font_sz ) ;
+                 oq.setpos( self.ok, 20, 20, self:GetWidth() - 2*20, self:GetHeight() - 2*20 ) ;
 ]]
         end
         f.center = function(self)

@@ -1,9 +1,12 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
-local _  -- throw away (was getting taint warning; what happened blizz?)
+local _
+if (OQ.table == nil) then
+    OQ.table = {}
+end
 local tbl = OQ.table
 
-OQ.TIMER_RESOLUTION = 200 / 1000 -- 5 times per second
+OQ.TIMER_RESOLUTION = 100 / 1000 -- 2 times per second
 
 --------------------------------------------------------------------------
 -- timer functions
@@ -12,17 +15,33 @@ function oq.create_timer()
     if (oq.timers == nil) then
         oq.next_timer_cycle = 0
         oq.timer_slice = OQ.TIMER_RESOLUTION -- no more than 10 cycles per second; helps throttle for high framerate machines
+
         oq.timers = tbl.new()
-        oq.ui_timer = oq.CreateFrame('Frame', 'OQ_TimerFrame')
+        oq.ui_timer = CreateFrame('Frame', 'OQ_TimerFrame')
+        oq.ui_timer._thread = coroutine.create(oq.timer_coroutine_func)
+        oq.ui_timer._counter = 0
+        oq.ui_timer._ticker = 0
+        oq.ui_timer._restarts = 0
+        oq.ui_timer._throttle = 0.5
+        oq.ui_timer:SetScript('OnUpdate', oq.timer_coroutine)
         oq.ui_timer:SetScript(
-            'OnUpdate',
-            function(self, elapsed)
-                oq.timer_trigger(GetTime())
+            'OnHide',
+            function(self)
+                print('timer-hidden')
+                self:Show()
             end
         )
         oq.ui_timer:SetSize(2, 2)
         oq.ui_timer:Show()
     end
+end
+
+function oq.stop_timer()
+    oq.ui_timer._done = true
+end
+
+function oq.is_timer(id)
+    return ((oq.timers ~= nil) and (oq.timers[id] ~= nil))
 end
 
 function oq.timer(id, dt_, func_, repeater, arg1_, arg2_, arg3_, arg4_, arg5_, arg6_, arg7_)
@@ -50,23 +69,54 @@ function oq.timer(id, dt_, func_, repeater, arg1_, arg2_, arg3_, arg4_, arg5_, a
     end
 end
 
-function oq.is_timer(id)
-    return ((oq.timers ~= nil) and (oq.timers[id] ~= nil))
+function oq.timer_coroutine(t, elapsed)
+    t._counter = t._counter + elapsed
+    if (t._counter >= t._throttle) then
+        t._counter = t._counter - t._throttle
+        if (coroutine.status(t._thread) == 'dead') then
+            -- thread died (how??)... restart
+            t._restarts = t._restarts + 1
+            t._thread = coroutine.create(oq.timer_coroutine_func)
+        elseif (coroutine.status(t._thread) == 'suspended') then
+            coroutine.resume(t._thread)
+        end
+    end
+end
+
+function oq.timer_coroutine_func()
+    while (oq.ui_timer._done == nil) do
+        oq.timer_trigger(GetTime())
+        oq.ui_timer._ticker = oq.ui_timer._ticker + 1
+        coroutine.yield()
+    end
 end
 
 function oq.timer_clear()
     tbl.clear(oq.timers, true)
 end
 
-function oq.timer_dump()
+function oq.timer_dump(opt)
+    local arg = nil
+    if (opt) and (opt:find(' ')) then
+        arg = strlower(opt:sub(opt:find(' ') + 1, -1))
+    end
+
     print('--[ timers ]------')
     local now = GetTime()
     local i, v
     for i, v in pairs(oq.timers) do
-        if (v.one_shot) then
-            print('  ' .. oq.render_tm(v.tm - now, true) .. '  ' .. tostring(i) .. '   one_shot')
+        if (arg) then
+            if (v.one_shot) then
+                print('  ' .. string.format('%6.3f', v.dt) .. '  ' .. tostring(i) .. '   one_shot')
+            else
+                print('  ' .. string.format('%6.3f', v.dt) .. '  ' .. tostring(i))
+            end
         else
-            print('  ' .. oq.render_tm(v.tm - now, true) .. '  ' .. tostring(i))
+            if (v.one_shot) then
+                print('  ' .. oq.render_tm(v.tm - now, true) .. '  ' .. tostring(i) .. '   one_shot')
+            else
+                print('  ' .. oq.render_tm(v.tm - now, true) .. '  ' .. tostring(i))
+            end
         end
     end
     print('--')
@@ -93,7 +143,6 @@ function oq.timer_trigger(now)
     if (now < oq.next_timer_cycle) then
         return
     end
-    oq.next_timer_cycle = now + oq.timer_slice
     local i, v
     for i, v in pairs(oq.timers) do
         if (v.tm) and (v.tm < now) then
@@ -101,8 +150,9 @@ function oq.timer_trigger(now)
             if (arg1 == nil) or (arg1 == '#now') then
                 arg1 = now
             end
+            local retOK, rc = 0, 0
             oq._timer_id = i
-            local retOK, rc = pcall(v.func, arg1, v.arg2, v.arg3, v.arg4, v.arg5, v.arg6, v.arg7)
+            retOK, rc = pcall(v.func, arg1, v.arg2, v.arg3, v.arg4, v.arg5, v.arg6, v.arg7)
             if (retOK == true) then
                 if (rc ~= nil) or (v == nil) or (v.one_shot) or (v.dt == nil) or (v.dt == 0) then
                     oq.timers[i] = tbl.delete(oq.timers[i])
@@ -118,8 +168,13 @@ function oq.timer_trigger(now)
                     oq.timers[i] = tbl.delete(oq.timers[i])
                 end
             end
+            if ((GetTime() - now) > 0.25) then
+                return
+            end
         end
     end
+
+    oq.next_timer_cycle = GetTime() + oq.timer_slice
 end
 
 function oq.timer_trip(id)

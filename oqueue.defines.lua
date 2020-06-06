@@ -126,6 +126,7 @@ OQ.TYPE_LADDER = 'L'
 OQ.TYPE_CHALLENGE = 'C'
 OQ.TYPE_MISC = 'M'
 OQ.TYPE_ROLEPLAY = 'P'
+OQ.TYPE_ALL_PENDING = 'p'
 
 OQ.VOIP_DISCORD = 'd'
 OQ.VOIP_DOLBYAXON = 'D'
@@ -554,6 +555,22 @@ OQ.QUEUE_POPS = {
     ['red'] = 5,
     ['black'] = 31,
     ['nopop'] = 10
+}
+
+OQ.ARENA_MMR_RANK_ACHIEVE = {
+    [0] = '',
+    [1] = '( |cFFFFD331' .. '1550' .. '|r )',
+    [2] = '( |cFFFFD331' .. '1750' .. '|r )',
+    [3] = '( |cFFFFD331' .. '2000' .. '|r )',
+    [4] = '( |cFFFFD331' .. '2200' .. '|r )'
+}
+
+OQ.ARENA_RANK_ACHIEVE = {
+    [0] = '',
+    [1] = '|cFFFFD331' .. '1550' .. '|r',
+    [2] = '|cFFFFD331' .. '1750' .. '|r',
+    [3] = '|cFFFFD331' .. '2000' .. '|r',
+    [4] = '|cFFFFD331' .. '2200' .. '|r'
 }
 
 OQ.dragon_rank = {

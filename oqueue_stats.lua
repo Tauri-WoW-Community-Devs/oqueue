@@ -34,7 +34,7 @@ function PacketStatistics:avg()
     local t2 = nil
     local n1 = 0
     local n2 = 0
-    local i
+    local i = 0
     self._n = 0
     self._aps = 0 -- avg per second
 
@@ -64,7 +64,7 @@ end
 function PacketStatistics:mean()
     local n = 0
     local sum = 0
-    local i
+    local i = 0
     for i = 1, self._max do
         if (self.array[i]._x ~= nil) then
             n = n + 1
@@ -80,7 +80,7 @@ end
 
 function PacketStatistics:reset()
     self._cnt = 0
-    local i
+    local i = 0
     for i = 1, self._max do
         self.array[i]._x = nil
         self.array[i]._tm = nil
@@ -104,7 +104,7 @@ function PacketStatistics:noop()
 end
 
 function PacketStatistics:push(x, use_mean)
-    local i
+    local i = 0
     for i = self._max, 2, -1 do
         self.array[i]._x = self.array[i - 1]._x
         self.array[i]._tm = self.array[i - 1]._tm
@@ -118,10 +118,22 @@ function PacketStatistics:push(x, use_mean)
     end
 end
 
+function PacketStatistics:median()
+    local t = tbl.new()
+    local i, v
+    for i, v in pairs(self.array) do
+        table.insert(t, v._x)
+    end
+    local median = oq.stats.median(t)
+    tbl.delete(t)
+    return median
+end
+
 oq.pkt_sent = PacketStatistics:new(50)
 oq.pkt_recv = PacketStatistics:new(50)
 oq.pkt_processed = PacketStatistics:new(50)
 oq.pkt_drift = PacketStatistics:new(5)
+oq.gmt_diff_track = PacketStatistics:new(100)
 
 --------------------------------------------------------------------------
 --  general stats

@@ -1,5 +1,6 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
+local tbl = OQ.table
 
 local ALLIANCE_WIN = 'Interface/Icons/INV_BannerPVP_02.blp'
 local HORDE_WIN = 'Interface/Icons/INV_BannerPVP_01.blp'
@@ -7,7 +8,7 @@ local _tp_init = nil
 local _tp_expire_tm = 0
 local _  -- throw away (was getting taint warning; what happened blizz?)
 
-local units = {}
+local units = tbl.new()
 local scores = {
     ['horde'] = 0,
     ['alliance'] = 0,
@@ -80,7 +81,7 @@ local function tp_utimer_init()
     oq.utimer_start('Alliance flag room', 'alliance', 43, 30, 4, true) -- alliance flag room
     oq.utimer_start('Horde flag room', 'horde', 44, 30, 4, true) -- horde flag room
 
-    units = {}
+    tbl.clear(units)
     scores['horde'] = 0
     scores['alliance'] = 0
     scores['tm'] = GetTime()
@@ -93,12 +94,12 @@ local function tp_graveyard_timers_reset()
     oq.utimer_reset_cycle('Alliance')
 end
 
-local dead_count = {}
-local node_count = {}
+local dead_count = tbl.new()
+local node_count = tbl.new()
 local function check_ressers()
     -- Grab our data
-    dead_count = {}
-    node_count = {}
+    tbl.clear(dead_count)
+    tbl.clear(node_count)
     local i, v
     for i = 1, GetNumGroupMembers() do
         local name = GetUnitName('raid' .. i, true)
@@ -140,8 +141,8 @@ local function check_ressers()
         end
     end
 
-    dead_count = {} -- clean it out
-    node_count = {} -- clean it out
+    tbl.clear(dead_count)
+    tbl.clear(node_count)
 end
 
 local function tp_utimer_check()
@@ -232,9 +233,9 @@ local function tp_shuffle()
     local cy = 20
     local n = 0
     local i, v
-    oq._utimer_items = {}
-    oq._utimer_gys = {}
-    oq._utimer_controlled = {}
+    oq._utimer_items = (oq._utimer_items and tbl.clear(oq._utimer_items)) or tbl.new()
+    oq._utimer_gys = (oq._utimer_gys and tbl.clear(oq._utimer_gys)) or tbl.new()
+    oq._utimer_controlled = (oq._utimer_controlled and tbl.clear(oq._utimer_controlled)) or tbl.new()
     for i, v in pairs(oq._utimers) do
         if (v._start ~= 0) then
             if (v._type == 1) then

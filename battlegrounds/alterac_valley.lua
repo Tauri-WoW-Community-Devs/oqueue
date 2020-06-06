@@ -1,5 +1,6 @@
 local addonName, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
+local tbl = OQ.table
 
 local ALLIANCE_GENERAL = 'Interface/Icons/INV_BannerPVP_02.blp'
 local HORDE_GENERAL = 'Interface/Icons/INV_BannerPVP_01.blp'
@@ -38,9 +39,9 @@ local state = {
     [9] = 3, -- alli assaulted
     [12] = 4 -- horde assaulted
 }
-local units = {}
-local graveyards = {}
-local towers = {}
+local units = tbl.new()
+local graveyards = tbl.new()
+local towers = tbl.new()
 local _init = nil
 
 local bosses = {
@@ -116,8 +117,8 @@ local function utimer_init_AV()
     if (_init) then
         return
     end
-    graveyards = {}
-    towers = {}
+    tbl.clear(graveyards)
+    tbl.clear(towers)
     local nMarks = GetNumMapLandmarks()
     local i, v
     for i = 1, nMarks, 1 do
@@ -180,7 +181,7 @@ local function utimer_init_AV()
     scores['alliance'] = 500
     scores['tm'] = 0
 
-    units = {}
+    tbl.clear(units)
     oq._boss_compare = oq.av_boss_compare
 
     -- initialized
@@ -206,16 +207,16 @@ local function av_get_current_loc()
     print('location: Alterac Valley @ ' .. floor(x * 1000) / 1000 .. ' , ' .. floor(y * 1000) / 1000 .. '    ' .. loc)
 end
 
-local dead_count = {}
-local node_count = {}
+local dead_count = tbl.new()
+local node_count = tbl.new()
 
 local function check_ressers()
     if (WorldMapFrame:IsVisible()) then
         return
     end
     -- Grab our data
-    dead_count = {}
-    node_count = {}
+    tbl.clear(dead_count)
+    tbl.clear(node_count)
     local i, v
     for i = 1, GetNumGroupMembers() do
         local name = GetUnitName('raid' .. i, true)
@@ -253,8 +254,8 @@ local function check_ressers()
         end
     end
 
-    dead_count = {} -- clean it out
-    node_count = {} -- clean it out
+    tbl.clear(dead_count) -- clean it out
+    tbl.clear(node_count) -- clean it out
 end
 
 local function check_captains()
@@ -415,10 +416,10 @@ local function av_shuffle()
     local cy = 20
     local n = 0
     local i, v
-    oq._utimer_bosses = {}
-    oq._utimer_items = {}
-    oq._utimer_gys = {}
-    oq._utimer_controlled = {}
+    oq._utimer_bosses = (oq._utimer_bosses and tbl.clear(oq._utimer_bosses)) or tbl.new()
+    oq._utimer_items = (oq._utimer_items and tbl.clear(oq._utimer_items)) or tbl.new()
+    oq._utimer_gys = (oq._utimer_gys and tbl.clear(oq._utimer_gys)) or tbl.new()
+    oq._utimer_controlled = (oq._utimer_controlled and tbl.clear(oq._utimer_controlled)) or tbl.new()
     for i, v in pairs(oq._utimers) do
         if (v._start ~= 0) then
             if (v._type == 1) then
@@ -488,7 +489,7 @@ local function av_test_2()
     print('av test 2')
     oq.utimer_stop_all() -- clear out existing timers
     local t
-    --  t = oq.utimer_start("Lumber Mill", "horde"   , 24, 1*60, 1); -- horde capping lumbermill
+    --  t = oq.utimer_start( "Lumber Mill", "horde"   , 24, 1*60, 1 ) ; -- horde capping lumbermill
 end
 
 local function av_start()
@@ -506,8 +507,8 @@ end
 
 local function av_close()
     _init = nil
-    graveyards = {}
-    towers = {}
+    tbl.clear(graveyards)
+    tbl.clear(towers)
     oq.utimer_stop_all()
     oq._boss_compare = nil
 end

@@ -104,7 +104,7 @@ end
 
 function oq.get_raid_progression()
     --  GetStatistic(588)
-    -- oq.bset(m.flags, OQ_FLAG_DESERTER, deserter);
+    -- oq.bset( m.flags, OQ_FLAG_DESERTER, deserter ) ;
     local flags = 0
 
     -- terrace of endless spring
@@ -435,6 +435,31 @@ function oq.get_arena_ratio(wins_id, total_id)
     return wins, total - wins
 end
 
+-- sz = 2, 3, 5
+-- 2 == 2v2
+-- 3 == 3v3
+-- 5 == 5v5
+function oq.best_arena_rank(sz)
+    local best = 0
+    if (sz == 2) then
+        best = (select(4, GetAchievementInfo(399)) == true) and 1 or best -- 1550
+        best = (select(4, GetAchievementInfo(400)) == true) and 2 or best -- 1750
+        best = (select(4, GetAchievementInfo(401)) == true) and 3 or best -- 2000
+        best = (select(4, GetAchievementInfo(1159)) == true) and 4 or best -- 2200
+    elseif (sz == 3) then
+        best = (select(4, GetAchievementInfo(402)) == true) and 1 or best -- 1550
+        best = (select(4, GetAchievementInfo(403)) == true) and 2 or best -- 1750
+        best = (select(4, GetAchievementInfo(405)) == true) and 3 or best -- 2000
+        best = (select(4, GetAchievementInfo(1160)) == true) and 4 or best -- 2200
+    elseif (sz == 5) then
+        best = (select(4, GetAchievementInfo(406)) == true) and 1 or best -- 1550
+        best = (select(4, GetAchievementInfo(407)) == true) and 2 or best -- 1750
+        best = (select(4, GetAchievementInfo(404)) == true) and 3 or best -- 2000
+        best = (select(4, GetAchievementInfo(1161)) == true) and 4 or best -- 2200
+    end
+    return best
+end
+
 function oq.get_arena_experience(as_lead)
     -- rmmm5wwwlll3wwwlll2wwwlllC
     -- r        best rank
@@ -456,23 +481,9 @@ function oq.get_arena_experience(as_lead)
     rank = (select(4, GetAchievementInfo(2092)) == true) and 3 or rank -- duelist
     rank = (select(4, GetAchievementInfo(2091)) == true) and 4 or rank -- gladiator
 
-    local best_2s = 0
-    best_2s = (select(4, GetAchievementInfo(399)) == true) and 1 or best_2s -- 1550
-    best_2s = (select(4, GetAchievementInfo(400)) == true) and 2 or best_2s -- 1750
-    best_2s = (select(4, GetAchievementInfo(401)) == true) and 3 or best_2s -- 2000
-    best_2s = (select(4, GetAchievementInfo(1159)) == true) and 4 or best_2s -- 2200
-
-    local best_3s = 0
-    best_3s = (select(4, GetAchievementInfo(402)) == true) and 1 or best_3s -- 1550
-    best_3s = (select(4, GetAchievementInfo(403)) == true) and 2 or best_3s -- 1750
-    best_3s = (select(4, GetAchievementInfo(405)) == true) and 3 or best_3s -- 2000
-    best_3s = (select(4, GetAchievementInfo(1160)) == true) and 4 or best_3s -- 2200
-
-    local best_5s = 0
-    best_5s = (select(4, GetAchievementInfo(406)) == true) and 1 or best_5s -- 1550
-    best_5s = (select(4, GetAchievementInfo(407)) == true) and 2 or best_5s -- 1750
-    best_5s = (select(4, GetAchievementInfo(404)) == true) and 3 or best_5s -- 2000
-    best_5s = (select(4, GetAchievementInfo(1161)) == true) and 4 or best_5s -- 2200
+    local best_2s = oq.best_arena_rank(2)
+    local best_3s = oq.best_arena_rank(3)
+    local best_5s = oq.best_arena_rank(5)
 
     local class, spec, spec_id = oq.get_spec()
 
@@ -589,7 +600,13 @@ function oq.get_pdata(raid_type, sub_type)
                 end
             end
         end
-    else
+    elseif (raid_type == OQ.TYPE_RBGS) then
+    elseif (raid_type == OQ.TYPE_ARENA) then
+        pdata =
+            '+' ..
+            oq.encode_mime64_1digit(oq.best_arena_rank(2)) ..
+                oq.encode_mime64_1digit(oq.best_arena_rank(3)) .. oq.encode_mime64_1digit(oq.best_arena_rank(5))
+    else -- type_raid
         local ntanks, nheals, ndps = oq.get_n_roles()
         pdata = oq.encode_mime64_1digit(ntanks) .. oq.encode_mime64_1digit(nheals) .. oq.encode_mime64_1digit(ndps)
         pdata = pdata .. oq.get_current_raid_status(sub_type)
@@ -823,7 +840,7 @@ function oq.scan_for_unit(name)
         return nil
     end
     if (name == L['Icecrown Gunship Battle']) then
-        if (player_faction == 'A') then
+        if (oq.player_faction == 'A') then
             name = L["Orgrim's Hammer"]
         else
             name = L['The Skybreaker']
@@ -914,7 +931,7 @@ function oq.get_current_raid_status(sub_type)
     local nkilled, maxBosses = oq.get_raid_bosses_killed(name)
     local boss_id = nkilled + 1
     local hp = 100
-    --  local unit = oq.scan_for_unit(OQ.raid_bosses[rid][boss_id]);
+    --  local unit = oq.scan_for_unit(OQ.raid_bosses[rid][boss_id]) ;
     local unit = oq.scan_for_boss(rid)
     if (unit) then
         hp = floor(100 * UnitHealth(unit) / UnitHealthMax(unit))

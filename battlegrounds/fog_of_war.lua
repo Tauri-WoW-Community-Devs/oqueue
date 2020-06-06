@@ -43,11 +43,7 @@ end
 
 function Bogey:clear()
     if (self._pings ~= nil) then
-        local i, v
-        for i, v in pairs(self._pings) do
-            tbl.delete(v)
-        end
-        self._pings = tbl.delete(self._pings)
+        self._pings = tbl.delete(self._pings, true)
     end
     self._cnt = 0
     self._texture = self._parent:del_texture(self._texture)
@@ -79,22 +75,14 @@ end
 
 -- new data.  do not update bubble size.  that happens on ui update cycle
 function Bogey:ping(now, x_, y_)
-    if (self._pings == nil) then
-        self._pings = tbl.new()
-    end
-    local p = nil
+    self._pings = self._pings or tbl.new()
+
+    local s = nil
     if (tbl.size(self._pings) >= 40) then
-        p = table.remove(self._pings, 1)
-        if (p == nil) then
-            p = tbl.new()
-        end
-    else
-        p = tbl.new()
+        table.remove(self._pings, 1)
     end
-    p.tm = now
-    p.x = x_
-    p.y = y_
-    table.insert(self._pings, p)
+    s = tostring(now) .. ',' .. tostring(x_) .. ',' .. tostring(y_)
+    table.insert(self._pings, s)
 end
 
 function Bogey:on_timer(now)
@@ -106,15 +94,24 @@ function Bogey:on_timer(now)
     local x = 0
     local y = 0
     local i, v
+    local tmp = tbl.new()
+    local v_x, v_y, v_tm
+
     for i, v in pairs(self._pings) do
-        if (v.tm) and ((now - v.tm) < 5) then
+        tbl.fill_match(tmp, v, ',') -- time, x, y
+        v_tm = tonumber(tmp[1])
+        v_x = tonumber(tmp[2])
+        v_y = tonumber(tmp[3])
+        if (v_tm) and ((now - v_tm) < 5) then
             n = n + 1
-            x = x + v.x
-            y = y + v.y
-        elseif (v.tm) then
-            self._pings[i] = tbl.delete(self._pings[i])
+            x = x + v_x
+            y = y + v_y
+        elseif (v_tm) then
+            self._pings[i] = nil
         end
     end
+    tbl.delete(tmp)
+
     if (n == 0) then
         -- clear buoy
         if (self._texture) then
@@ -283,9 +280,7 @@ function oq.fog_new_data(d)
     local i
     for i = 1, n do
         id = oq.decode_mime64_digits(d:sub(4 + i, 4 + i))
-        if (f._bogeys[id] == nil) then
-            f._bogeys[id] = Bogey:new(f, x, y, 32, 32)
-        end
+        f._bogeys[id] = f._bogeys[id] or Bogey:new(f, x, y, 32, 32)
         f._bogeys[id]:ping(now, x, y)
     end
 end
