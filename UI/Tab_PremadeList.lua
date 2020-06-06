@@ -31,17 +31,14 @@ function OQ:InitTab_PremadeList(tab)
             50,
             50,
             50,
-            {
-                width = 50,
-                alignH = "middle"
-            },
+            50,
             queueBtnWidth(),
             xBtnWidth()
         },
         space = 3,
         align = "CENTERLEFT"
     })
-    table:SetFullHeight(true);
+    -- table:SetFullHeight(true);
     table:SetFullWidth(true);
     scroll:AddChild(table)
 

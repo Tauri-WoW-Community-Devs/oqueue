@@ -20,7 +20,7 @@ data = {
 itemRenderer(arg1, arg2, ...)
 ]]
 function OQ:Table(columns, data, itemRenderer)
-    local table = AceGUI:Create("InlineGroup")
+    local table = AceGUI:Create("SimpleGroup")
     table:SetLayout("Table")
 
     for col in columns do
@@ -37,11 +37,12 @@ function OQ:TableLabelAlign(label, horizontal, vertical)
 
     local group = AceGUI:Create("SimpleGroup")
     if (horizontal ~= nil) then
-        label:SetJustifyH(horizontal)
+        label.label:SetJustifyH(horizontal)
     end
     if (vertical ~= nil) then
-        label:SetJustifyV(vertical)
+        label.label:SetJustifyV(vertical)
     end
+    -- return label
     group:AddChild(label)
 
     return group

@@ -8,4 +8,5 @@
   <Include file="libs\AceEvent-3.0\AceEvent-3.0.xml"/>
   <Include file="libs\AceTimer-3.0\AceTimer-3.0.xml"/>
   <Include file="libs\AceDB-3.0\AceDB-3.0.xml"/>
+  <Include file="libs\Lib-ScrollingTable\Lib-ScrollingTable.xml"/>
 </Ui>

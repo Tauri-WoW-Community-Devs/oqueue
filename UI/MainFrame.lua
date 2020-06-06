@@ -13,8 +13,131 @@ OQ.TAB_ID_BAN_LIST = 6
 OQ.TAB_ID_WAIT_LIST = 7
 OQ.ActiveTab = nil
 
+function Test()
+    local data = {
+        {
+            "Sachmo",
+            12,
+            4
+        },
+        {
+            "Josua",
+            8,
+            2
+        }
+    };
+
+    local cols = {
+        {
+            ["name"] = "",
+            ["width"] = 25,
+            ["align"] = "CENTER",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "Premade name",
+            ["width"] = 200,
+            ["align"] = "LEFT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "Leader",
+            ["width"] = 150,
+            ["align"] = "LEFT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "Level",
+            ["width"] = 50,
+            ["align"] = "RIGHT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "iLvl",
+            ["width"] = 50,
+            ["align"] = "RIGHT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "Stat 1",
+            ["width"] = 50,
+            ["align"] = "RIGHT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "Stat 2",
+            ["width"] = 50,
+            ["align"] = "RIGHT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        },
+        {
+            ["name"] = "",
+            ["width"] = 50,
+            ["align"] = "RIGHT",
+            ["colorargs"] = nil,
+            ["defaultsort"] = "dsc",
+            ["sortnext"] = 4,
+            ["comparesort"] = function(cella, cellb, column)
+                return cella.value < cellb.value;
+            end,
+            ["DoCellUpdate"] = nil
+        }
+    }
+
+    local frame = AceGUI:Create("Frame")
+
+    local ScrollingTable = LibStub("ScrollingTable");
+    local table = ScrollingTable:CreateST(cols, 12, 15, nil, frame.frame);
+    table.frame:SetPoint("TOPLEFT", 15, -40)
+    table.frame:SetPoint("BOTTOMRIGHT", -15, 45)
+    -- table.frame:SetFrameLevel(frame.frame:GetFrameLevel() + 10)
+    -- frame:AddChild(table)
+end
 local tabControl
 function OQ:Init_MainFrame()
+    Test()
     local frame = AceGUI:Create("Frame")
     frame:SetTitle(OQ.TITLE_LEFT .. "TODO VERSION" .. OQ.TITLE_RIGHT)
     frame:SetStatusText("Premades: 0/0")

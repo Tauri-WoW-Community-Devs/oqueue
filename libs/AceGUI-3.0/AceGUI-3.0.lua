@@ -1008,7 +1008,12 @@ AceGUI:RegisterLayout("Table", function(content, children)
                 local alignFn, align = GetCellAlign("H", tableObj, colObj, cellObj, cellH, childH)
                 f:SetPoint("LEFT", content, offsetH + align, 0)
                 if child:IsFullWidth() or alignFn == "fill" or childH > cellH then
-                    f:SetPoint("RIGHT", content, "LEFT", offsetH + align + cellH, 0)
+                    child:SetWidth(cellH)
+                    if col == #cols then
+                        f:SetPoint("RIGHT", content)
+                    else
+                        f:SetPoint("RIGHT", content, "LEFT", offsetH + align + cellH, 0)
+                    end
                 end
 
                 if child.DoLayout then
