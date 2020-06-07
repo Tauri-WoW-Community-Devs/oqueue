@@ -1,4 +1,4 @@
-local addonName, OQ = ...
+local _, OQ = ...
 local L = OQ._T -- for literal string translations
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local _  -- throw away (was getting taint warning; what happened blizz?)
@@ -79,7 +79,6 @@ function oq.tooltip_create()
     tooltip.left = tbl.new()
     tooltip.right = tbl.new()
 
-    local i
     for i = 1, tooltip.nRows do
         if (i == (tooltip.nRows - 1)) or (i == (tooltip.nRows)) then
             tooltip.left[i] = oq.tooltip_label(tooltip, x, y, 'LEFT')
@@ -131,7 +130,6 @@ end
 function oq.tooltip_clear()
     local tooltip = oq.tooltip
     if (tooltip ~= nil) then
-        local i
         for i = 1, tooltip.nRows do
             tooltip.left[i]:SetText('')
             tooltip.right[i]:SetText('')
@@ -159,7 +157,7 @@ function oq.get_rank_achieves(s)
     if (s == nil) then
         return ''
     end
-    local rank_id = oq.decode_mime64_digits(s:sub(1, 1))
+    -- local rank_id = oq.decode_mime64_digits(s:sub(1, 1))
     local t1 = oq.decode_mime64_digits(s:sub(2, 2))
     local t2 = oq.decode_mime64_digits(s:sub(3, 3))
     local t3 = oq.decode_mime64_digits(s:sub(4, 4))
@@ -229,7 +227,6 @@ function oq.get_medal(medal, s)
     if (s == nil) then
         return ''
     end
-    local str = ''
     s = 'FF'
     if (medal == 'gold') then
         return oq.decode_mime64_digits(s) .. ' ' .. OQ.GOLD_MEDAL
@@ -295,7 +292,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
     end
     local tooltip = oq.tooltip_create()
     tooltip:ClearAllPoints()
-    local nRows = 14
     totheside = true
     if (totheside) then
         tooltip:SetParent(OQMainFrame, 'ANCHOR_RIGHT')
@@ -454,8 +450,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
     end
 
     -- adjust dimensions of the box
-    local w = tooltip.left[1]:GetStringWidth()
-    local i
     for i = 3, tooltip.nRows do
         tooltip.right[i]:SetWidth(tooltip:GetWidth() - 30)
     end
@@ -560,7 +554,6 @@ function oq.long_tooltip_create()
     tooltip.left = tbl.new()
     tooltip.right = tbl.new()
 
-    local i
     for i = 1, tooltip.nRows do
         if (i == (tooltip.nRows - 1)) or (i == (tooltip.nRows)) then
             tooltip.left[i] = oq.tooltip_label(tooltip, x, y, 'LEFT')
@@ -598,7 +591,6 @@ end
 function oq.long_tooltip_clear()
     local tooltip = oq.long_tooltip
     if (tooltip ~= nil) then
-        local i
         for i = 1, tooltip.nRows do
             tooltip.left[i]:SetText('')
             tooltip.right[i]:SetText('')
@@ -757,7 +749,6 @@ function oq.pm_tooltip_create()
 
     local x = 8
     local y = 12
-    local i
     for i = 1, pm_tooltip.nRows + 5 do
         pm_tooltip.left[i] = oq.tooltip_label(pm_tooltip, x, y, 'LEFT')
         pm_tooltip.right[i] = oq.tooltip_label(pm_tooltip, x, y, 'RIGHT', pm_tooltip:GetWidth() - 27)
@@ -811,7 +802,6 @@ function oq.pm_tooltip_disqualified(raid, pm_tooltip)
 end
 
 function oq.pm_tooltip_clear()
-    local i
     pm_tooltip.class:SetTexture(nil)
     for i = 1, pm_tooltip.nRows + 5 do
         pm_tooltip.left[i]:SetText('')
@@ -928,7 +918,7 @@ function oq.pm_tooltip_set(f, raid_token)
 
         pm_tooltip.left[10]:SetText(OQ.TT_RECORD)
         nWins, nLosses = oq.get_winloss_record(raid.leader_xp)
-        local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, nWins or 0)
+        local tag, y, _, _, _, r1 = oq.get_dragon_rank(raid.type, nWins or 0)
         rank = r1
         if (tag) then
             if (y == 0) then
@@ -945,7 +935,7 @@ function oq.pm_tooltip_set(f, raid_token)
         local nWins = oq.decode_mime64_digits(raid.leader_xp:sub(1, 3))
         local nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(6, 8))
-        local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp)
+        local tag, y = oq.get_dragon_rank(raid.type, dkp)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -962,7 +952,7 @@ function oq.pm_tooltip_set(f, raid_token)
     elseif (raid.type == OQ.TYPE_CHALLENGE) then
         nWins, nLosses = oq.get_challenge_winloss_record(raid.leader_xp)
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(12, 14))
-        local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp or 0)
+        local tag, y = oq.get_dragon_rank(raid.type, dkp or 0)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -1010,7 +1000,7 @@ function oq.pm_tooltip_set(f, raid_token)
 
         nWins, nLosses = oq.get_pve_winloss_record(raid.leader_xp)
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(17, 19))
-        local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp or 0)
+        local tag, y = oq.get_dragon_rank(raid.type, dkp or 0)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)

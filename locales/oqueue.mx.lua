@@ -1,21 +1,10 @@
-﻿--[[ 
-  @file       oqueue.mx.lua
-  @brief      localization for oqueue addon (spanish)
-
-  @author     rmcinnis
-  @date       july 30, 2013
-  @par        copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 OQ.TRANSLATED_BY['esMX'] = 'NeoSaro (core translation)'
 if (GetLocale() ~= 'esMX') then
     return
 end
-local L = OQ._T -- for literal string translations
+-- local L = OQ._T -- for literal string translations
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - buscador de Premades'
@@ -125,7 +114,6 @@ OQ.SETUP_OK2SUBMIT_BTAG = 'Enviar b-tag cada 4 dias'
 OQ.SETUP_ADD = 'a�adir'
 OQ.SETUP_MYCREW = 'mi equipo'
 OQ.SETUP_CLEAR = 'borrar'
-OQ.BN_FRIENDS = 'Amigos OQ activos'
 OQ.LOCAL_OQ_USERS = 'Locales OQ activos'
 OQ.PPS_SENT = 'pqts enviados/seg'
 OQ.PPS_RECVD = 'pqts recibidos/seg'

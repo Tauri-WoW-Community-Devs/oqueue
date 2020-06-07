@@ -1,5 +1,134 @@
 ﻿change.log for oQueue
 
+v2.2.9  BUGFIX:  hyperlinks were not clicking
+
+v2.2.8  UPD:  changed classic check for battleground file inclusion; will need revisit when achievements come out
+        UPD:  removed all battleground related timers and initialization
+        UPD:  changed default value for 'enforce level brackets' to false
+
+v2.2.7  UPD:  restricted more functions from classic
+
+v2.2.6  BUGFIX:  making sure raid was set on creation
+
+v2.2.5  BUGFIX:  changed 'is_classic' test (was getting false negatives)
+        BUGFIX:  changed icon text to cover all possible talent specs
+        UPD:  changed version numbers for bigger range
+        UPD:  changed directory to point from oqueue to oqueue-classic
+        UPD:  disabled hyperlinks
+
+v2.2.4  BUGFIX:  wasn't joining oqchannel on startup (channel wasn't initialized)
+
+v2.2.3  BUGFIX:  removed bounty check
+        UPD: changed name from oQueue to oQueue-classic
+
+v2.2.2  BUGFIX:  removed calls to bnet
+
+V2.2.1  BUGFIX: various bugs flying fast and furious
+
+V2.2.0  UPD: updated for classic
+
+v2.1.1  BUGFIX: missed realmList to portal for EU region 
+
+v2.1.0  ** MANDATORY UPDATE - PROTOCOL CHANGE **
+        UPD: no battle.net support; all group information will come strictly from oqgeneral
+        UPD: removed missing api shade
+
+v2.0.7  BUGFIX: replaced GetCVar('realmList') with GetCVar('portal')
+
+v2.0.6  BUGFIX: moved 'fog of war' checkbox to new world map
+        UPD: the 'missing api' shade can now be closed.  will reappear every 15 minutes
+
+v2.0.5  UPD: WOD updates .. final update
+
+v2.0.3  BUGFIX: remove-all oQueue added friends patched
+        UPD: added spelling special case for 'Khaz'goroth' ... also forced lower check on all realms when searching for realm-id
+        UPD: added rejection reason to wait list denials
+        UPD: changed spyglass filter from 20 characters max to 80 (really thought i changed that before, sorry Nikolaj)
+        UPD: changed format of rejection message
+        UPD: caster hit % should combine GetCombatRatingBonus with GetSpellHitModifier.  (thx stickybit!)
+        UPD: red tinge to groups with members below the min ilevel as a warning (thx Nerien!)
+        UPD: adjusted font size for premade version on tooltip
+        UPD: contract target guids modified
+        UPD: insured only normal and heroic will respond to lockouts
+        UPD: moved paperdoll gear info and auto-inspect to oGear, now on solidice.com and icebox
+        add: the snitch: inspect group members for min ilevel; to toggle the ui, type '/oq snitch' or click the button 
+
+v2.0.1  BUGFIX: appending nil on req_invite fail (thx Renato!)
+        BUGFIX: assigned raid markers will only be set by actual premade leader (pvp players could get lead and shift markers)
+        BUGFIX: insured oq_ascii was initialized when initializing tables
+        UPD: tweaked message processing for bad messages
+        UPD: invite sent even if bnet doesn't show the person friended and online (bnet doesn't always relay the info, yet invites still work.  gg blizz)
+        UPD: insured only pve groups would check for resil and mmr
+        UPD: added boss name in response if lockout conflict detected
+        UPD: added limit on bn_connect response (ping'ing the world)
+        UPD: clear-filters will also reset find-premade sort column and order
+        add: you can now filter by realm name. just type the realm name into the spyglass to see those realms
+        add: sort by leadership rank now available; skull/boss icon will toggle ascending/descending
+        add: tooltip will include boss name if lockout conflict 
+        add: cmdline to show raid lockouts (bit per boss rendered as hex):  /oq show locks
+        add: will announce in chat when removed from a wait list
+        add: premade group leader's oQueue version number now displayed on lower right of find-premade's tooltip
+
+v2.0.0  *skipping to insure all beta testers get the update notice
+
+v1.9.9  BUGFIX: verifying BNGetToonInfo does not return a nil sender_name
+        BUGFIX: attempting to wait list while in a group will now ask if you want to leave.  if yes, it will leave group and wait list
+        UPD: you can no longer queue for regular bg groups with a group
+        UPD: updated remove options to include left over wait listers
+        UPD: 'not qualified' response will now include a reason (group leader must have latest version)
+        UPD: 'go dark' will now leave oqgeneral and ping friends to stop sending; re-enabling oqueue will ping the world and re-join oqgeneral
+        UPD: minimum ilevel will reflect the lowest ilevel in the group or the set minimum, whichever is lowest
+        UPD: 'going dark' will now inform your b.net friends you're offline, so they'll stop sending oq messages
+        add: 'all pending' premade filter type (thx ZacharyC!)
+        add: new filter capability: use 'pvp' and 'pve' to find general categories of premades (ie: all pve over 570: pve & i570)
+
+v1.9.8  BUGFIX: status when queue'd will no longer 'blink'
+        BUGFIX: GMT time on the setup tab will now reposition when oqueue is resized
+        BUGFIX: bg premade chart cleared on bg exit
+        BUGFIX: force role set upon entry to group
+        BUGFIX: role check button should only be visible to the group leader
+        BUGFIX: unpack error on bad charm 
+        BUGFIX: insured old mesh requests are denied (hoping to address freeze bug)
+        BUGFIX: added empty realmName check (hoping to address freeze bug; thx sigprof!)
+        BUGFIX: ilevel being shown in mmr column for rbgs
+        BUGFIX: 'rating too low' popped up on raids for users w/ no pvp rating        UPD: spyglass filter text increased to 50 characters max
+        UPD: arena waitlist tooltip will show arena rank achieve (requires this update by waitlister to populate)
+        UPD: rbg wait list will now display highest achieved rank as numeric on 'pvp rating' line
+        add: minimum ilevel spyglass filter option: i<number>
+        add: minimum rating spyglass filter option: r<number>
+        add: count of members in the current bg instance
+
+v1.9.7  BUGFIX: nil time offset check
+        BUGFIX: best arena rating will now be sent when WL'ing for arenas; rbg rating now sent when WL'ing rbgs
+        BUGFIX: premade info sent from same realm bnet friend
+        BUGFIX: party member offline status change caught
+        BUGFIX: wait list tooltip wasn't showing correct info; premade type sent from WLer incorrect
+        BUGFIX: plugged token leak
+        BUGFIX: waitlist comparison default set
+        UPD: will clean out expired groups from opposite faction upon load
+        UPD: clear premade info out of cache if group expires
+        UPD: group_reform removed
+        UPD: top dps and heals reporting removed
+        UPD: premades will not be announced while in an instance
+        UPD: additional invite safeguards to insure accidental invite acceptance doesn't happen
+        UPD: group leaders will leave as normal member now
+        UPD: group leads will no longer trigger group disband when leaving (remnant from old bg grouping)
+        UPD: performace tweak - changed timers to coroutines to get off the ui thread
+        UPD: properly defined any vars ending up in the global table (thx VIad and Workfoz!)
+        UPD: check for btag before processing friend requests
+        UPD: tweaked for slow machines to insure oqgeneral isn't hijacking channel-ids
+        UPD: mesh requests issued more then 1 hour prior will be auto-rejected (sender must have updated oQueue)
+        UPD: mesh requests from opposite faction or banned btags will be auto-rejected
+        UPD: changed all shades to use the OQ.FONT instead of hardcoding FRIZQT__.TTF.  should help w/ cyrillic 
+        UPD: premade tooltip now shows lowest ilevel; the # of ppl on the waitlist is on same line as the # of ppl in the group
+        add: cmdline option:  '/oq show cache' will dump cache stats
+        add: hard-drop button to the create-premade tab; forces premade group cleanup (button instead of cmdline)
+        add: if WL with bad premade type info, will respond with error "outdated oQueue"
+        add: role-check button on main-premade tab
+        add: performace tweak - buffered premade reshuffle; would get 4 or 5 reshuffle requests at once, reduced to 1
+
+v1.9.6  *skipping to insure all beta testers get the update notice
+
 v1.9.5  BUGFIX: player-role picked up on spec change and reload
         BUGFIX: raid subtype will change properly
         BUGFIX: extra checks for valid group info
@@ -618,7 +747,7 @@ v1.3.0  BUGFIX: global 'oq.pkt_recv' didn't exist (how?); put check to avoid nil
         UPD: changed how the number of premade types were counted; more accurate now 
         UPD: tweaked game duration calcs
         UPD: changed order of pvp achieve icons.  now: bm, khan, conq, bloodthirsty, warbringer, hero, (glad|duelist|rival), arena master
-        add: you are now blocked from banning yourself (>.<)
+        add: you are now blocked from banning yourself ( >.< )
 
 v1.2.9   ** HARD RESTART REQUIRED **  (new files)
          BUGFIX: arena ranks weren't showing on tooltips in group
@@ -961,7 +1090,7 @@ v0.9z.75 BIGFIX: upon OQ lead swap, new leader name will now replace exiting nam
 
 v0.9z.74 add: remembers minimap button location
 
-v0.9z.73 BUGFIX: fixed glyph '_' global bug (http://www.mmo-champion.com/threads/1192031-Addon-errors-when-trying-to-switch-glyphs-or-talents)
+v0.9z.73 BUGFIX: fixed glyph '_' global bug ( http://www.mmo-champion.com/threads/1192031-Addon-errors-when-trying-to-switch-glyphs-or-talents )
          BUGFIX: free-for-all wasn't tripping due to old msg; fixed
          add: garbage-collect toggle on the setup tab (forces garbage collection every 5 seconds)
          add: 'promote-to-group-lead" now available
@@ -974,7 +1103,7 @@ v0.9z.72 BUGFIX: killing blow now fixed (threw an exception before)
 v0.9z.71 UPD: preformance enhancments 
          UPD: changed parenting on the find-premade tab; hoping to fix unclick-able button bug
 
-v0.9z.70 UPD: removed debug text (>.<)
+v0.9z.70 UPD: removed debug text (  >.<  )
 
 v0.9z.68 UPD: enabled the receipt of scorekeeper response while in BG
          UPD: added verification for valid class/spec in bg-spy

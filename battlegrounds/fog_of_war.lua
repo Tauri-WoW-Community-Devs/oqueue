@@ -1,27 +1,10 @@
-local addonName, OQ = ...
+local _, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local _  -- throw away (was getting taint warning; what happened blizz?)
 if (OQ.table == nil) then
     OQ.table = {}
 end
 local tbl = OQ.table
-
-local cloud_cover = {
-    [0] = 0.0,
-    [1] = 0.55,
-    [2] = 0.75,
-    [3] = 0.85,
-    [4] = 0.90,
-    [5] = 0.99
-}
-local cloud_size = {
-    [0] = 10,
-    [1] = 24,
-    [2] = 36,
-    [3] = 50,
-    [4] = 64,
-    [5] = 80
-}
 
 --------------------------------------------------------------------------
 --  Bogey
@@ -93,7 +76,6 @@ function Bogey:on_timer(now)
     local n = 0
     local x = 0
     local y = 0
-    local i, v
     local tmp = tbl.new()
     local v_x, v_y, v_tm
 
@@ -140,8 +122,7 @@ local function fog_refresh(self)
     if ((self._next_update_tm) and (self._next_update_tm > now)) or (OQ_data.fog_enabled == 0) then
         return
     end
-    local i, v
-    for i, v in pairs(self._bogeys) do
+    for _, v in pairs(self._bogeys) do
         v:on_timer(now)
     end
     self._next_update_tm = now + 0.25 -- four times a second the fog will refresh
@@ -168,8 +149,7 @@ end
 function oq.fog_clear()
     local f = WorldMapButton._fog
     if (f) and (f._bogeys) then
-        local i, v
-        for i, v in pairs(f._bogeys) do
+        for _, v in pairs(f._bogeys) do
             v:clear()
         end
     end
@@ -277,7 +257,6 @@ function oq.fog_new_data(d)
     local n = strlen(d) - 4
     local now = GetTime()
     local id = 0
-    local i
     for i = 1, n do
         id = oq.decode_mime64_digits(d:sub(4 + i, 4 + i))
         f._bogeys[id] = f._bogeys[id] or Bogey:new(f, x, y, 32, 32)

@@ -1,15 +1,4 @@
-﻿--[[ 
-  @file       oqueue.ru.lua
-  @brief      localization for oqueue addon (russian)
-
-  @author     rmcinnis
-  @date       june 11, 2012
-  @par        Copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 OQ.TRANSLATED_BY['ruRU'] = 'Efzet (Сибил, Azuregos EU)'
 if (GetLocale() ~= 'ruRU') then
@@ -131,7 +120,6 @@ OQ.SETUP_AUTOHIDE_FRIENDREQS = 'Скрывать запросы предложе
 OQ.SETUP_ADD = 'Добавить'
 OQ.SETUP_MYCREW = 'Моя команда'
 OQ.SETUP_CLEAR = 'Очистить'
-OQ.BN_FRIENDS = 'Друзья oQ'
 OQ.LOCAL_OQ_USERS = 'Локальные oQ пользователи'
 OQ.TIME_DRIFT = 'Время дрейфа'
 OQ.PPS_SENT = 'Отправлено пакетов в сек'

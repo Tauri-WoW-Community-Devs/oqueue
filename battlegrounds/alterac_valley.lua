@@ -1,4 +1,4 @@
-local addonName, OQ = ...
+local _, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local tbl = OQ.table
 
@@ -120,7 +120,6 @@ local function utimer_init_AV()
     tbl.clear(graveyards)
     tbl.clear(towers)
     local nMarks = GetNumMapLandmarks()
-    local i, v
     for i = 1, nMarks, 1 do
         local name, _, textureIndex = GetMapLandmarkInfo(i)
         if name and textureIndex then
@@ -172,7 +171,7 @@ local function utimer_init_AV()
     end
 
     -- show bosses; this way we can see the count of our ppl in the area/defending
-    for i, v in pairs(bosses) do
+    for _, v in pairs(bosses) do
         oq.utimer_start(v.name, v.faction, v.texture, 30, 5) -- node
     end
 
@@ -188,12 +187,10 @@ local function utimer_init_AV()
     _init = 1
 end
 
-local GRAVEYARD_RANGE = 0.01
 local NODE_RANGE = 0.015
 
 local function get_location_name(x, y, location, radius)
-    local i, v
-    for i, v in pairs(location) do
+    for _, v in pairs(location) do
         if (x > (v.x - radius)) and (x < (v.x + radius)) and (y > (v.y - radius)) and (y < (v.y + radius)) then
             return v.name
         end
@@ -217,7 +214,6 @@ local function check_ressers()
     -- Grab our data
     tbl.clear(dead_count)
     tbl.clear(node_count)
-    local i, v
     for i = 1, GetNumGroupMembers() do
         local name = GetUnitName('raid' .. i, true)
         local hp = UnitHealth('raid' .. i)
@@ -247,7 +243,7 @@ local function check_ressers()
         units[name] = hp
     end
     -- set count on cycle timers
-    for i, v in pairs(oq._utimers) do
+    for _, v in pairs(oq._utimers) do
         if (v._start ~= 0) then
             v._count = node_count[v.label:GetText()]
             v._dead = dead_count[v.label:GetText()]
@@ -286,7 +282,6 @@ local function av_utimer_check()
 
     utimer_init_AV()
 
-    local k, v
     for k, v in pairs(graveyards) do
         local name, _, textureIndex = GetMapLandmarkInfo(k)
         if name and textureIndex then
@@ -415,7 +410,6 @@ local function av_shuffle()
     local cx = OQ_data.timer_width or 200
     local cy = 20
     local n = 0
-    local i, v
     oq._utimer_bosses = (oq._utimer_bosses and tbl.clear(oq._utimer_bosses)) or tbl.new()
     oq._utimer_items = (oq._utimer_items and tbl.clear(oq._utimer_items)) or tbl.new()
     oq._utimer_gys = (oq._utimer_gys and tbl.clear(oq._utimer_gys)) or tbl.new()
@@ -439,7 +433,7 @@ local function av_shuffle()
     -- bosses
     n = 0
     table.sort(oq._utimer_bosses, av_boss_compare)
-    for i, v in pairs(oq._utimer_bosses) do
+    for _, v in pairs(oq._utimer_bosses) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
         n = n + 1
@@ -451,7 +445,7 @@ local function av_shuffle()
     end
     n = 0
     table.sort(oq._utimer_items, oq.utimer_compare)
-    for i, v in pairs(oq._utimer_items) do
+    for _, v in pairs(oq._utimer_items) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
         n = n + 1
@@ -463,7 +457,7 @@ local function av_shuffle()
     end
     n = 0
     table.sort(oq._utimer_controlled, av_compare_controlled)
-    for i, v in pairs(oq._utimer_controlled) do
+    for _, v in pairs(oq._utimer_controlled) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
         n = n + 1
@@ -474,7 +468,7 @@ local function av_shuffle()
         y = y + cy
     end
     table.sort(oq._utimer_gys, oq.utimer_compare_alpha)
-    for i, v in pairs(oq._utimer_gys) do
+    for _, v in pairs(oq._utimer_gys) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
     end
@@ -488,8 +482,6 @@ end
 local function av_test_2()
     print('av test 2')
     oq.utimer_stop_all() -- clear out existing timers
-    local t
-    --  t = oq.utimer_start( "Lumber Mill", "horde"   , 24, 1*60, 1 ) ; -- horde capping lumbermill
 end
 
 local function av_start()
@@ -518,7 +510,6 @@ local function av_show_control(show)
         av_utimer_check()
     else
         oq.utimer_stop(nil, 4) -- clear controlled towers
-        local i, v
         for i, v in pairs(graveyards) do
             if (state[v] == 1) or (state[v] == 2) then
                 graveyards[i] = 0

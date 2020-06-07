@@ -1,4 +1,4 @@
-local addonName, OQ = ...
+local _, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local tbl = OQ.table
 
@@ -27,8 +27,7 @@ local graveyards = {
 local GRAVEYARD_RANGE = 0.02
 local NODE_RANGE = 0.08
 local function get_location_name(x, y, location, radius)
-    local i, v
-    for i, v in pairs(location) do
+    for _, v in pairs(location) do
         if (x > (v.x - radius)) and (x < (v.x + radius)) and (y > (v.y - radius)) and (y < (v.y + radius)) then
             return v.name
         end
@@ -100,14 +99,11 @@ local function check_ressers()
     -- Grab our data
     tbl.clear(dead_count)
     tbl.clear(node_count)
-    local i, v
     for i = 1, GetNumGroupMembers() do
         local name = GetUnitName('raid' .. i, true)
         local hp = UnitHealth('raid' .. i)
         if (units[name] ~= nil) and (units[name] <= 1) and (hp > 1) then
             -- ressed
-            local x, y = GetPlayerMapPosition('raid' .. i)
-            local loc = get_location_name(x, y, graveyards, GRAVEYARD_RANGE)
             tp_graveyard_timers_reset()
         elseif (units[name] ~= nil) and (units[name] <= 1) then
             -- dead, waiting to res.  which graveyard?
@@ -130,7 +126,7 @@ local function check_ressers()
         units[name] = hp
     end
     -- set count on cycle timers
-    for i, v in pairs(oq._utimers) do
+    for _, v in pairs(oq._utimers) do
         if (v._start ~= 0) then
             if (v._type == 3) then
                 v._dead = dead_count[v.label:GetText()]
@@ -232,7 +228,6 @@ local function tp_shuffle()
     local cx = OQ_data.timer_width or 200
     local cy = 20
     local n = 0
-    local i, v
     oq._utimer_items = (oq._utimer_items and tbl.clear(oq._utimer_items)) or tbl.new()
     oq._utimer_gys = (oq._utimer_gys and tbl.clear(oq._utimer_gys)) or tbl.new()
     oq._utimer_controlled = (oq._utimer_controlled and tbl.clear(oq._utimer_controlled)) or tbl.new()
@@ -256,7 +251,7 @@ local function tp_shuffle()
     end
     n = 0
     table.sort(oq._utimer_items, oq.utimer_compare)
-    for i, v in pairs(oq._utimer_items) do
+    for _, v in pairs(oq._utimer_items) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
         n = n + 1
@@ -268,7 +263,7 @@ local function tp_shuffle()
     end
     n = 0
     table.sort(oq._utimer_controlled, oq.utimer_compare_alpha)
-    for i, v in pairs(oq._utimer_controlled) do
+    for _, v in pairs(oq._utimer_controlled) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
         n = n + 1
@@ -279,7 +274,7 @@ local function tp_shuffle()
         y = y + cy
     end
     table.sort(oq._utimer_gys, oq.utimer_compare_alpha)
-    for i, v in pairs(oq._utimer_gys) do
+    for _, v in pairs(oq._utimer_gys) do
         oq.setpos(oq._utimers[v], x, y, cx, cy)
         y = y + cy
     end

@@ -1,21 +1,10 @@
-﻿--[[ 
-  @file       oqueue.br.lua
-  @brief      localization for oqueue addon (portuguese)
-
-  @author     rmcinnis
-  @date       june 11, 2012
-  @par        copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 OQ.TRANSLATED_BY['ptBR'] = 'Aceg'
 if (GetLocale() ~= 'ptBR') then
     return
 end
-local L = OQ._T -- for literal string translations
+-- local L = OQ._T -- for literal string translations
 
 OQ.TITLE_LEFT = 'oQueue v'
 OQ.TITLE_RIGHT = ' - Buscador de Premades'
@@ -124,7 +113,6 @@ OQ.SETUP_OK2SUBMIT_BTAG = 'Enviar b-tag a cada 4 dias'
 OQ.SETUP_ADD = 'adicionar'
 OQ.SETUP_MYCREW = 'minha equipa'
 OQ.SETUP_CLEAR = 'limpar'
-OQ.BN_FRIENDS = 'Amigos com oQ'
 OQ.LOCAL_OQ_USERS = 'Locais com oQ'
 OQ.PPS_SENT = 'pcts enviados/sec'
 OQ.PPS_RECVD = 'pcts recebidos/sec'

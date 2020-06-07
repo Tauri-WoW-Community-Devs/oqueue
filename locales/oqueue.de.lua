@@ -1,15 +1,4 @@
-﻿--[[ 
-  @file       oqueue.de.lua
-  @brief      localization for oqueue addon (german)
-
-  @author     rmcinnis
-  @date       june 11, 2012
-  @par        copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 OQ.TRANSLATED_BY['deDE'] = 'Realm69'
 if (GetLocale() ~= 'deDE') then
@@ -127,7 +116,6 @@ OQ.SETUP_OK2SUBMIT_BTAG = 'B-Tag alle 4 Tage senden'
 OQ.SETUP_ADD = 'Hinzufuegen'
 OQ.SETUP_MYCREW = 'Mein Team'
 OQ.SETUP_CLEAR = 'Loeschen'
-OQ.BN_FRIENDS = 'OQ enabled friends' --dunno
 OQ.LOCAL_OQ_USERS = 'OQ enabled locals' --dunno
 OQ.PPS_SENT = 'pkts sent/sec' --dunno
 OQ.PPS_RECVD = 'pkts recvd/sec' --dunno

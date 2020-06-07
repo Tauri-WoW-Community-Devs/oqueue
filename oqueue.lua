@@ -56,7 +56,6 @@ local player_name = nil
 local player_class = nil
 local player_guid = nil
 local player_realm = nil
-local player_fullname = nil
 local player_realm_id = 0
 local player_level = 1
 local player_ilevel = 1
@@ -5728,30 +5727,6 @@ function oq.add_to_conversation(pid)
         -- no conversation yet
         return
     end
-    --[[
-issue #1: multiple accounts under one bnet
-issue #2: must have 3 ppl minimum to start
-issue #3: what if 3rd person leaves?
-issue #4: if 2nd person leaves, conversation closes?  have to continually recreate
-
-print("max in a channel:  ".. BNGetMaxPlayersInConversation());
-print("max # conversations: ".. BNGetMaxNumConversations ());
-
-if (thistle_pid ~= 0) then
-   print("attempting to create conversation");
-   --   BNCreateConversation(thistle_pid, 0);
-end
-
-for i=1, BNGetMaxNumConversations() do
-   if (BNGetConversationInfo(i) == "conversation") then
-      print("# in channel: ".. tostring(BNGetNumConversationMembers( i)));
-      BNSendConversationMessage(i, "test msg");
-      --      BNInviteToConversation(i, snot_pid);
-      --      BNInviteToConversation(i, snot2_pid);
-   end
-end
-]]
-    --
 end
 
 function oq.show_raid()
@@ -6376,26 +6351,6 @@ function oq.find_group_member(name)
         end
     end
     return nil
-end
-
-function oq.get_toon_pid(friendId, name_, realm_)
-    if (name_ == nil) or (realm_ == nil) then
-        return 0
-    end
-    local nToons = BNGetNumFriendToons(friendId)
-    if (nToons > 0) then
-        local toonIndx
-        for toonIndx = 1, nToons do
-            tbl.fill(_toon, BNGetFriendToonInfo(friendId, toonIndx))
-            if
-                (_toon[3] == 'WoW') and (_toon[2]) and (strlower(_toon[2]) == name_) and (_toon[4]) and
-                    (strlower(_toon[4]) == realm_)
-             then
-                return _toon[16]
-            end
-        end
-    end
-    return 0
 end
 
 function oq.IsFriend(realId)
@@ -9894,7 +9849,7 @@ function oq.toggle_raid_scroll(state)
         oq._scroll_paused = nil
         oq.reshuffle_premades_now() -- force the reshuffle
         oq.tab2_paused.label:SetTextColor(111 / 255, 111 / 255, 111 / 255, 1)
-        oq.tab2_paused.label:SetText(L['** PAUSED **'])
+        oq.tab2_paused.label:SetText(L['Pause'])
     else
         oq._scroll_paused = 1
         oq.tab2_paused.label:SetTextColor(247 / 255, 207 / 255, 131 / 255, 1)
@@ -14404,7 +14359,7 @@ function oq.create_tab2()
     )
 
     x = x + 35
-    oq.tab2_paused = oq.click_label(parent, x, y - 6, 90, cy + 12, L['** PAUSED **'])
+    oq.tab2_paused = oq.click_label(parent, x, y - 6, 90, cy + 12, L['Pause'])
     oq.tab2_paused.label:SetJustifyH('middle')
     oq.tab2_paused.label:SetTextColor(111 / 255, 111 / 255, 111 / 255, 1)
     oq.tab2_paused:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
@@ -22270,7 +22225,10 @@ end
 --  event handlers
 --------------------------------------------------------------------------
 function oq.on_addon_event(prefix, msg, channel, sender)
-    if (prefix ~= OQ_HEADER) or (sender == player_name) or (sender == player_fullname) or (msg == nil) or (msg == '') then
+    if
+        (prefix ~= OQ_HEADER) or (sender == player_name) or (strlower(sender) == oq.player_realid) or (msg == nil) or
+            (msg == '')
+     then
         return
     end
     -- just process, do not send it on
@@ -22461,29 +22419,6 @@ function oq.ping_oq_toon(toon_pid, toonName, realmName, ts, ack)
     oq.toon.disabled = f
 end
 
-function oq.tid2pid(tid)
-    local ntotal, nonline = GetNumFriends()
-    local friendId, toonIndx
-    for friendId = 1, ntotal do
-        tbl.fill(_f, GetFriendInfo(friendId))
-        local pid = _f[1]
-        local online = _f[8]
-        local nToons = BNGetNumFriendToons(friendId)
-        if (nToons > 0) and (online == true) then
-            for toonIndx = 1, nToons do
-                tbl.fill(_toon, BNGetFriendToonInfo(friendId, toonIndx))
-                local toonName = _toon[2]
-                local realmName = _toon[4]
-                local toon_pid = _toon[16]
-                if (toon_pid == tid) then
-                    return pid
-                end
-            end
-        end
-    end
-    return -1
-end
-
 --
 -- arg = nil for normal ping
 -- arg = stop to go dark
@@ -22499,25 +22434,6 @@ function oq.ping_the_world(arg)
     local friendId, toonIndx
     for friendId = 1, ntotal do
         tbl.fill(_f, GetFriendInfo(friendId))
-        local online = _f[8]
-        local nToons = BNGetNumFriendToons(friendId)
-        if (nToons > 0) and (online == true) then
-            for toonIndx = 1, nToons do
-                tbl.fill(_toon, BNGetFriendToonInfo(friendId, toonIndx))
-                local toonName = _toon[2]
-                local toon_client = _toon[3]
-                local realmName = _toon[4]
-                local toon_pid = _toon[16]
-                if (toon_pid) and (online) and (toon_client == 'WoW') then
-                    -- the new messaging supposedly had no limit.  if there were a limit on the number of msgs/sec being sent,
-                    -- and this exceeded that limit, then we'd get disconnected from the game.  as is, we only get d/c'd from b.net.
-                    -- this might be reason, or it's just b.net lagging out.  to err on the side of caution, i'll scatter the
-                    -- msgs to produce no more then 10 per second.
-                    cnt = cnt + 1
-                    oq.timer_oneshot(cnt * 0.10, oq.ping_oq_toon, toon_pid, toonName, realmName, now, arg or '')
-                end
-            end
-        end
     end
 end
 
@@ -22547,7 +22463,7 @@ function oq.on_oq_user(toonName, realmName, faction, btag, ts_, is_ack)
     friend.isOnline = true
     friend.toonName = toonName
     friend.realm = realmName
-    friend.pid = oq.tid2pid(oq._sender_toonid)
+    friend.pid = -1
     friend.toon_id = oq._sender_toonid -- this message should be coming in on bnet
     friend.oq_enabled = true
     friend.faction = faction
@@ -24566,7 +24482,6 @@ function oq.on_init(now)
     player_name = UnitName('player')
     player_guid = UnitGUID('player')
     player_realm = oq.GetRealmName()
-    player_fullname = player_name .. '-' .. player_realm
     player_realm_id = oq.GetRealmID(player_realm)
     oq.player_realid = strlower(player_name .. '-' .. player_realm)
     if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
@@ -24591,7 +24506,6 @@ function oq.on_init(now)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_CHANNEL', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_WHISPER_INFORM', oq.chat_filter)
-    ChatFrame_AddMessageEventFilter('CHAT_MSG_BN_INLINE_TOAST_BROADCAST', oq.chat_filter)
 
     -- first time check
     oq.timer_oneshot(2, oq.hook_error_frame)

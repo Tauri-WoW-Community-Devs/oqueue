@@ -1,22 +1,11 @@
-﻿--[[ 
-  @file       oqueue.fr.lua
-  @brief      localization for oqueue addon (french)
-
-  @author     rmcinnis
-  @date       june 11, 2012
-  @par        copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 OQ.TRANSLATED_BY['frFR'] = 'Shamallo'
 OQ.TRANSLATED_BY['frFR'] = 'Alathèa (Medivh, EU)'
 if (GetLocale() ~= 'frFR') then
     return
 end
-local L = OQ._T -- for literal string translations
+-- local L = OQ._T -- for literal string translations
 
 BINDING_HEADER_OQUEUE = 'oQueue'
 BINDING_NAME_TOGGLE_OQUEUE = 'Touche oQueue'
@@ -135,7 +124,6 @@ OQ.SETUP_AUTOHIDE_FRIENDREQS = 'Cacher automatiquement les requêtes amies'
 OQ.SETUP_ADD = 'Ajouter'
 OQ.SETUP_MYCREW = 'Mon équipage'
 OQ.SETUP_CLEAR = 'Retirer'
-OQ.BN_FRIENDS = 'OQ enabled friends'
 OQ.LOCAL_OQ_USERS = 'OQ enabled locals'
 OQ.TIME_DRIFT = 'time drift'
 OQ.PPS_SENT = 'pkts sent/sec'

@@ -1,15 +1,4 @@
-﻿--[[ 
-  @file       oqueue.en.lua
-  @brief      localization for oqueue addon (english - default)
-
-  @author     rmcinnis
-  @date       june 11, 2012
-  @par        copyright (c) 2012 Solid ICE Technologies, Inc.  All rights reserved.
-              this file may be distributed so long as it remains unaltered
-              if this file is posted to a web site, credit must be given to me along with a link to my web page
-              no code in this file may be used in other works without expressed permission  
-]] --
-local addonName, OQ = ...
+﻿local _, OQ = ...
 
 local L = OQ._T -- for literal string translations
 
@@ -137,7 +126,6 @@ OQ.SETUP_LOOT_ACCEPTANCE = 'Notify on loot method change'
 OQ.SETUP_ADD = 'Add'
 OQ.SETUP_MYCREW = 'My crew'
 OQ.SETUP_CLEAR = 'Clear'
-OQ.BN_FRIENDS = 'OQ enabled friends'
 OQ.LOCAL_OQ_USERS = 'OQ enabled locals'
 OQ.TIME_DRIFT = 'Time drift'
 OQ.PPS_SENT = 'Packets sent/sec'

@@ -1,4 +1,4 @@
-local addonName, OQ = ...
+local _, OQ = ...
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local L = OQ._T -- for literal string translations
 local _  -- throw away (was getting taint warning; what happened blizz?)
@@ -75,7 +75,6 @@ function oq.check_for_wipe()
         type = 'raid'
     end
 
-    local i
     for i = 1, nMembers - 1 do
         if (UnitHealth(type .. '' .. tostring(i)) > 0) then
             oq._wiped = nil
@@ -300,7 +299,6 @@ function oq.get_pvp_experience()
     if (strlower(select(1, UnitFactionGroup('player'))) == 'alliance') then
         faction = 15
     end
-    local i
     for i = faction, faction + 13 do
         if (oq.has_achieved(OQ.rbg_rank[i].id)) then
             rank = i
@@ -485,7 +483,7 @@ function oq.get_arena_experience(as_lead)
     local best_3s = oq.best_arena_rank(3)
     local best_5s = oq.best_arena_rank(5)
 
-    local class, spec, spec_id = oq.get_spec()
+    local _, _, spec_id = oq.get_spec()
 
     return oq.encode_mime64_1digit(rank) ..
         oq.encode_mime64_3digit(best_mmr) ..
@@ -555,7 +553,7 @@ function oq.get_pdata(raid_type, sub_type)
     raid_type = raid_type or oq.raid.type
     if (raid_type == OQ.TYPE_DUNGEON) then
         local n = 0
-        local i
+
         for i = 1, 5 do
             local m = oq.raid.group[1].member[i]
             if (m.name ~= nil) and (m.name ~= '-') then
@@ -570,7 +568,6 @@ function oq.get_pdata(raid_type, sub_type)
             end
         end
     elseif (raid_type == OQ.TYPE_CHALLENGE) or (raid_type == OQ.TYPE_QUESTS) then
-        local i
         for i = 1, 5 do
             local m = oq.raid.group[1].member[i]
             if (m.name ~= nil) and (m.name ~= '-') then
@@ -585,7 +582,7 @@ function oq.get_pdata(raid_type, sub_type)
         end
     elseif (raid_type == OQ.TYPE_SCENARIO) then
         local n = 0
-        local i
+
         pdata = '---'
         for i = 1, 3 do
             local m = oq.raid.group[1].member[i]
@@ -620,18 +617,17 @@ function oq.get_raid_bosses_killed(name)
     end
 
     local n = GetNumSavedInstances()
-    local index
     for index = 1, n do
         local iName,
-            iID,
+            _,
             iReset,
-            iDiff,
-            locked,
-            extended,
-            iIDMostSig,
-            isRaid,
-            maxPlayers,
-            diffName,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
             maxBosses,
             defeatedBosses = GetSavedInstanceInfo(index)
         if (iName == name) then
@@ -650,7 +646,6 @@ function oq.get_raid_bosses_killed(name)
 end
 
 function oq.get_raid_id(raid_name)
-    local i, v
     for i, v in pairs(OQ.raid_ids) do
         if (i == raid_name) then
             return v
@@ -660,7 +655,6 @@ function oq.get_raid_id(raid_name)
 end
 
 function oq.get_raid_name(raid_id)
-    local i, v
     for i, v in pairs(OQ.raid_ids) do
         if (v == raid_id) then
             return i
@@ -674,21 +668,9 @@ function oq.get_raid_index(raid_id)
         return 0
     end
     local n = GetNumSavedInstances()
-    local index
     local name = oq.get_raid_name(raid_id)
     for index = 1, n do
-        local iName,
-            iID,
-            iReset,
-            iDiff,
-            locked,
-            extended,
-            iIDMostSig,
-            isRaid,
-            maxPlayers,
-            diffName,
-            maxBosses,
-            defeatedBosses = GetSavedInstanceInfo(index)
+        local iName = GetSavedInstanceInfo(index)
         if (iName == name) then
             return index
         end
@@ -707,7 +689,6 @@ function oq.get_boss_id(raid_id, boss_name)
     if (OQ.raid_bosses[raid_id] == nil) then
         return 0
     end
-    local i, v
     for i, v in pairs(OQ.raid_bosses[raid_id]) do
         if (v == boss_name) then
             return i
@@ -729,7 +710,6 @@ function oq.get_boss_bits(raid_id, maxBosses)
         return 0
     end
 
-    local index
     for index = 1, maxBosses do
         local name, _, dead = GetSavedInstanceEncounterInfo(raid_ndx, index)
         if (dead) then
@@ -752,7 +732,6 @@ end
 
 function oq.is_boss_conflict(raid_id, maxBosses, boss_bits)
     local my_boss_bits = oq.get_boss_bits(raid_id, maxBosses)
-    local i
     oq.__reason_extra = nil
     for i = 1, maxBosses do
         if oq.is_set(my_boss_bits, 2 ^ i) and not oq.is_set(boss_bits, 2 ^ i) then
@@ -769,10 +748,10 @@ function oq.lockout_conflict(pdata)
     end
     local D = oq.decode_mime64_digits(pdata:sub(4, 4)) -- difficulty
     local R = oq.decode_mime64_digits(pdata:sub(5, 5)) -- raid id
-    local b = oq.decode_mime64_digits(pdata:sub(6, 6)) -- # killed
+    -- local b = oq.decode_mime64_digits(pdata:sub(6, 6)) -- # killed
     local B = oq.decode_mime64_digits(pdata:sub(7, 7)) -- max bosses
-    local i = oq.decode_mime64_digits(pdata:sub(8, 8))
-    local h = oq.decode_mime64_digits(pdata:sub(9, 9))
+    -- local i = oq.decode_mime64_digits(pdata:sub(8, 8))
+    -- local h = oq.decode_mime64_digits(pdata:sub(9, 9))
 
     local boss_bits = oq.decode_mime64_digits(pdata:sub(10, 12))
     if (D >= 3) and (D <= 6) then
@@ -800,7 +779,6 @@ function oq.pdata_raid_conflict(pdata)
         local maxBosses = OQ.max_raid_bosses[raid_id] or 0
         local boss_bits = oq.decode_mime64_digits(pdata:sub(10, 12)) -- their bits
         local my_boss_bits = oq.get_boss_bits(raid_id, maxBosses)
-        local i
         for i = 1, maxBosses do
             -- if they're locked on a boss and i am not... conflict
             if oq.is_set(boss_bits, 2 ^ i) and not oq.is_set(my_boss_bits, 2 ^ i) then
@@ -811,26 +789,13 @@ function oq.pdata_raid_conflict(pdata)
     end
     return nil
 end
-
 function oq.get_raid_boss_progression(name)
     if (name == nil) then
         return 'AAA'
     end
     local n = GetNumSavedInstances()
-    local index
     for index = 1, n do
-        local iName,
-            iID,
-            iReset,
-            iDiff,
-            locked,
-            extended,
-            iIDMostSig,
-            isRaid,
-            maxPlayers,
-            diffName,
-            maxBosses,
-            defeatedBosses = GetSavedInstanceInfo(index)
+        local iName, _, _, _, _, _, _, _, _, _, maxBosses = GetSavedInstanceInfo(index)
         if (iName == name) then
             return oq.encode_mime64_3digit(oq.get_boss_locks(name, index, maxBosses))
         end
@@ -856,7 +821,6 @@ function oq.scan_for_unit(name)
     elseif (UnitName 'pettarget' == name) then
         return 'pettarget'
     else
-        local i
         for i = 1, GetNumGroupMembers() do
             local unit = ('raid%dtarget'):format(i)
             if (UnitName(unit) == name) then
@@ -870,7 +834,6 @@ function oq.is_raid_boss(raid_id, name)
     if (raid_id == 0) or (OQ.raid_bosses[raid_id] == nil) then
         return nil
     end
-    local i, v
     for i, v in pairs(OQ.raid_bosses[raid_id]) do
         if (v == name) then
             return true, i, v
@@ -894,7 +857,6 @@ function oq.scan_for_boss(raid_id)
     if oq.is_raid_boss(raid_id, UnitName('pettarget')) then
         return 'pettarget'
     end
-    local i
     for i = 1, GetNumGroupMembers() do
         local unit = ('raid%dtarget'):format(i)
         if (oq.is_raid_boss(raid_id, UnitName(unit))) then
@@ -923,8 +885,7 @@ function oq.get_current_raid_status(sub_type)
     -- h  boss hp percent (1..50)
     -- PPP boss progression bits
     --
-    local name, type, difficultyIndex, difficultyName, maxPlayers, dynamicDifficulty, isDynamic, mapID =
-        GetInstanceInfo()
+    local name, _, difficultyIndex = GetInstanceInfo()
     local rid = oq.get_raid_id(name)
     if (rid == 0) then
         rid = sub_type
@@ -1028,9 +989,7 @@ function oq.get_dragon_rank(type, nwins, leader_xp)
 
     local title = ''
     local rank = 0
-    local i = 0
     if (t) and (OQ.rank_breaks[t]) then
-        local i
         for i = 4, 1, -1 do
             if (OQ.rank_breaks[t][i]) and (nwins >= OQ.rank_breaks[t][i].line) then
                 rank = OQ.rank_breaks[t][i].rank
