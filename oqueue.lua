@@ -1677,6 +1677,7 @@ function oq.timezone_adjust(opt)
 end
 
 function oq.harddrop()
+    oq.raid_disband()
     oq.raid_cleanup()
     oq.raid_init()
 
