@@ -26,18 +26,29 @@ function oq.make_frame_moveable(f)
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag('LeftButton')
-    f:SetScript('OnDragStart', f.StartMoving)
-    f:SetScript('OnDragStop', f.StopMovingOrSizing)
+    f:SetScript(
+        'OnDragStart',
+        function(self)
+            self:StartMoving()
+        end
+    )
+    f:SetScript(
+        'OnDragStop',
+        function(self)
+            self:StopMovingOrSizing()
+        end
+    )
     f:SetScript(
         'OnMouseDown',
         function(self, button)
-            if (button == 'LeftButton') and (not self.isMoving) then
+            if (button == 'LeftButton') and (not self.isMoving) and (not self.__resizing) then
                 self:StartMoving()
                 self.isMoving = true
             elseif (button == 'LeftButton') then
                 -- try to recover from odd double left-down with no left-up
                 self:StopMovingOrSizing()
                 self.isMoving = false
+                self.__resizing = nil
             end
         end
     )
@@ -48,9 +59,10 @@ function oq.make_frame_moveable(f)
                 if (f._save_position) then
                     f._save_position(f)
                 end
-                self:StopMovingOrSizing()
                 self.isMoving = false
+                self.__resizing = nil
             end
+            self:StopMovingOrSizing()
         end
     )
     f:SetScript(
@@ -59,6 +71,7 @@ function oq.make_frame_moveable(f)
             if (self.isMoving) then
                 self:StopMovingOrSizing()
                 self.isMoving = false
+                self.__resizing = nil
             end
         end
     )
@@ -82,7 +95,7 @@ end
 
 function oq.move_y(f, y, adjust_br)
     if (f) and (f:GetParent()) then
-        local x = floor(f:GetLeft() - f:GetParent():GetLeft())
+        local x = floor(math.abs((f:GetLeft() or 0) - (f:GetParent():GetLeft() or 0)))
         y = floor(y)
         f:SetPoint('TOPLEFT', x, -1 * y)
 

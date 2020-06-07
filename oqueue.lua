@@ -5,14 +5,14 @@ if (OQ.table == nil) then
 end
 local tbl = OQ.table
 -------------------------------------------------------------------------------
-local OQ_MAJOR = 1
-local OQ_MINOR = 9
-local OQ_REVISION = 9
-local OQ_BUILD = 199
+local OQ_MAJOR = 2
+local OQ_MINOR = 0
+local OQ_REVISION = 1
+local OQ_BUILD = 201
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
 local OQ_VER_STR = OQUEUE_VERSION
-local OQ_VER = '1C' -- just removing the dot
-local OQSK_VER = '0C'
+local OQ_VER = '1D' -- just removing the dot
+local OQSK_VER = '10'
 local OQSK_HEADER = 'OQSK'
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
 local OQ_ONEDAY = 24 * 60 * 60
@@ -119,6 +119,9 @@ local _vlist = nil
 local oq_ascii = nil
 local oq_mime64 = nil
 local lead_ticker = 0
+OQ.TOP_LEVEL = 90
+OQ.MAX_LOG_LINES = 43
+OQ.MAX_SNITCH_LINES = 250
 OQ.MAX_MESH_REQ_TM = 60 * 60 -- 1 hour
 OQ.BUNDLE_EARLIEST_SEND = 3.0 -- seconds
 OQ.BUNDLE_EXPIRATION = 4.0 -- seconds
@@ -154,40 +157,27 @@ end
 --   local defines
 -------------------------------------------------------------------------------
 local OQ_versions = {
-    ['1.7.7'] = 1,
-    ['1.7.8'] = 2,
-    ['1.7.9'] = 3,
-    ['1.8.0'] = 4,
-    ['1.8.1'] = 5,
-    ['1.8.2'] = 6,
-    ['1.8.3'] = 7,
-    ['1.8.4'] = 8,
-    ['1.8.5'] = 9,
-    ['1.8.6'] = 10,
-    ['1.8.7'] = 11,
-    ['1.8.8'] = 12,
-    ['1.8.9'] = 13,
-    ['1.9.0'] = 14,
-    ['1.9.1'] = 15,
-    ['1.9.2'] = 16,
-    ['1.9.3'] = 17,
-    ['1.9.4'] = 18,
-    ['1.9.5'] = 19,
-    ['1.9.6'] = 20,
-    ['1.9.7'] = 21,
-    ['1.9.8'] = 22,
-    ['1.9.9'] = 23,
-    ['2.0.0'] = 24,
-    ['2.0.1'] = 25,
-    ['2.0.2'] = 26,
-    ['2.0.3'] = 27,
-    ['2.0.4'] = 28,
-    ['2.0.5'] = 29,
-    ['2.0.6'] = 30,
-    ['2.0.7'] = 31,
-    ['2.0.8'] = 32,
-    ['2.0.9'] = 33,
-    ['2.1.0'] = 34
+    ['2.0.0'] = 1,
+    ['2.0.1'] = 2,
+    ['2.0.2'] = 3,
+    ['2.0.3'] = 4,
+    ['2.0.4'] = 5,
+    ['2.0.5'] = 6,
+    ['2.0.6'] = 7,
+    ['2.0.7'] = 8,
+    ['2.0.8'] = 9,
+    ['2.0.9'] = 10,
+    ['2.1.0'] = 11,
+    ['2.1.1'] = 12,
+    ['2.1.2'] = 13,
+    ['2.1.3'] = 14,
+    ['2.1.4'] = 15,
+    ['2.1.5'] = 16,
+    ['2.1.6'] = 17,
+    ['2.1.7'] = 18,
+    ['2.1.8'] = 19,
+    ['2.1.9'] = 20,
+    ['2.1.0'] = 21
 }
 
 function oq.get_version_id()
@@ -197,6 +187,9 @@ end
 function oq.get_version_str(id)
     if (id == 0) then
         return ''
+    end
+    if (id == 99) then
+        return '--'
     end
     local i, v
     for i, v in pairs(OQ_versions) do
@@ -280,6 +273,7 @@ function oq.hook_options()
     oq.options['reset'] = oq.data_reset
     oq.options['show'] = oq.show_data
     oq.options['set'] = oq.set_params
+    oq.options['snitch'] = oq.snitch_toggle_ui
     oq.options['spy'] = oq.battleground_spy
     oq.options['stats'] = oq.dump_statistics
     oq.options['thx'] = oq.special_thanks
@@ -841,7 +835,6 @@ function oq.utimer_reset_cycle(name)
                 local dt = (v._start - v._last_reset_tm)
                 if (dt > 1) then
                     v._last_cyle_length = dt
-                    oq.debug_report('(' .. name .. ') res cycle length: ' .. tostring(dt))
                 end
             end
             v._last_reset_tm = v._start
@@ -1447,6 +1440,12 @@ function oq.reposition_ui()
         oq._log:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -325)
         oq._log:_save_position()
     end
+
+    oq.snitch_ui_create()
+    if (oq._snitch) and (oq._snitch.ui) then
+        oq._snitch.ui:_fixui()
+        oq._snitch.ui:Show()
+    end
 end
 
 function oq.frame_resize()
@@ -1512,6 +1511,7 @@ function oq.show_data(opt)
         print('   raid         show current raid members')
         print("   remove       list all the battle-tags that will be removed with 'remove now'")
         print('   report       show battleground reports yet to be filed')
+        print('   snitch       list snitch info to chat area')
         print('   stats        list various stats')
         print('   thebook      bounty board')
         print("   wallet       what's in YOUR wallet?")
@@ -1539,6 +1539,8 @@ function oq.show_data(opt)
         oq.reform_show_keys()
     elseif (opt == 'report') then
         oq.show_reports()
+    elseif (opt == 'snitch') then
+        oq.snitch('dump')
     elseif (opt == 'stats') then
         oq.dump_statistics()
     elseif (opt:find('tables') == 1) then
@@ -1743,10 +1745,11 @@ function oq.data_reset()
         raid = tbl.new(),
         waitlist = tbl.new()
     }
-    OQ_data = {bn_friends = tbl.new()}
-    if (OQ_toon) then
-        OQ_toon = tbl.delete(OQ_toon)
-    end
+    OQ_data = nil
+    oq.load_oq_data()
+    --    if (OQ_toon) then
+    --      OQ_toon = tbl.delete( OQ_toon ) ;
+    --    end
     oq.load_toon_info()
     oq.init_stats_data()
     print('oQueue data reset.  for it to take effect, type /reload')
@@ -2575,7 +2578,6 @@ function oq.dump_statistics()
     end
     local nShown, nPremades = oq.n_premades()
     print('  # of premades        : ' .. nShown .. ' / ' .. nPremades)
-    print('  # of BN friends      : ' .. select(1, GetNumFriends()))
     print(
         '  packets recv         : ' ..
             oq.pkt_recv._cnt .. ' (' .. string.format('%5.3f', oq.pkt_recv._aps) .. ' per sec)'
@@ -2801,27 +2803,14 @@ function oq.SendChannelMessage(chan_name, msg)
 end
 
 function oq.oqgeneral_join()
-    local now = GetTime()
-    if (oq._next_init_tm) and (now < oq._next_init_tm) then
-        return
-    end
-    oq._next_init_tm = now + 5
-
-    tbl.fill(_arg, GetChannelList())
-    if (#_arg < 2) then
-        return
-    end
-
     oq.initial_join_oqgeneral()
-    if (oq._banned or oq._oqgeneral_initialized == nil) then
+    if (oq._banned) or (OQ_data.auto_join_oqgeneral == 0) or (oq._oqgeneral_initialized == nil) then
         return
     end
-    if (oq._inside_instance and not oq.iam_raid_leader()) then
+    if (oq._inside_instance) and (not oq.iam_raid_leader()) then
         return
     end
-
-    local joined = oq.channel_join(OQ_REALM_CHANNEL)
-    if (joined == 1) then
+    if (oq.channel_join(OQ_REALM_CHANNEL) == 1) then
         oq.timer('hook_roster_update', 5, oq.hook_roster_update, true, OQ_REALM_CHANNEL) -- will repeat until channel joined
         oq.timer('chk_OQGeneralLockdown', 30, oq.check_oqgeneral_lockdown, true) -- will check capacity every 30 seconds
     else
@@ -3751,7 +3740,7 @@ function oq.warning_no_role()
 
     print(OQ.LILREDX_ICON .. '  WARNING:  player_role unknown.  This may be a language support issue.')
     print(OQ.LILREDX_ICON .. '  WARNING:  If you believe oQueue does not support your language,')
-    print(OQ.LILREDX_ICON .. '  WARNING:  please inform tiny on wow.publicvent.org : 4135 ')
+    print(OQ.LILREDX_ICON .. '  WARNING:  please inform tiny on https://github.com/Tauri-WoW-Community-Devs/oqueue')
     print(OQ.LILREDX_ICON .. '  locale: ' .. GetLocale())
     print(OQ.LILREDX_ICON .. '  class: ' .. tostring(class))
     print(OQ.LILREDX_ICON .. '  spec: ' .. tostring(spec))
@@ -3904,6 +3893,530 @@ function oq.battleground_spy(opt)
 
     -- cleanup
     tbl.delete(f, true)
+end
+
+function oq.snitch(opt)
+    if (opt) and ((opt == 'dump') or (opt == 'dumpall')) then
+        oq.snitch_dump(opt)
+        return
+    end
+
+    oq._snitch._report = true
+    oq.snitch_init()
+    oq.snitch_start_inspect(opt)
+end
+
+function oq.snitch_toggle_ui()
+    local f = oq.snitch_ui_create()
+    if (f == nil) then
+        return
+    end
+    if (f:IsVisible()) then
+        f:Hide()
+    else
+        f:Show()
+    end
+end
+
+function oq.onSnitchHide(f)
+    oq.tremove_value(getglobal('UISpecialFrames'), f:GetName())
+    PlaySound('igCharacterInfoClose')
+end
+
+function oq.onSnitchShow(f)
+    tinsert(getglobal('UISpecialFrames'), f:GetName())
+    PlaySound('igCharacterInfoOpen')
+end
+
+function oq.create_snitch_button(parent, name)
+    local x = floor(parent:GetWidth() - 140)
+    local y = 8
+    local cx = 34
+    local cy = 34
+    local b = CreateFrame('Button', name or 'OQSnitchButton', parent)
+    b:SetFrameLevel(parent:GetFrameLevel() + 1)
+    b:RegisterForClicks('anyUp')
+    b:SetWidth(cx)
+    b:SetHeight(cy)
+    b:SetPoint('TOPLEFT', x, y)
+
+    local pt = b:CreateTexture(nil, 'ARTWORK')
+    pt:SetTexture('INTERFACE\\TARGETINGFRAME\\PetBadge-Critter.png')
+    pt:SetAllPoints(b)
+    b:SetPushedTexture(pt)
+
+    local ct = b:CreateTexture()
+    ct:SetTexture([[Interface\Minimap\UI-Minimap-ZoomButton-Highlight]])
+    ct:SetAllPoints(b)
+    ct:SetBlendMode('ADD')
+    ct:SetAlpha(0.5)
+    ct:SetTexCoord(2 / 32, 29 / 32, 2 / 32, 28 / 32)
+    b:SetHighlightTexture(ct)
+
+    local icon = b:CreateTexture(nil, 'ARTWORK')
+    icon:SetAllPoints(b)
+    icon:SetTexture('INTERFACE\\TARGETINGFRAME\\PetBadge-Critter.png')
+    b:SetNormalTexture(icon)
+
+    b:SetScript(
+        'OnClick',
+        function(self, button)
+            OQ_Snitch_Toggle()
+        end
+    )
+    b:Show()
+    return b
+end
+
+function OQ_SnitchScrollBar_Update(f)
+    OQ_data._snitch = OQ_data._snitch or tbl.new()
+    local nItems = max(10, table.getn(OQ_data._snitch))
+    FauxScrollFrame_Update(f, nItems, 5, 25)
+end
+
+function oq.snitch_ui_create()
+    oq.snitch_init()
+    if (oq._snitch.ui) then
+        return oq._snitch.ui
+    end
+    local d = oq.CreateFrame('FRAME', 'OQSnitchFrame', UIParent)
+    oq.make_frame_moveable(d)
+    d:SetScript(
+        'OnShow',
+        function(self)
+            oq.onSnitchShow(self)
+        end
+    )
+    d:SetScript(
+        'OnHide',
+        function(self)
+            oq.onSnitchHide(self)
+        end
+    )
+
+    if (oq.__backdrop01 == nil) then
+        oq.__backdrop01 = {
+            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
+            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = {left = 1, right = 1, top = 1, bottom = 1}
+        }
+    end
+    d:SetBackdrop(oq.__backdrop01)
+    d:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
+    d:SetAlpha(1.0)
+
+    oq.setpos(d, 500, 300, 354, 256)
+
+    d.closepb =
+        oq.closebox(
+        d,
+        function(self)
+            self:GetParent():Hide()
+        end
+    )
+    d.closepb:SetPoint('TOPRIGHT', d, 'TOPRIGHT', 0, -2)
+    d._save_position = function(self)
+        OQ_data.snitch_x = max(0, floor(self:GetLeft()))
+        OQ_data.snitch_y = max(0, floor(self:GetTop()))
+    end
+    if (OQ_data.snitch_x or OQ_data.snitch_y) then
+        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.snitch_x, OQ_data.snitch_y)
+    end
+
+    -- snitch icon, top left
+    d._snitch_icon = oq.create_snitch_button(d, 'OQSnitchLogo')
+    d._snitch_icon:SetPoint('TOPLEFT', -10, 10)
+    d._snitch_icon:SetScript('OnClick', nil)
+
+    -- title
+    local x = 10
+    local y = 10
+    d.title = oq.label(d, x + 3, y + 2, 160, 25, L['The Snitch Report'], 'CENTER', 'CENTER')
+    d.title:SetFont(OQ.FONT, 16, '')
+    x = x + 160 + 5
+
+    d.clear_but =
+        oq.button(
+        d,
+        x,
+        y + 2,
+        50,
+        25,
+        L['clear'],
+        function(self)
+            oq.snitch_clear()
+        end
+    )
+    x = x + 50 + 3
+    d.start_but =
+        oq.button(
+        d,
+        x,
+        y + 2,
+        50,
+        25,
+        L['start'],
+        function(self)
+            oq.snitch_start_inspect()
+        end
+    )
+    x = x + 50 + 3
+    d.stop_but =
+        oq.button(
+        d,
+        x,
+        y + 2,
+        50,
+        25,
+        L['stop'],
+        function(self)
+            oq.snitch_stop()
+        end
+    )
+    y = y + 30 + 5
+
+    -- resize corner
+    local but = oq.CreateFrame('BUTTON', 'OQSnitchResize', d)
+    but:RegisterForDrag('LeftButton', 'RightButton')
+    but:SetScript(
+        'OnMouseDown',
+        function(self)
+            OQ_ResizeMouse_down(self)
+        end
+    )
+    but:SetScript(
+        'OnMouseUp',
+        function(self)
+            OQ_ResizeMouse_up(self)
+        end
+    )
+    but:SetScript(
+        'OnHide',
+        function(self)
+            self:GetParent():StopMovingOrSizing()
+        end
+    )
+    but:SetNormalTexture('Interface\\AddOns\\oqueue-classic\\art\\resize')
+    but:GetNormalTexture():SetVertexColor(0.6, 0.6, 0.6)
+    but:SetWidth(16)
+    but:SetHeight(16)
+    but:SetPoint('BOTTOMRIGHT', d, 'BOTTOMRIGHT', -3, 1)
+
+    d:SetResizable(true)
+    d:SetMaxResize(900, 900)
+    d:SetMinResize(360, 300)
+    d:Hide() -- require caller to explicitly show it
+    d:SetWidth(350)
+    d:SetHeight(450)
+    -- snitch layout
+    d._scroller, d._list = oq.create_scrolling_list(d, 'snitchlist', 'SimpleHTML', OQ_SnitchScrollBar_Update)
+    local f = d._scroller
+    oq.setpos(f, 20, y, f:GetParent():GetWidth() - 2 * 30, f:GetParent():GetHeight() - (y + 38))
+
+    d:SetScript(
+        'OnSizeChanged',
+        function(self)
+            self._resize(self)
+        end
+    )
+
+    d._fixui = function(self)
+        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', 800, 500)
+        d:SetWidth(360)
+        d:SetHeight(300)
+        self:_resize()
+    end
+
+    d._resize = function(self)
+        local cx = floor(self:GetWidth())
+        local cy = floor(self:GetHeight())
+        self._scroller:ClearAllPoints()
+        self._scroller:SetPoint('TOPLEFT', self, 'TOPLEFT', 10, -45)
+        self._scroller:SetWidth(cx - 4 * 10)
+        self._scroller:SetHeight((cy - 10) - 45)
+        self._list:SetWidth(self._scroller:GetWidth())
+
+        OQ_data.snitch_cx = cx
+        OQ_data.snitch_cy = cy
+    end
+
+    -- tweak list
+    d._list:SetBackdrop(nil) -- remove outline frame inside scrolling region
+    d._list:SetFont(OQ.FONT, 12)
+    d._list:SetWidth(d:GetWidth() - 2 * 10)
+    d._list:SetHeight(1000)
+    d._list:SetFont('h1', OQ.FONT_FIXED, 12)
+    d._list:SetTextColor('h1', 0.9, 0.9, 0.9, 0.8)
+
+    d._list:SetFont('h2', 'Fonts\\MORPHEUS.ttf', 40)
+    d._list:SetShadowColor('h2', 0, 0, 0, 1)
+    d._list:SetShadowOffset('h2', 1, -1)
+    d._list:SetTextColor('h2', 128 / 255, 0 / 255, 0 / 255, 1.0)
+
+    d._list:SetFont('h3', OQ.FONT, 10)
+    d._list:SetShadowColor('h3', 0, 0, 0, 1)
+    d._list:SetShadowOffset('h3', 0, 0)
+    d._list:SetTextColor('h3', 0.2, 0.2, 0.2, 0.8)
+
+    d._list:SetText('')
+
+    if (OQ_data.snitch_x or OQ_data.snitch_y) then
+        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.snitch_x or 100, OQ_data.snitch_y or 100)
+    end
+    if (OQ_data.snitch_cx or OQ_data.snitch_cy) then
+        d:SetWidth(OQ_data.snitch_cx or 360)
+        d:SetHeight(OQ_data.snitch_cy or 300)
+    end
+    d:_resize()
+
+    -- done
+    oq._snitch.ui = d
+    oq.update_snitch_text()
+    return oq._snitch.ui
+end
+
+function oq.snitch_init()
+    oq._snitch = oq._snitch or tbl.new()
+    oq._snitch.players = oq._snitch.players or tbl.new()
+    tbl.clear(oq._snitch.players)
+end
+
+function oq.snitch_log(...)
+    local now = oq.utc_time()
+    OQ_data._snitch = OQ_data._snitch or tbl.new()
+    tinsert(OQ_data._snitch, '|cFF00B000' .. date('%H:%M:%S', now) .. '|r  ' .. tostring(...))
+    if (table.getn(OQ_data._snitch) > OQ.MAX_SNITCH_LINES) then
+        local n = table.getn(OQ_data._snitch) - OQ.MAX_SNITCH_LINES
+        local i
+        for i = 1, n do
+            table.remove(OQ_data._snitch, 1)
+        end
+    end
+    oq.update_snitch_text()
+end
+
+function oq.update_snitch_text()
+    OQ_data._snitch = OQ_data._snitch or tbl.new()
+
+    local d = oq._snitch.ui
+    local txt = '<html><body><h1>'
+    local n = table.getn(OQ_data._snitch)
+    if (n > 0) then
+        local i
+        for i = 1, n do
+            txt = txt .. OQ_data._snitch[i] .. '<br/>'
+        end
+    end
+
+    if
+        (oq._snitch.current) and (oq._snitch.players[oq._snitch.current]) and
+            (type(oq._snitch.players[oq._snitch.current]) ~= 'number')
+     then
+        local now = oq.utc_time()
+        txt =
+            txt ..
+            '|cFF00B000' ..
+                date('%H:%M:%S', now) ..
+                    '|r  ' ..
+                        tostring(oq._snitch.current) .. ' ... ' .. tostring(oq._snitch.players[oq._snitch.current])
+    end
+
+    txt = txt .. '</h1><br/></body></html>'
+
+    d._list:SetText(txt)
+    d._list:SetHeight(25 * max(25, n))
+    d._list:Show()
+end
+
+function oq.snitch_clear()
+    oq.snitch_stop()
+    tbl.clear(OQ_data._snitch)
+    oq.snitch_log('--')
+    oq.update_snitch_text()
+end
+
+function oq.snitch_stop()
+    if (oq._snitch.status == 0) then
+        return
+    end
+    oq._snitch.status = 0 -- 1 == active; 0 == completed
+    oq._snitch.current = nil
+    oq._snitch.giveup = 0
+    oq.timer('snitch_check', 1, nil)
+    oq.snitch_log('stopped')
+end
+
+function oq.snitch_start_inspect(opt)
+    if (oq._snitch.status == 1) then
+        return
+    end
+    oq._snitch.status = 0
+    oq.snitch_log(L['starting'])
+    oq._snitch.min_ilevel = tonumber(opt or 0) or 0
+    local p = oq.premades[oq.raid.raid_token]
+    if (oq._snitch.min_ilevel == 0) and (oq.raid.raid_token) then
+        oq._snitch.min_ilevel = p.min_ilevel or 0
+        if ((p.type == OQ.TYPE_DUNGEON) or (p.type == OQ.TYPE_RAID)) and (p.min_mmr > 0) then
+            oq._snitch.min_ilevel = min(oq._snitch.min_ilevel, p.min_mmr)
+        end
+    end
+    if (oq._snitch.min_ilevel <= 0) then
+        oq.snitch_log(L['no minimum ilevel set'])
+        oq.snitch_log('--')
+        return
+    end
+
+    -- fill pending w/ group members
+    local n = GetNumGroupMembers()
+    if (n == 0) then
+        oq.snitch_log(L['no members to snitch on'])
+        oq.snitch_log('--')
+        return
+    end
+    if (n > 0) then
+        oq.snitch_log(tostring(GetZoneText() or L['Zone text unavailable']))
+
+        local i, name, realm
+        for i = 1, n do
+            name, realm = oq.crack_name(string.lower(select(1, GetRaidRosterInfo(i)) or ''))
+            -- tried caching the data by calling inspect on all.. didn't help
+            --      NotifyInspect( oq.proper_name(name, realm) ) ;
+            oq._snitch.players[name .. '-' .. realm] = 'pending'
+        end
+        oq.snitch_log('min ilevel: ' .. tostring(oq._snitch.min_ilevel))
+    end
+    oq._snitch.status = 1 -- 1 == active; 0 == completed
+    oq._snitch.current = nil
+    oq._snitch.giveup = 0
+
+    oq.timer('snitch_check', 0.5, oq.snitch_check, true)
+end
+
+function oq.snitch_check()
+    if (oq._snitch.current == nil) then
+        oq._snitch.current = oq.snitch_next()
+        if (oq._snitch.current == nil) then
+            oq._snitch.status = nil
+            oq.snitch_log('--')
+            return 1 -- no more.  end timed function
+        end
+        oq._snitch.players[oq._snitch.current] = 'inspect' -- inspect stage
+        oq._snitch.giveup = GetTime() + 5.0 -- wait no longer then 5 seconds before moving on
+    end
+
+    local proper_name = oq.proper_name(oq.crack_name(oq._snitch.current))
+    if (not CanInspect(proper_name)) then
+        oq._snitch.players[oq._snitch.current] = 'oor' -- out of range
+        oq.snitch_log('OOR  ' .. tostring(oq._snitch.current))
+        oq._snitch.current = nil -- go to next player
+        oq.update_snitch_text()
+        return
+    end
+
+    --
+    -- in range, try to pull gear info
+    --
+    if (oq._snitch.players[oq._snitch.current] == 'inspect') then
+        NotifyInspect(proper_name)
+        oq._snitch.players[oq._snitch.current] = 'wait'
+        oq.update_snitch_text()
+        return
+    elseif (oq._snitch.players[oq._snitch.current] == 'wait') then
+        if (oq.snitch_info_missing(oq._snitch.current)) then
+            if (oq._snitch.giveup < GetTime()) then
+                oq._snitch.players[oq._snitch.current] = 'unk'
+                oq.snitch_log('|cffffff80' .. 'UNK|r  ' .. tostring(oq._snitch.current))
+                oq._snitch.current = nil -- go to next player
+            else
+                NotifyInspect(proper_name)
+            end
+            return
+        end
+        oq._snitch.players[oq._snitch.current] = 'ready'
+    end
+
+    --
+    -- have gear info.  do check
+    --
+    local ilevel = oq.snitch_get_ilevel(oq._snitch.current)
+    if (ilevel < oq._snitch.min_ilevel) then
+        oq._snitch.players[oq._snitch.current] = tostring(ilevel)
+        oq.snitch_log('|cffff8080' .. tostring(ilevel) .. '|r  ' .. tostring(oq._snitch.current))
+    else
+        oq._snitch.players[oq._snitch.current] = ilevel
+        oq.snitch_log(tostring(ilevel) .. '  ' .. tostring(oq._snitch.current))
+    end
+    oq._snitch.current = nil -- go to next player
+end
+
+function oq.snitch_get_ilevel(unit)
+    local proper_name = oq.proper_name(oq.crack_name(unit))
+    local i, sum, cnt, ilevel, itemLink
+    sum, cnt = 0, 0
+    for i = 1, 19 do
+        itemLink = GetInventoryItemLink(proper_name, i)
+        if (itemLink) and (i ~= 4) and (i ~= 19) then -- not shirt or tabard
+            ilevel = oq.get_actual_ilevel(itemLink)
+            sum = (sum or 0) + ilevel
+            cnt = (cnt or 0) + 1
+        end
+    end
+    local avg_ilevel = 0
+    if (cnt > 0) then
+        avg_ilevel = floor(sum / cnt)
+    end
+    return avg_ilevel
+end
+
+function oq.proper_name(n, r)
+    if (r == player_realm) then
+        return n
+    end
+    return n .. '-' .. r
+end
+
+function oq.snitch_next()
+    local name, n, r, v, proper_name
+    for name, v in pairs(oq._snitch.players) do
+        if (v == 'pending') then
+            proper_name = oq.proper_name(oq.crack_name(name))
+            if UnitExists(proper_name) and CanInspect(proper_name) then
+                return name
+            else
+                oq._snitch.players[proper_name] = 'invalid'
+            end
+        end
+    end
+    return nil
+end
+
+function oq.snitch_info_missing(unit)
+    local missing = nil
+    local i
+    for i = 1, 19 do
+        if GetInventoryItemID(unit, i) and not GetInventoryItemLink(unit, i) then
+            missing = true
+        end
+    end
+    return missing
+end
+
+function oq.snitch_dump(opt)
+    opt = opt or 'show'
+
+    print('-- OQ snitch results --')
+    local name, v
+    for name, v in pairs(oq._snitch.players) do
+        if (type(v) ~= 'number') then
+            print('|cFFFF8080' .. tostring(v) .. '|r  ' .. tostring(name))
+        elseif (opt == 'dumpall') then
+            print(tostring(v) .. '  ' .. tostring(name))
+        end
+    end
+    print('--')
 end
 
 function oq.calc_pkt_stats()
@@ -4291,53 +4804,20 @@ end
 
 function oq.salt()
     return oq.encode_mime64_3digit(OQ_data.leader['bg'].nWins) ..
-        '' ..
-            oq.encode_mime64_3digit(OQ_data.leader['bg'].nLosses) ..
-                '' ..
-                    oq.encode_mime64_3digit(OQ_data.leader['bg'].nGames) ..
-                        '' ..
-                            oq.encode_mime64_3digit(OQ_data.leader['rbg'].nWins) ..
-                                '' ..
-                                    oq.encode_mime64_3digit(OQ_data.leader['rbg'].nLosses) ..
-                                        '' ..
-                                            oq.encode_mime64_3digit(OQ_data.leader['rbg'].nGames) ..
-                                                '' ..
-                                                    oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nBosses) ..
-                                                        '' ..
-                                                            oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nWipes) ..
-                                                                '' ..
-                                                                    oq.encode_mime64_3digit(
-                                                                        OQ_data.leader['pve.raid'].nBosses
-                                                                    ) ..
-                                                                        '' ..
-                                                                            oq.encode_mime64_3digit(
-                                                                                OQ_data.leader['pve.raid'].nWipes
-                                                                            ) ..
-                                                                                '' ..
-                                                                                    oq.encode_mime64_3digit(
-                                                                                        OQ_data.leader['pve.challenge'].nBosses
-                                                                                    ) ..
-                                                                                        '' ..
-                                                                                            oq.encode_mime64_3digit(
-                                                                                                OQ_data.leader[
-                                                                                                    'pve.challenge'
-                                                                                                ].nWipes
-                                                                                            ) ..
-                                                                                                '' ..
-                                                                                                    oq.encode_mime64_3digit(
-                                                                                                        OQ_data.leader_dkp or
-                                                                                                            0
-                                                                                                    ) ..
-                                                                                                        '' ..
-                                                                                                            oq.encode_mime64_3digit(
-                                                                                                                OQ_data._dkp or
-                                                                                                                    0
-                                                                                                            ) ..
-                                                                                                                '' .. -- dragon kill points
-                                                                                                                    oq.encode_mime64_4digit(
-                                                                                                                        OQ_data._dtp or
-                                                                                                                            0
-                                                                                                                    ) -- dragon timed points (length of time to kill); tbd
+        oq.encode_mime64_3digit(OQ_data.leader['bg'].nLosses) ..
+            oq.encode_mime64_3digit(OQ_data.leader['bg'].nGames) ..
+                oq.encode_mime64_3digit(OQ_data.leader['rbg'].nWins) ..
+                    oq.encode_mime64_3digit(OQ_data.leader['rbg'].nLosses) ..
+                        oq.encode_mime64_3digit(OQ_data.leader['rbg'].nGames) ..
+                            oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nBosses) ..
+                                oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nWipes) ..
+                                    oq.encode_mime64_3digit(OQ_data.leader['pve.raid'].nBosses) ..
+                                        oq.encode_mime64_3digit(OQ_data.leader['pve.raid'].nWipes) ..
+                                            oq.encode_mime64_3digit(OQ_data.leader['pve.challenge'].nBosses) ..
+                                                oq.encode_mime64_3digit(OQ_data.leader['pve.challenge'].nWipes) ..
+                                                    oq.encode_mime64_3digit(OQ_data.leader_dkp or 0) ..
+                                                        oq.encode_mime64_3digit(OQ_data._dkp or 0) .. -- dragon kill points
+                                                            oq.encode_mime64_4digit(OQ_data._dtp or 0) -- dragon timed points (length of time to kill); tbd
 end
 
 function oq.post_karma_request(pbtag, btag, salt)
@@ -4952,9 +5432,7 @@ function oq.init_stats_data()
         oq.toon.stats['bg'].nLosses = oq.toon.losses or 0
         oq.toon.stats['bg'].nGames = (oq.toon.stats['bg'].nWins + oq.toon.stats['bg'].nLosses)
     end
-    if (OQ_data.tear_cup == nil) then
-        OQ_data.tear_cup = tbl.new()
-    end
+    OQ_data.tear_cup = OQ_data.tear_cup or tbl.new()
     if (oq.toon.stats['bg'].nTears) and (oq.toon.stats['bg'].nTears > 0) and (oq.total_tears() == 0) then
         oq.new_tears(oq.toon.stats['bg'].nTears)
         oq.toon.stats['bg'].nTears = nil
@@ -4995,7 +5473,7 @@ function oq.send_my_premade_info()
 
     player_realm = player_realm or oq.GetRealmName()
 
-    local raid = oq.premades[oq.raid.raid_token]
+    local raid = oq.premades[oq.raid.raid_token] or oq.raid
     if ((raid) and (raid.next_advert > now) and ((raid.next_advert - now) < 5)) then
         return
     end
@@ -5029,7 +5507,8 @@ function oq.send_my_premade_info()
         oq.raid.pdata,
         oq.raid.leader_xp,
         player_karma,
-        oq.raid._preferences
+        oq.raid._preferences,
+        oq.get_version_id()
     )
     oq._my_group = nil
 
@@ -5106,6 +5585,7 @@ function oq.send_my_premade_info()
     oq.__my_last_ad = msg -- to avoid resending too often
 
     oq.__premade_msg = 1
+    _inc_channel = nil
     oq.announce(msg)
     oq.__premade_msg = nil
 
@@ -5341,7 +5821,8 @@ function oq.push_initial_raid_info()
             oq.raid.pdata,
             oq.raid.leader_xp,
             player_karma,
-            oq.raid._preferences
+            oq.raid._preferences,
+            oq.get_version_id()
         )
     end
 end
@@ -5389,6 +5870,7 @@ function oq.raid_create()
     oq.raid.pword = oq.tab3_pword:GetText() or ''
     oq.raid.leader_xp = oq.get_leader_experience()
     oq.raid.next_advert = 0
+    oq.raid.oq_ver = oq.get_version_id()
 
     local m = tbl.new()
     m.level = player_level
@@ -5471,7 +5953,8 @@ function oq.raid_create()
         oq.raid.pdata,
         oq.raid.leader_xp,
         player_karma,
-        oq.raid._preferences
+        oq.raid._preferences,
+        oq.raid.oq_ver
     )
 
     -- update tab_1
@@ -5941,7 +6424,7 @@ end
 
 function oq.n_connections()
     local nOQlocals, nOQfriends = 0
-    if (oq.loaded) and (oq.tab2_nfriends) then
+    if (oq.loaded) and (oq.tab2._connection) then
         oq.tab2._connection:SetText(string.format(OQ.CONNECTIONS, nOQlocals, nOQfriends))
     end
 end
@@ -6117,6 +6600,10 @@ function oq.clear_exclusions()
     end
     oq.set_voip_filter(OQ.VOIP_UNSPECIFIED)
     oq.set_lang_filter(OQ.LANG_UNSPECIFIED)
+
+    -- premade sort
+    OQ_data.premade_sort = 'lead'
+    OQ_data.premade_sort_ascending = true
 
     -- premade types
     OQ_data.premade_filter_type = OQ.TYPE_NONE
@@ -6555,6 +7042,46 @@ function oq.remove_premade(token, dont_shuffle)
     end
 end
 
+function oq.get_rank_score(p)
+    local score = 0.0
+    local top = 0
+    local rank = 0
+    if (p.type == OQ.TYPE_BG) then
+        top = OQ.rank_breaks['pvp'][4].line
+        rank = oq.get_winloss_record(p.leader_xp)
+    end
+    if (p.type == OQ.TYPE_RBG) then
+        top = OQ.rank_breaks['rated'][4].line
+        rank = oq.get_winloss_record(p.leader_xp)
+    end
+    if (p.type == OQ.TYPE_ARENA) then
+    -- arena has no leader record; will sort to the bottom in 'all premades'
+    --    top  = 2400 ;
+    --    rank = oq.decode_mime64_digits(p.leader_xp:sub( 2, 4)) ;
+    end
+    if (p.type == OQ.TYPE_DUNGEON) or (p.type == OQ.TYPE_RAID) then
+        top = OQ.rank_breaks['pve'][4].line
+        rank = oq.decode_mime64_digits(p.leader_xp:sub(17, 19)) -- dragon kill pts
+    end
+    if (p.type == OQ.TYPE_SCENARIO) then
+        top = OQ.rank_breaks['pve'][4].line
+        rank = oq.decode_mime64_digits(p.leader_xp:sub(6, 8)) -- dragon kill pts
+    end
+    if (top == 0) then
+        return 0
+    end
+    return rank / top
+end
+
+function oq.compare_ranks(p1, p2)
+    local rank1 = oq.get_rank_score(p1)
+    local rank2 = oq.get_rank_score(p2)
+    if (rank1 == rank2) then
+        return (strlower(p1.leader or '') < strlower(p2.leader or ''))
+    end
+    return (rank1 < rank2)
+end
+
 function oq.compare_premades(a, b)
     if (a == nil) and (b == nil) then
         return false
@@ -6584,6 +7111,9 @@ function oq.compare_premades(a, b)
     if (OQ_data.premade_sort == 'name') then
         return (strlower(p1.name or '') < strlower(p2.name or ''))
     end
+    if (OQ_data.premade_sort == 'rank') then
+        return oq.compare_ranks(p1, p2)
+    end
     if (OQ_data.premade_sort == 'lead') then
         return (strlower(p1.leader or '') < strlower(p2.leader or ''))
     end
@@ -6612,6 +7142,7 @@ end
 
 function oq.qualified(token)
     oq.__reason = nil
+    oq.__reason_extra = nil
     if (token == nil) then
         return false
     end
@@ -6634,15 +7165,19 @@ function oq.qualified(token)
         oq.__reason = L['invalid level range']
         return false
     end
+
     local min_ilevel = p.min_ilevel
     if ((p.type == OQ.TYPE_DUNGEON) or (p.type == OQ.TYPE_RAID)) and (p.min_mmr > 0) then
-        min_ilevel = min(min_ilevel, p.min_mmr)
+        min_ilevel = p.min_ilevel
     end
     if (oq.get_ilevel() < min_ilevel) then
         oq.__reason = L['ilevel too low']
         return false
     end
-    if (oq.get_resil() < p.min_resil) then
+    if
+        ((p.type == OQ.TYPE_BG) or (p.type == OQ.TYPE_RBG) or (p.type == OQ.TYPE_ARENA)) and
+            (oq.get_resil() < p.min_resil)
+     then
         oq.__reason = L['resil too low']
         return false
     end
@@ -6652,7 +7187,7 @@ function oq.qualified(token)
         return false
     end
     if
-        ((p.type == OQ.TYPE_RBG) or (p.type == OQ.TYPE_ARENA) or (p.type == OQ.TYPE_BG)) and
+        ((p.type == OQ.TYPE_BG) or (p.type == OQ.TYPE_RBG) or (p.type == OQ.TYPE_ARENA)) and
             (oq.get_best_mmr(p.type) < p.min_mmr)
      then
         oq.__reason = L['rating too low']
@@ -6666,13 +7201,13 @@ function oq.qualified(token)
         oq.__reason = L['invalid class']
         return false
     end
-    if (p.type == OQ.TYPE_RAID) and (oq.lockout_conflict(p.pdata)) then
+    local difficulty = (p.type == OQ.TYPE_RAID) and oq.decode_mime64_digits(p.pdata:sub(4, 4))
+    if (p.type == OQ.TYPE_RAID) and (difficulty >= 3) and (difficulty <= 6) and (oq.lockout_conflict(p.pdata)) then
         oq.__reason = L['raid lockout']
         return false
     end
     return true
 end
-
 
 function oq.premades_of_type(filter_type)
     local nPremades = 0
@@ -7014,14 +7549,17 @@ function oq.compare_waitlist(a, b)
 
     OQ_data.waitlist_sort = OQ_data.waitlist_sort or 'name'
 
-    if (OQ_data.waitlist_sort == 'bgrp') then
-        return (strlower(oq.find_bgroup(p1.realm)) < strlower(oq.find_bgroup(p2.realm)))
-    end
     if (OQ_data.waitlist_sort == 'name') then
         return (strlower(p1.name or '') < strlower(p2.name or ''))
     end
     if (OQ_data.waitlist_sort == 'rlm') then
         return (strlower(p1.realm) < strlower(p2.realm))
+    end
+    if (OQ_data.waitlist_sort == 'cls') then
+        return (strlower(p1.class) < strlower(p2.class))
+    end
+    if (OQ_data.waitlist_sort == 'role') then
+        return (strlower(p1.role) < strlower(p2.role))
     end
     if (OQ_data.waitlist_sort == 'level') then
         return (p1.level < p2.level)
@@ -7241,7 +7779,7 @@ function oq.clear_pending()
 end
 
 function oq.check_and_send_request(raid_token)
-    local in_party = (oq.GetNumPartyMembers() > 0)
+    local in_party = (GetNumGroupMembers() > 0)
     local raid = oq.premades[raid_token]
     if (raid == nil) then
         return
@@ -7417,8 +7955,8 @@ end
 
 function oq.get_player_level_id()
     player_level = UnitLevel('player') -- the level could have changed since the group was formed
-    if (player_level == 90) then
-        return OQ.SHORT_LEVEL_RANGE['90']
+    if (player_level == OQ.TOP_LEVEL) then
+        return OQ.SHORT_LEVEL_RANGE[tostring(OQ.TOP_LEVEL)]
     elseif (player_level < 10) then
         return OQ.SHORT_LEVEL_RANGE['UNK']
     end
@@ -7429,8 +7967,8 @@ end
 
 function oq.get_player_level_range()
     player_level = UnitLevel('player') -- the level could have changed since the group was formed
-    if (player_level == 90) then
-        return 90, 90
+    if (player_level == OQ.TOP_LEVEL) then
+        return OQ.TOP_LEVEL, OQ.TOP_LEVEL
     elseif (player_level < 10) then
         return 0, 0
     end
@@ -10217,7 +10755,7 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
             OQ.X_BUTTON_DN,
             OQ.X_BUTTON_UP,
             function(self, button, down)
-                local tok = self:GetParent().req_token
+                local tok = self:GetParent().token
                 if (button == 'LeftButton') then
                     oq.remove_waitlist(tok)
                 elseif (button == 'RightButton') then
@@ -10233,45 +10771,49 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
         )
         f.remove_but:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
     end
-    x2 = x2 + 24
-
-    f.role = f.role or oq.label(f, x2, 3, 24, cy, '')
-    f.role:SetJustifyV('middle')
-    x2 = x2 + 24
-
-    f.toon_name = f.toon_name or oq.label(f, x2, 2, 108, cy, '')
+    x2 = x2 + 20 + 4
+    --  f.class      = f.class or oq.simple_texture( f, x2, 2,  22, 22, nil ) ;  x2 = x2 + 30 ;
+    f.class = f.class or oq.label(f, x2, 1, 25, 27, '')
+    x2 = x2 + 25 + 5
+    f.spec = f.spec or oq.label(f, x2, 2, 25, 25, '')
+    x2 = x2 + 25 + 5
+    f.role = f.role or oq.label(f, x2, 2, 25, 25, '')
+    x2 = x2 + 25 + 5
+    --  f.role:SetJustifyV( "middle" ) ;
+    f.toon_name = f.toon_name or oq.label(f, x2, 2, 120, cy, '')
+    x2 = x2 + 120
     f.toon_name:SetFont(OQ.FONT, 12, '')
-    x2 = x2 + 108
-
     f.realm = f.realm or oq.label(f, x2, 2, 100, cy, '')
     x2 = x2 + 100
-
     f.level = f.level or oq.label(f, x2, 2, 40, cy, '85')
     f.level:SetJustifyH('right')
     x2 = x2 + 40
-
     f.ilevel = f.ilevel or oq.label(f, x2, 2, 40, cy, '395')
-    f.ilevel:SetTextColor(0.9, 0.9, 0.9)
     f.ilevel:SetJustifyH('right')
+    f.ilevel:SetTextColor(0.9, 0.9, 0.9)
     x2 = x2 + 40
+
+    -- x2 = x2 + 10
+    -- f.stat_1 = f.stat_1 or oq.label(f, x2, 2, 45, 25, '')
+    -- f.stat_1:SetJustifyH('RIGHT')
+    -- x2 = x2 + 45 + 5
+    -- f.stat_2 = f.stat_2 or oq.label(f, x2, 2, 45, 25, '')
+    -- f.stat_2:SetJustifyH('RIGHT')
+    -- x2 = x2 + 45 + 5
 
     f.resil = f.resil or oq.label(f, x2, 2, 40, cy, '4100')
     f.resil:SetJustifyH('right')
     x2 = x2 + 40
-
     f.pvppower = f.pvppower or oq.label(f, x2, 2, 40, cy, '99999')
-    f.pvppower:SetTextColor(0.9, 0.9, 0.9)
     f.pvppower:SetJustifyH('right')
+    f.pvppower:SetTextColor(0.9, 0.9, 0.9)
     x2 = x2 + 50
-
     f.mmr = f.mmr or oq.label(f, x2, 2, 40, cy, '1500')
     f.mmr:SetJustifyH('right')
     x2 = x2 + 40
-    x2 = x2 + 10 -- nudge for time
 
     f.nMembers = n_members
-
-    x2 = x2 + 75 + 4
+    x2 = x2 + 35
 
     if (n_members == 1) then
         f.invite_but =
@@ -11090,10 +11632,6 @@ function oq.populate_npc_table()
     OQ.npc[50780] = L['Sahn Tidehunter'] -- rare; eternal blossoms
     OQ.npc[50806] = L['Moldo One-Eye'] -- rare; eternal blossoms
     OQ.npc[50805] = L['Omnis Grinlok'] -- rare; pandaria
-    OQ.npc[70101] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
-    OQ.npc[71620] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
-    OQ.npc[70108] = L['Roo Desvin'] -- horde pvp vendor; four winds
-    OQ.npc[71618] = L['Roo Desvin'] -- horde pvp vendor; four winds
     OQ.npc[68000] = L['Hiren Loresong'] -- isle of thunder; alli quartermaster
     OQ.npc[67672] = L['Vasarin Redmorn'] -- isle of thunder; horde quartermaster
     OQ.npc[19907] = L['Grumbol Grimhammer'] -- alli AV battlemaster
@@ -11122,15 +11660,25 @@ function oq.populate_npc_table()
     OQ.npc[50840] = L['Major Nanners'] -- rare in eternal blossoms
     OQ.npc[69965] = L['Doris Chiltonius'] -- conquest vendor; horde
     OQ.npc[71617] = L['Doris Chiltonius'] -- conquest vendor; horde
-    OQ.npc[69967] = L['Lucan Malory'] -- conquest vendor; alli
-    OQ.npc[71623] = L['Lucan Malory'] -- conquest vendor; alli
+    OQ.npc[73141] = L['Doris Chiltonius'] -- conquest vendor; horde
     OQ.npc[69966] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
     OQ.npc[71622] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
+    OQ.npc[73145] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
+    OQ.npc[70108] = L['Roo Desvin'] -- horde pvp vendor; four winds
+    OQ.npc[71618] = L['Roo Desvin'] -- horde pvp vendor; four winds
+    OQ.npc[73148] = L['Roo Desvin'] -- horde pvp vendor; four winds
+    OQ.npc[67461] = L['Warlord Bloodhilt'] -- horde keep boss in krasarang wilds
+    OQ.npc[69967] = L['Lucan Malory'] -- conquest vendor; alli
+    OQ.npc[71623] = L['Lucan Malory'] -- conquest vendor; alli
+    OQ.npc[73144] = L['Lucan Malory'] -- conquest vendor; alli
     OQ.npc[69968] = L['Ethan Natice'] -- glorious conquest vendor; alliance
     OQ.npc[71619] = L['Ethan Natice'] -- glorious conquest vendor; alliance
-    OQ.npc[63978] = L["Kri'chon"] -- quest mob @ the wall
-    OQ.npc[67461] = L['Warlord Bloodhilt'] -- horde keep boss in krasarang wilds
+    OQ.npc[73147] = L['Ethan Natice'] -- glorious conquest vendor; alliance
+    OQ.npc[70101] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
+    OQ.npc[71620] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
+    OQ.npc[73142] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
     OQ.npc[67801] = L['High Marshal Twinbraid'] -- alliance keep boss in krasarang wilds
+    OQ.npc[63978] = L["Kri'chon"] -- quest mob @ the wall
     OQ.npc[50356] = L['Krol the Blade'] -- rare; dread wastes
     OQ.npc[50836] = L['Ik-Ik the Nimble'] -- rare; dread wastes
     OQ.npc[50821] = L['Ai-Li Skymirror'] -- rare; dread wastes
@@ -11915,6 +12463,10 @@ function oq.pass_filter_condition(f, p)
     if (t:find(f)) then
         flag = true
     end
+    t = strlower(p.leader_realm or '')
+    if (t:find(f)) then
+        flag = true
+    end
     if (p.type == OQ.TYPE_RAID) and (p.pdata) and (#p.pdata > 8) then
         local D = oq.decode_mime64_digits(p.pdata:sub(4, 4))
         local R = oq.decode_mime64_digits(p.pdata:sub(5, 5))
@@ -12016,7 +12568,7 @@ function oq.filter_hide()
 end
 
 function oq.create_filter_button(parent)
-    local x = 140
+    local x = 90 -- old: 140 ;
     local y = 4
     local cx = 24
     local cy = 26
@@ -12054,9 +12606,9 @@ function oq.create_filter_button(parent)
     icon:SetPoint('BOTTOMRIGHT', -2, 2)
     icon:SetTexCoord(3 / 64, 60 / 64, 3 / 64, 60 / 64)
 
-    b._edit = oq.editline(parent, 'Filter', x, y, 120, cy, 20)
+    b._edit = oq.editline(parent, 'Filter', x, y, 120, cy, 80)
     b._edit:SetPoint('TOPLEFT', x + cx + 8, y - 4)
-    b._edit:SetWidth(120)
+    b._edit:SetWidth(120 + 30)
     b._edit:SetHeight(cy)
     b._edit:SetAlpha(1.0)
     if (OQ_data._filter_text ~= nil) then
@@ -12109,7 +12661,6 @@ function oq.create_filter_button(parent)
     return b
 end
 
-OQ.MAX_LOG_LINES = 43
 function oq.log(echo, ...)
     if (oq._log == nil) then
         return
@@ -12148,7 +12699,7 @@ function oq.log_realm_name()
 end
 
 function oq.create_log_button(parent)
-    local x = 84
+    local x = 60 -- old: 84 ;
     local y = 4
     local cx = 24
     local cy = 26
@@ -13408,7 +13959,7 @@ function oq.set_premade_type(t)
     end
 
     if (OQTabPage7.header1 ~= nil) then
-        if (oq.is_dungeon_premade() or (oq.raid.type == OQ.TYPE_RAID)) then
+        if (oq.is_dungeon_premade(oq.raid.type) or (oq.raid.type == OQ.TYPE_RAID)) then
             -- change headers
             OQTabPage7.header1.label:SetText(OQ.HDR_HASTE)
             OQTabPage7.header1.sortby = 'haste'
@@ -14133,7 +14684,7 @@ OQ._premade_types = {
     [OQ.TYPE_ARENA] = OQ.LABEL_ARENAS,
     [OQ.TYPE_BG] = OQ.LABEL_BGS,
     [OQ.TYPE_DUNGEON] = OQ.LABEL_DUNGEONS,
-    [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTERS,
+    [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTING,
     [OQ.TYPE_RBG] = OQ.LABEL_RBGS,
     [OQ.TYPE_RAID] = OQ.LABEL_RAIDS,
     [OQ.TYPE_SCENARIO] = OQ.LABEL_SCENARIOS,
@@ -14158,7 +14709,7 @@ OQ.findpremade_types = {
     [OQ.TYPE_BG] = OQ.LABEL_BGS,
     [OQ.TYPE_CHALLENGE] = OQ.LABEL_CHALLENGES,
     [OQ.TYPE_DUNGEON] = OQ.LABEL_DUNGEONS,
-    [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTERS,
+    [OQ.TYPE_QUESTS] = OQ.LABEL_QUESTING,
     [OQ.TYPE_RBG] = OQ.LABEL_RBGS,
     [OQ.TYPE_RAID] = OQ.LABEL_RAIDS,
     [OQ.TYPE_SCENARIO] = OQ.LABEL_SCENARIOS,
@@ -14269,8 +14820,8 @@ function oq.premade_row_show(p)
         p.raid_token,
         p.name,
         p.min_ilevel,
-        p.min_resil,
-        p.min_mmr,
+        p.min_resil or 0,
+        p.min_mmr or 0,
         p.bgs,
         p.tm,
         p.status,
@@ -14446,6 +14997,7 @@ function oq.create_tab2()
         end
     )
     oq.tab2._findmesh_but.string:SetFont(OQ.FONT, 10, '')
+    oq.tab2._findmesh_but:Disable()
 
     x = x - 95
     oq.tab2._clearfilters_but =
@@ -14622,7 +15174,7 @@ function oq.create_tab3()
 
     -- set level range
     x = floor(oq.tab3:GetWidth() - 280)
-    if (player_level == 90) then
+    if (player_level == OQ.TOP_LEVEL) then
         t = oq.label(OQTabPage3, x, 55, 100, 50, OQ.LABEL_LEVEL)
     else
         t = oq.label(OQTabPage3, x, 55, 100, 50, OQ.LABEL_LEVELS)
@@ -14633,8 +15185,8 @@ function oq.create_tab3()
     local minlevel, maxlevel = oq.get_player_level_range()
     if (minlevel == 0) then
         txt = 'UNK'
-    elseif (minlevel == 90) then
-        txt = '90'
+    elseif (minlevel == OQ.TOP_LEVEL) then
+        txt = tostring(OQ.TOP_LEVEL)
     else
         txt = minlevel .. ' - ' .. maxlevel
     end
@@ -15312,15 +15864,31 @@ function oq.create_tab_waitlist()
 
     oq.tab7._scroller, oq.tab7._list = oq.create_scrolling_list(parent, 'waitlist')
     local f = oq.tab7._scroller
-    oq.setpos(f, -40, 48, f:GetParent():GetWidth() - 2 * 30, f:GetParent():GetHeight() - (50 + 38))
+    oq.setpos(f, -40, 50, f:GetParent():GetWidth() - 2 * 30, f:GetParent():GetHeight() - (50 + 38))
 
     -- list header
     cy = 20
-    x = 48
+    x = 50
     y = 27
 
+    f = oq.click_label(parent, x, y, 50, cy, OQ.HDR_CLASS)
+    x = x + (25 + 5 + 25 + 5)
+    f:SetScript(
+        'OnClick',
+        function(self)
+            oq.sort_waitlist('cls')
+        end
+    )
+    f = oq.click_label(parent, x, y, 30, cy, OQ.HDR_ROLE)
+    x = x + (25 + 5)
+    f:SetScript(
+        'OnClick',
+        function(self)
+            oq.sort_waitlist('role')
+        end
+    )
     f = oq.click_label(parent, x, y, 120, cy, OQ.HDR_TOONNAME)
-    x = x + 132
+    x = x + 120
     f:SetScript(
         'OnClick',
         function(self)
@@ -15353,6 +15921,7 @@ function oq.create_tab_waitlist()
             oq.sort_waitlist('ilevel')
         end
     )
+
     f = oq.click_label(parent, x, y, 50, cy, OQ.HDR_RESIL)
     f.label:SetJustifyH('right')
     x = x + 41
@@ -15385,8 +15954,9 @@ function oq.create_tab_waitlist()
         end
     )
     f.sortby = 'mmr'
+
     parent.header3 = f
-    f = oq.click_label(parent, x + 185, y, 40, cy, OQ.HDR_TIME)
+    f = oq.click_label(parent, x + 165, y, 40, cy, OQ.HDR_TIME)
     f.label:SetJustifyH('right')
     f:SetScript(
         'OnClick',
@@ -15612,8 +16182,12 @@ function oq.create_badtagbox(parent)
     return f
 end
 
-function oq.create_banbox(parent)
+function oq.create_banbox(parent, troll_ban)
     if (parent._banned) then
+        if (troll_ban) then
+            -- yes, i saw you ...
+            oq.timer('troll_ban', 2.0, oq.hide_shade, nil)
+        end
         return parent._banned
     end
     local pcx = parent:GetWidth()
@@ -15636,20 +16210,20 @@ function oq.create_banbox(parent)
     f:SetAlpha(1.0)
 
     local x, y
-    x = 60
+    x = 40
     y = -50
     local msg = oq.CreateFrame('SimpleHTML', 'OQBannedPoster', f)
     msg:SetPoint('TOPLEFT', x, y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 12)
+    msg:SetFont(OQ.FONT, 12)
     msg:SetWidth(cx - 2 * x)
     msg:SetHeight(cy - 2 * y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 14)
+    msg:SetFont(OQ.FONT, 14)
     msg:SetTextColor(136 / 256, 221 / 256, 221 / 256, 0.8)
 
-    msg:SetFont('p', 'Fonts\\FRIZQT__.TTF', 14)
+    msg:SetFont('p', OQ.FONT, 14)
     msg:SetTextColor('p', 225 / 256, 225 / 256, 225 / 256, 0.8)
 
-    msg:SetFont('h1', 'Fonts\\FRIZQT__.TTF', 16)
+    msg:SetFont('h1', OQ.FONT, 16)
     msg:SetTextColor('h1', 221 / 256, 36 / 256, 36 / 256, 0.8)
 
     msg:SetFont('h2', 'Fonts\\MORPHEUS.ttf', 36)
@@ -15657,29 +16231,43 @@ function oq.create_banbox(parent)
     msg:SetShadowOffset('h2', 1, -1)
     msg:SetTextColor('h2', 221 / 256, 36 / 256, 36 / 256, 0.8)
 
-    msg:SetFont('h3', 'Fonts\\FRIZQT__.ttf', 22)
+    msg:SetFont('h3', OQ.FONT, 22)
     msg:SetShadowColor('h3', 0, 0, 0, 1)
     msg:SetShadowOffset('h3', 0, 0)
     msg:SetTextColor('h3', 221 / 256, 36 / 256, 36 / 256, 0.8)
+
+    local reason = L['behavior']
+    local offense = L["You're BANNED"]
+    local from = L['from oQueue']
+    if (OQ.gbl[strlower(oq.player_realid)]) then
+        reason = OQ.gbl[strlower(oq.player_realid)]
+    elseif (troll_ban) then
+        offense = L["You've been SPANKED"]
+        reason = L['being naughty']
+        from = L['by oQueue']
+    end
 
     msg:SetText(
         string.format(
             L[
                 '<html><body>' ..
-                    "<h2 align=\"center\">You're BANNED</h2>" ..
-                        '<h3 align="center">from oQueue</h3>' ..
-                            '<br/>' ..
-                                '<h1 align="left">reason:</h1>' ..
-                                    '<h2 align="center">%s</h2>' ..
-                                        '<br/>' ..
-                                            '<p>If you would like to plead your case, you may request ' ..
-                                                'an appeal on the forums.</p>' ..
-                                                    '<br/>' ..
-                                                        '<h1 align="left">forums</h1>' ..
-                                                            '<p><a href="forums">solidice.com/forums</a></p>' ..
-                                                                '<br/>' .. '</body></html>'
+                    '<h2 align="center">%s</h2>' ..
+                        '<br/>' ..
+                            '<h3 align="center">%s</h3>' ..
+                                '<br/>' ..
+                                    '<h1 align="left">reason:</h1>' ..
+                                        '<h2 align="center">%s</h2>' ..
+                                            '<br/>' ..
+                                                '<p>If you would like to plead your case, you may request ' ..
+                                                    'an appeal on the forums.</p>' ..
+                                                        '<br/>' ..
+                                                            '<h1 align="left">forums</h1>' ..
+                                                                '<p><a href="forums">solidice.com/forums</a></p>' ..
+                                                                    '<br/>' .. '</body></html>'
             ],
-            (OQ.gbl[strlower(oq.player_realid)] or 'behavior')
+            offense,
+            from,
+            reason
         )
     )
     msg:Show()
@@ -15688,7 +16276,19 @@ function oq.create_banbox(parent)
     f.html = msg
 
     parent._banned = f
+
+    if (troll_ban) then
+        -- yes, i saw you ...
+        oq.timer('troll_ban', 2.0, oq.hide_shade, nil)
+    end
     return f
+end
+
+function oq.is_naughty()
+    if (oq.player_realid) and (OQ.naughty_list) and (OQ.naughty_list[oq.player_realid]) then
+        return true
+    end
+    return nil
 end
 
 function oq.on_pending_note(raid_token, btag, txt, token)
@@ -16035,7 +16635,7 @@ function oq.badtag_shade()
 end
 
 function oq.banned_shade()
-    oq.shaded_dialog(oq.create_banbox(oq.create_ui_shade()), true)
+    oq.shaded_dialog(oq.create_banbox(oq.create_ui_shade(), oq.is_naughty()), true)
 end
 
 function oq.pending_note_shade(self)
@@ -17003,8 +17603,9 @@ function oq.create_main_ui()
 end
 
 -- TODO is it still needed?
-function oq.get_battle_tag()
-    if (oq.player_realid) then
+function oq.get_battle_tag(forced)
+    if (oq.player_realid) and (forced == nil) then
+        OQ_data.realid = oq.player_realid
         return oq.player_realid
     end
 
@@ -17029,6 +17630,8 @@ function oq.get_battle_tag()
     if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
         oq._iam_scorekeeper = true
     end
+
+    OQ_data.realid = oq.player_realid
     return oq.player_realid
 end
 
@@ -17516,7 +18119,7 @@ function oq.assign_lucky_charms()
                         end
 
                         -- set the charm if currently in the bg
-                        if (oq.IsRaidLeader()) then
+                        if (oq.iam_raid_leader()) then
                             if (m.name == player_name) then
                                 SetRaidTarget('player', m.charm or 0)
                             else
@@ -18224,7 +18827,11 @@ function oq.update_premade_listitem(
     f.raid_name:SetText(raid_name)
     f.levels:SetText(r.level_range)
     if ((type == OQ.TYPE_DUNGEON) or (type == OQ.TYPE_RAID)) and (mmr > 0) then
-        f.min_ilvl:SetText(min(ilevel, mmr))
+        if (mmr < ilevel) then -- mmr == lowest ilevel in the group; ilevel == lowest required; member being carried
+            f.min_ilvl:SetText('|cFFD08080' .. mmr .. '|r')
+        else
+            f.min_ilvl:SetText(ilevel)
+        end
     else
         f.min_ilvl:SetText(ilevel)
     end
@@ -18396,10 +19003,10 @@ end
 function oq.recently_disbanded(raid_tok)
     oq._disbanded = oq._disbanded or tbl.new()
     oq._disbanded[raid_tok] = oq.utc_time()
-    if (oq._p8s ~= nil) then
-        oq._p8s[raid_tok] = nil -- clear out token
-    end
+    oq._p8s = oq._p8s or tbl.new()
+    oq._p8s[raid_tok] = nil -- clear out token
 end
+
 local npremades = 0
 local _premadeinfo = nil
 function oq.on_premade(
@@ -18422,7 +19029,7 @@ function oq.on_premade(
         _reason = 'bad src(bnfinvite)'
         return
     end
-    if (subtype_) and (subtype_:find('#') ~= nil) then
+    if (subtype_) and ((subtype_:find('#') ~= nil) or (#subtype_ > 1)) then
         subtype_ = nil -- old msg types had fields appended
     end
     subtype_ = oq.decode_mime64_digits(subtype_)
@@ -18457,7 +19064,8 @@ function oq.on_premade(
         status,
         tm_,
         min_mmr,
-        karma = oq.decode_premade_info(premade_info)
+        karma,
+        oq_ver = oq.decode_premade_info(premade_info)
     local raid_tm_token = raid_tok .. '.' .. tm_
     if (oq.token_was_seen(raid_tm_token) or (faction ~= oq.player_faction)) then
         _ok2relay = nil
@@ -18498,7 +19106,8 @@ function oq.on_premade(
         pdata_,
         leader_xp_,
         karma,
-        preferences_
+        preferences_,
+        oq_ver
     )
 
     --
@@ -18543,7 +19152,8 @@ function oq.process_premade_info(
     pdata_,
     leader_xp_,
     karma_,
-    preferences_)
+    preferences_,
+    oq_ver)
     if (oq.toon.disabled) then
         return
     end
@@ -18560,6 +19170,9 @@ function oq.process_premade_info(
         _reason = 'bad leader info'
         return
     end
+
+    local r1 = strlower(lead_realm)
+    local r2 = strlower(player_realm)
     if (raid_name == nil) or (raid_name == '') then
         -- do not record or relay premade info for banned people
         _ok2relay = nil
@@ -18645,6 +19258,7 @@ function oq.process_premade_info(
         premade.lang = lang_
         premade.classes = classes_
         premade.min_mmr = mmr
+        premade.oq_ver = oq_ver or 0
         if (is_source == 0) then
             premade.next_advert = now + OQ_SEC_BETWEEN_ADS
         end
@@ -18655,8 +19269,8 @@ function oq.process_premade_info(
             raid_tok,
             raid_name,
             ilevel,
-            resil,
-            mmr,
+            resil or 0,
+            mmr or 0,
             battlegrounds,
             tm_,
             status_,
@@ -18823,6 +19437,7 @@ function oq.set_premade_pending(raid_token, is_pending, hide_sounds)
         if (oq.raid.raid_token == nil) and (hide_sounds == nil) then
             -- sad sound if no group and leaving wait list
             PlaySound('igQuestFailed')
+            print(OQ.LILREDX_ICON .. '  removed by ' .. tostring(r.leader) .. ' (' .. tostring(r.name) .. ')')
         end
         f.pending_clik:Hide()
         f.req_but:Show()
@@ -18951,15 +19566,24 @@ end
 function oq.is_qualified(m)
     local level_min, level_max = oq.get_player_level_range()
     if (oq.raid.enforce_levels == 1) and ((m.level < level_min) or (m.level > level_max)) then
+        oq.__reason = L['invalid level range']
         return nil
     end
     if (m.ilevel == nil) then
         return nil
     end
-    if (oq.raid.min_ilevel ~= 0) and (oq.raid.min_ilevel > m.ilevel) then
-        return nil ;
+    if (oq.raid.min_ilevel ~= 0) then
+        if (oq.raid.type == OQ.TYPE_DUNGEON) or (oq.raid.type == OQ.TYPE_RAID) then
+            if (oq.raid.min_mmr) and (min(oq.raid.min_ilevel, oq.raid.min_mmr) > m.ilevel) then
+                oq.__reason = L['ilevel too low']
+                return nil
+            end
+        elseif (oq.raid.min_ilevel > m.ilevel) then
+            oq.__reason = L['ilevel too low']
+            return nil
+        end
     end
-    if (oq.is_dungeon_premade() or (oq.raid.type == OQ.TYPE_RAID) or (oq.raid.type == OQ.TYPE_ROLEPLAY)) then
+    if (oq.is_dungeon_premade(oq.raid.type) or (oq.raid.type == OQ.TYPE_RAID) or (oq.raid.type == OQ.TYPE_ROLEPLAY)) then
         return true
     end
     if (oq.raid.min_resil ~= 0) and (oq.raid.min_resil > m.resil) then
@@ -18983,19 +19607,25 @@ function oq.is_qualified(m)
     return true
 end
 
-function oq.qualified_role(spec_id)
+function oq.role_type(spec_id)
     local s = OQ.CLASS_SPEC[spec_id]
     if (s == nil) then
         return nil
     end
-    local role_type = OQ.ROLE_FLAG['dps']
+    local role_type = 'dps'
     if (s.spy == 'Tank') then
-        role_type = OQ.ROLE_FLAG['tank']
+        role_type = 'tank'
     elseif (s.spy == 'Healer') then
-        role_type = OQ.ROLE_FLAG['heal']
+        role_type = 'heal'
     end
+    local role_type_id = OQ.ROLE_FLAG[role_type]
+    return role_type_id, role_type
+end
+
+function oq.qualified_role(spec_id)
+    local role_type_id, role_type = oq.role_type(spec_id)
     local voip_, role_, classes_, lang_ = oq.decode_preferences(oq.raid._preferences)
-    if (oq.is_set(role_, role_type)) then
+    if (oq.is_set(role_, role_type_id)) then
         return true
     end
     return nil
@@ -19055,7 +19685,7 @@ function oq.on_req_invite(raid_token, raid_type, n_members_, req_token, enc_data
             raid_token,
             req_token,
             'N',
-            L['not qualified'] .. ((oq.__reason) and (': ' .. L[oq.__reason])) or ''
+            L['not qualified'] .. ((oq.__reason) and (': ' .. L[oq.__reason]) or '')
         )
         tbl.delete(m)
         return
@@ -19075,15 +19705,24 @@ function oq.on_req_invite(raid_token, raid_type, n_members_, req_token, enc_data
         oq.send_invite_response(name_, realm_, realid_, raid_token, req_token, 'N', L['outdated oQueue. please update'])
         tbl.delete(m)
         return
-    elseif (oq.raid.type == OQ.TYPE_RAID) and (oq.pdata_raid_conflict(pdata)) then
-        oq.send_invite_response(name_, realm_, realid_, raid_token, req_token, 'N', L['raid lockout conflict'])
-        tbl.delete(m)
-        return
+    elseif (oq.raid.type == OQ.TYPE_RAID) then
+        local difficulty = oq.decode_mime64_digits(pdata:sub(4, 4))
+        if (difficulty >= 3) and (difficulty <= 6) and (oq.pdata_raid_conflict(pdata)) then
+            oq.send_invite_response(
+                name_,
+                realm_,
+                realid_,
+                raid_token,
+                req_token,
+                'N',
+                L['raid lockout conflict'] .. ((oq.__reason) and (L['\nboss: '] .. L[oq.__reason]) or '')
+            )
+            tbl.delete(m)
+            return
+        end
     end
 
-    if (oq.waitlist == nil) then
-        oq.waitlist = tbl.new()
-    end
+    oq.waitlist = oq.waitlist or tbl.new()
 
     -- check to see if the toon is already queue'd
     local token = oq.is_waitlisted(name_, realm_)
@@ -19105,9 +19744,10 @@ function oq.on_req_invite(raid_token, raid_type, n_members_, req_token, enc_data
     oq.waitlist[req_token].realid = realid_
     oq.waitlist[req_token].premade_type = raid_type
     oq.waitlist[req_token].n_members = n_members_
-    oq.waitlist[req_token].bgroup = oq.find_bgroup(realm_)
     oq.waitlist[req_token].create_tm = oq.utc_time()
     oq.waitlist[req_token].pdata = pdata
+    oq.waitlist[req_token].raid_token = raid_token
+    oq.waitlist[req_token].req_token = req_token
 
     oq.names[strlower(name_ .. '-' .. realm_)] = realid_
 
@@ -19153,6 +19793,7 @@ function oq.get_spec_icon_text(spec_id)
     if (spec_id == nil) or (spec_id == 0) then
         return ''
     end
+
     local id, name, description, icon, background, role, class = GetSpecializationInfoByID(spec_id)
     if (icon ~= nil) then
         return '|T' .. icon .. ':20:20:0:0|t'
@@ -19161,25 +19802,56 @@ function oq.get_spec_icon_text(spec_id)
     end
 end
 
+function oq.get_role_stats(m)
+    if (m.spec_type == OQ.TANK) then
+        return string.format('%.2f%%', m.melee_hit), m.armor
+    end
+    if (m.spec_type == OQ.CASTER) then
+        return string.format('%.2f%%', m.spell_hit), m.spell_dmg
+    end
+    if (m.spec_type == OQ.HEALER) then
+        return m.bonus_heal, m.spr
+    end
+    if (m.spec_type == OQ.RDPS) then
+        return string.format('%.2f%%', m.ranged_hit), m.agil
+    end
+    if (m.spec_type == OQ.MDPS) then
+        return string.format('%.2f%%', m.melee_hit or 0), m.str
+    end
+    if (m.spec_type == OQ.NONE) then
+        return '-', '-'
+    end
+    return '', ''
+end
+
 function oq.insert_waitlist_item(x, y, req_token, n_members_, name_, realm_, m)
     local f = oq.create_waitlist_item(oq.tab7._list, x, y, oq.tab7._list:GetWidth() - 2 * x, 25, req_token, n_members_)
 
-    if (m.role == 2) then
-        local s = '|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES.blp:20:20:0:%d:64:64:20:39:1:20|t'
-        f.role:SetText(s)
-    elseif (m.role == 4) then
-        local s = '|TInterface\\LFGFrame\\UI-LFG-ICON-PORTRAITROLES.blp:20:20:0:%d:64:64:0:19:22:41|t'
-        f.role:SetText(s)
-    else
-        -- set icon for spec
-        f.role:SetText(oq.get_spec_icon_text(m.spec_id))
+    -- class
+    f.class:SetText(oq.get_class_icon(m.class, 25, 25))
+
+    -- spec
+    f.spec:SetText(oq.get_spec_icon_text(m.spec_id))
+
+    -- role
+    if (m.role_type_id == 0x0004) then -- tank
+        f.role:SetText(oq.get_role_icon('T', 20, 20))
+    elseif (m.role == 0x0002) then -- heal
+        f.role:SetText(oq.get_role_icon('H', 20, 20))
+    else -- everyone else, dps
+        f.role:SetText(oq.get_role_icon('D', 20, 20))
     end
-    --  f.create_tm = oq.utc_time();
+    --  f.create_tm = oq.utc_time() ;
     f.m = m -- hopefully a ptr to the table
     f.toon_name:SetText(name_)
     f.realm:SetText(realm_)
     f.level:SetText(m.level)
     f.ilevel:SetText(m.ilevel)
+
+    -- role based stats
+    -- local s1, s2 = oq.get_role_stats(m)
+    -- f.stat_1:SetText(s1)
+    -- f.stat_2:SetText(s2)
 
     if (oq.is_dungeon_premade() or (oq.raid.type == OQ.TYPE_RAID)) then
         f.resil:SetText(m.haste)
@@ -19477,8 +20149,13 @@ function oq.update_tab3_info()
     end
     oq.tab3_raid_name:SetText(oq.raid.name)
     oq.tab3_min_ilevel:SetText(oq.raid.min_ilevel or 0)
-    oq.tab3_min_resil:SetText(oq.raid.min_resil or 0)
-    oq.tab3_min_mmr:SetText(oq.raid.min_mmr or 0)
+    if (oq.raid.type == OQ.TYPE_BG) or (oq.raid.type == OQ.TYPE_RBG) or (oq.raid.type == OQ.TYPE_ARENA) then
+        oq.tab3_min_resil:SetText(oq.raid.min_resil or 0)
+        oq.tab3_min_mmr:SetText(oq.raid.min_mmr or 0)
+    else
+        oq.tab3_min_resil:SetText('')
+        oq.tab3_min_mmr:SetText('')
+    end
     oq.tab3_bgs:SetText(oq.raid.bgs or '')
     oq.tab3_notes:SetText(oq.raid.notes or '')
     oq.tab3_pword:SetText(oq.raid.pword or '')
@@ -19616,16 +20293,9 @@ function oq.get_model_standin(gender, race)
     --  return fname .."\\".. base ..".m2" ;
 end
 
-function oq.is_dungeon_premade(m)
-    if (m == nil) then
-        return (oq.raid.type == OQ.TYPE_DUNGEON) or (oq.raid.type == OQ.TYPE_SCENARIO) or
-            (oq.raid.type == OQ.TYPE_CHALLENGE) or
-            (oq.raid.type == OQ.TYPE_QUESTS)
-    else
-        return (m.premade_type == OQ.TYPE_DUNGEON) or (m.premade_type == OQ.TYPE_SCENARIO) or
-            (m.premade_type == OQ.TYPE_CHALLENGE) or
-            (m.premade_type == OQ.TYPE_QUESTS)
-    end
+function oq.is_dungeon_premade(raid_type)
+    return (raid_type == OQ.TYPE_DUNGEON) or (raid_type == OQ.TYPE_SCENARIO) or (raid_type == OQ.TYPE_CHALLENGE) or
+        (raid_type == OQ.TYPE_QUESTS)
 end
 
 --
@@ -19734,6 +20404,9 @@ function oq.model_slot_create(panel)
 end
 
 function oq.model_is_valid(m)
+    if (m == nil) or (m.GetModel == nil) then
+        return nil
+    end
     local fname = m:GetModel()
     if (fname) and (fname ~= '') then
         return 1
@@ -19873,7 +20546,7 @@ function oq.get_model(parent, name, gender, race)
         oq._models[key].update_model = function(self)
             if (UnitIsVisible(self._name)) then
                 self:use_normal()
-            elseif (self._standin == nil) or (self._standin == 1) or (self:GetModel() == '') then -- was visible
+            elseif (self._standin == nil) or (self._standin == 1) or (self.GetModel and (self:GetModel() == '')) then -- was visible
                 self:use_standin()
             end
             oq.camera_profile_mode(self, self._gender, self._race)
@@ -19968,7 +20641,8 @@ function oq.set_player_model(panel, name, gender, race)
 
     if
         ((name == nil) and (gender == nil) and (race == nil)) or
-            (not oq.is_dungeon_premade() and (oq.raid.type ~= OQ.TYPE_ARENA) and (oq.raid.type ~= OQ.TYPE_RBG) and
+            (not oq.is_dungeon_premade(oq.raid.type) and (oq.raid.type ~= OQ.TYPE_ARENA) and
+                (oq.raid.type ~= OQ.TYPE_RBG) and
                 (oq.raid.type ~= OQ.TYPE_MISC))
      then
         if (panel) and (panel.model_frame) and (panel.model_frame._model ~= nil) then
@@ -20021,7 +20695,7 @@ function oq.set_textures_cell(m, cell)
         oq.set_player_model(cell, nil, nil, nil)
         if
             (cell.texture ~= nil) and
-                (oq.is_dungeon_premade() or (oq.raid.type == OQ.TYPE_ARENA) or (oq.raid.type == OQ.TYPE_RBG) or
+                (oq.is_dungeon_premade(oq.raid.type) or (oq.raid.type == OQ.TYPE_ARENA) or (oq.raid.type == OQ.TYPE_RBG) or
                     (oq.raid.type == OQ.TYPE_MISC))
          then
             cell.texture:SetPoint('TOPLEFT', cell.model_frame, 'TOPLEFT', 2, -3)
@@ -20094,7 +20768,7 @@ function oq.set_textures_cell(m, cell)
 
     if
         (cell.class ~= nil) and (m.realm_id > 0) and
-            (oq.is_dungeon_premade() or (oq.raid.type == OQ.TYPE_ARENA) or (oq.raid.type == OQ.TYPE_RBG) or
+            (oq.is_dungeon_premade(oq.raid.type) or (oq.raid.type == OQ.TYPE_ARENA) or (oq.raid.type == OQ.TYPE_RBG) or
                 (oq.raid.type == OQ.TYPE_MISC))
      then
         local name = m.name
@@ -20265,7 +20939,8 @@ function oq.set_role(g_id, slot, role)
 end
 
 function oq.scores_init_bgs()
-    oq.scores.bg = tbl.new()
+    oq.scores.bg = oq.scores.bg or tbl.new()
+    oq.scores.bg['DKP'] = 50
     oq.scores.bg['AB'] = 50
     oq.scores.bg['AV'] = 50
     oq.scores.bg['BFG'] = 50
@@ -20274,6 +20949,8 @@ function oq.scores_init_bgs()
     oq.scores.bg['SotA'] = 50
     oq.scores.bg['TP'] = 50
     oq.scores.bg['WSG'] = 50
+    oq.scores.bg['SSM'] = 50
+    oq.scores.bg['ToK'] = 50
     oq.scores.bg['DWG'] = 50
 end
 
@@ -20351,12 +21028,8 @@ function oq.on_scores(enc_data, sk_time, curr_oq_version, xdata, officers, xreal
     end
 
     -- update score info
-    if (oq.scores == nil) then
-        oq.scores = tbl.new()
-    end
-    if (oq.scores.bg == nil) then
-        oq.scores.bg = tbl.new()
-    end
+    oq.scores = oq.scores or tbl.new()
+    oq.scores.bg = oq.scores.bg or tbl.new()
     oq.scores.bg['AB'] = tonumber(_f[1], 16)
     oq.scores.bg['AV'] = tonumber(_f[2], 16)
     oq.scores.bg['BFG'] = tonumber(_f[3], 16)
@@ -20705,6 +21378,9 @@ function oq.on_stats(name, realm_id, stats, btag, queue_tm1, queue_tm2)
 end
 
 function oq.init_table()
+    oq_ascii = oq_ascii or tbl.new()
+    oq_mime64 = oq_mime64 or tbl.new()
+
     local i
     for i = 0, 255 do
         local c = string.format('%c', i)
@@ -21045,6 +21721,107 @@ function oq.get_class_spec_type(spec_id)
     return 0, nil, 0
 end
 
+function oq.get_melee_crit()
+    local meleecrit = GetCritChance() or 0
+    return floor(meleecrit * 100)
+end
+
+function oq.get_melee_atk_pow()
+    local base, posBuff, negBuff = UnitAttackPower('player')
+    local effective = base + posBuff + negBuff
+    return effective
+end
+
+function oq.get_armor()
+    local base, effectiveArmor, armor, posBuff, negBuff = UnitArmor('player')
+    return armor
+end
+
+function oq.get_stat_str()
+    local statID = 1
+    local stat, effectiveStat, posBuff, negBuff = UnitStat('player', statID)
+    return effectiveStat
+end
+
+function oq.get_stat_agil()
+    local statID = 2
+    local stat, effectiveStat, posBuff, negBuff = UnitStat('player', statID)
+    return effectiveStat
+end
+
+function oq.get_stat_stam()
+    local statID = 3
+    local stat, effectiveStat, posBuff, negBuff = UnitStat('player', statID)
+    return effectiveStat
+end
+
+function oq.get_stat_int()
+    local statID = 4
+    local stat, effectiveStat, posBuff, negBuff = UnitStat('player', statID)
+    return effectiveStat
+end
+
+function oq.get_stat_spr()
+    local statID = 5
+    local stat, effectiveStat, posBuff, negBuff = UnitStat('player', statID)
+    return effectiveStat
+end
+
+function oq.get_spell_hit()
+    local spellhit = GetSpellHitModifier() or 0
+    return floor(spellhit * 100)
+end
+
+function oq.get_melee_hit()
+    local meleehit = GetHitModifier() or 0
+    return floor(meleehit * 100)
+end
+
+function oq.get_melee_haste()
+    local haste = GetMeleeHaste() or 0
+    return floor(haste * 100)
+end
+
+function oq.get_range_hit()
+    local rangehit = GetHitModifier() or 0
+    return floor(rangehit * 100)
+end
+
+function oq.get_ranged_crit()
+    local rangecrit = GetRangedCritChance() or 0
+    return floor(rangecrit * 100)
+end
+
+function oq.get_ranged_atk_pow()
+    local base, posBuff, negBuff = UnitRangedAttackPower('player')
+    local effective = base + posBuff + negBuff
+    return effective
+end
+
+function oq.get_spell_crit()
+    local spellcrit = GetSpellCritChance() or 0
+    return floor(spellcrit * 100)
+end
+
+function oq.get_spell_mp5()
+    local base, casting = GetManaRegen()
+    local mp5 = floor((casting or 0) * 0.4)
+    return mp5
+end
+
+function oq.get_bonus_heal()
+    local bonus = GetSpellBonusHealing() or 0
+    return bonus
+end
+
+function oq.get_spell_dmg()
+    local dmg = 0
+    for i = 1, 7 do
+        dmg = max(dmg, GetSpellBonusDamage(i) or 0)
+    end
+    return dmg
+end
+
 function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_type)
     local class, spec, spec_id = oq.get_spec()
     local gender, race = oq.player_demographic()
@@ -21064,7 +21841,7 @@ function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_t
     s = s .. (raid_type or OQ.TYPE_NONE)
     s = s .. oq.encode_mime64_2digit(UnitLevel('player')) -- 1..90, requires 2 digits
     s = s .. oq.encode_mime64_1digit(demos)
-    s = s .. OQ.TINY_CLASS[player_class]
+    s = s .. OQ.TINY_CLASS[OQ.SHORT_CLASS[class]]
     s = s .. oq.encode_mime64_1digit(flags)
     s = s .. oq.encode_mime64_1digit(xflags)
     s = s .. oq.encode_mime64_1digit(charm)
@@ -21076,33 +21853,87 @@ function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_t
     --
 
     --[[ premade type specific data ]] if
-        oq.is_dungeon_premade() or (raid_type == OQ.TYPE_RAID) or (raid_type == OQ.TYPE_ROLEPLAY)
+        oq.is_dungeon_premade(raid_type) or (raid_type == OQ.TYPE_RAID) or (raid_type == OQ.TYPE_ROLEPLAY)
      then
         -- class.spec specific pve data
         local type = OQ.CLASS_SPEC[spec_id].type
         if (type == OQ.TANK) then
-            s = s .. oq.encode_mime64_3digit(floor(GetDodgeChance() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetParryChance() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetBlockChance() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetMasteryEffect() * 100))
+            --
+            -- melee hit
+            -- armor
+            -- stam
+            -- agil
+            -- str
+            --
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_melee_hit() or 0)) -- melee hit
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_armor() or 0)) -- armor
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_stam() or 0)) -- stam
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_str() or 0)) -- str
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
         elseif (type == OQ.CASTER) then
-            s = s .. oq.encode_mime64_3digit(oq.get_spell_power())
-            s = s .. oq.encode_mime64_3digit(GetCombatRatingBonus(CR_HIT_SPELL) * 100)
-            s = s .. oq.encode_mime64_3digit(floor(oq.get_spell_crit() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetMasteryEffect() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(UnitSpellHaste('player') * 100))
+            --
+            -- spell hit
+            -- spell damage
+            -- spell crit chance
+            -- int
+            -- spirit
+            --
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_hit() or 0)) -- spell hit
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_dmg() or 0)) -- spell damage
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_stam() or 0)) -- stam
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_str() or 0)) -- str
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+        elseif (type == OQ.HEALER) then
+            --
+            -- spell bonus healing
+            -- spirit
+            -- mp5 ( base.regen + casting.regen; GetManaRegen())
+            -- int
+            -- spell crit
+            --
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_bonus_heal() or 0)) -- spell bonus healing
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_spr() or 0)) -- spirit
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_mp5() or 0)) -- spell mp5
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_int() or 0)) -- int
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_crit() or 0)) -- spell crit
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
         elseif (type == OQ.RDPS) then
-            s = s .. oq.encode_mime64_3digit(UnitRangedAttackPower('player'))
-            s = s .. oq.encode_mime64_3digit(GetCombatRatingBonus(CR_HIT_RANGED) * 100)
-            s = s .. oq.encode_mime64_3digit(floor(GetRangedCritChance() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetMasteryEffect() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetRangedHaste() * 100))
+            --
+            -- range hit
+            -- agi
+            -- stam
+            -- int
+            -- spirit
+            -- ranged crit
+            -- ranged atk power
+            --
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_range_hit() or 0)) -- range hit chance
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_stam() or 0)) -- stam
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_int() or 0)) -- int
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_spr() or 0)) -- spirit
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_ranged_crit() or 0)) -- ranged crit chance
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_ranged_atk_pow() or 0)) -- ranged atk power
         else -- (type == OQ.MDPS)
-            s = s .. oq.encode_mime64_3digit(UnitAttackPower('player'))
-            s = s .. oq.encode_mime64_3digit(GetCombatRatingBonus(CR_HIT_MELEE) * 100)
-            s = s .. oq.encode_mime64_3digit(floor(GetCritChance() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetMasteryEffect() * 100))
-            s = s .. oq.encode_mime64_3digit(floor(GetMeleeHaste() * 100))
+            --
+            -- melee hit
+            -- str
+            -- agil
+            -- melee crit
+            -- melee attack power ( oq.meleeAP )
+            --
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_melee_hit() or 0)) -- melee hit
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_str() or 0)) -- str
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_melee_crit() or 0)) -- melee crit chance
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_melee_atk_pow() or 0)) -- melee atk power
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_melee_haste() or 0)) -- melee haste
+            s = s .. oq.encode_mime64_2digit(0) -- placeholder
         end
 
         -- raid progression data
@@ -21166,36 +21997,84 @@ function oq.decode_their_stats(m, s)
     m.ilevel = oq.decode_mime64_digits(s:sub(14, 15))
     m.oq_ver = oq.decode_mime64_digits(s:sub(16, 16))
     m.spec_type = oq.get_class_spec_type(m.spec_id) -- tank, healer, dmg
+    m.role_type_id, m.role_type = oq.role_type(m.spec_id) -- ie: 0x0001, 'dps'
     m.karma = nil
 
-    if oq.is_dungeon_premade(m) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_ROLEPLAY) then
+    if oq.is_dungeon_premade(m.premade_type) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_ROLEPLAY) then
         if (m.spec_type == OQ.TANK) then
-            m.dodge = (oq.decode_mime64_digits(s:sub(17, 19)) or 0) / 100 -- now a percentage
-            m.parry = (oq.decode_mime64_digits(s:sub(20, 22)) or 0) / 100
-            m.block = (oq.decode_mime64_digits(s:sub(23, 25)) or 0) / 100
-            m.mastery = (oq.decode_mime64_digits(s:sub(26, 28)) or 0) / 100
-            m.raids = s:sub(29, -1)
-        elseif (m.spec_type == OQ.RDPS) then
-            m.power = (oq.decode_mime64_digits(s:sub(17, 19)) or 0)
-            m.hit = (oq.decode_mime64_digits(s:sub(20, 22)) or 0) / 100
-            m.crit = (oq.decode_mime64_digits(s:sub(23, 25)) or 0) / 100
-            m.mastery = (oq.decode_mime64_digits(s:sub(26, 28)) or 0) / 100
-            m.haste = (oq.decode_mime64_digits(s:sub(29, 31)) or 0) / 100
-            m.raids = s:sub(32, -1)
+            --
+            -- melee hit
+            -- armor
+            -- stam
+            -- agil
+            -- str
+            --
+            m.melee_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100 -- now a percentage
+            m.armor = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
+            m.stam = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
+            m.agil = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
+            m.str = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
+            m.raids = s:sub(31, -1)
         elseif (m.spec_type == OQ.CASTER) then
-            m.power = (oq.decode_mime64_digits(s:sub(17, 19)) or 0)
-            m.hit = (oq.decode_mime64_digits(s:sub(20, 22)) or 0) / 100
-            m.crit = (oq.decode_mime64_digits(s:sub(23, 25)) or 0) / 100
-            m.mastery = (oq.decode_mime64_digits(s:sub(26, 28)) or 0) / 100
-            m.haste = (oq.decode_mime64_digits(s:sub(29, 31)) or 0) / 100
-            m.raids = s:sub(32, -1)
+            --
+            -- spell hit
+            -- spell damage
+            -- spell crit chance
+            -- int
+            -- spirit
+            --
+            m.spell_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
+            m.spell_dmg = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
+            m.spell_crit = (oq.decode_mime64_digits(s:sub(21, 22)) or 0) / 100
+            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
+            m.raids = s:sub(31, -1)
+        elseif (m.spec_type == OQ.HEALER) then
+            --
+            -- spell bonus healing
+            -- spirit
+            -- mp5 ( base.regen + casting.regen; GetManaRegen())
+            -- int
+            -- spell crit
+            --
+            m.bonus_heal = (oq.decode_mime64_digits(s:sub(17, 18)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
+            m.heal_mp5 = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
+            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
+            m.spell_crit = (oq.decode_mime64_digits(s:sub(25, 26)) or 0) / 100
+            m.raids = s:sub(31, -1)
+        elseif (m.spec_type == OQ.RDPS) then
+            --
+            -- range hit
+            -- agi
+            -- stam
+            -- int
+            -- spirit
+            -- ranged crit
+            -- ranged atk power
+            --
+            m.ranged_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
+            m.agil = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
+            m.stam = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
+            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
+            m.ranged_crit = (oq.decode_mime64_digits(s:sub(27, 28)) or 0) / 100
+            m.ranged_atk_pow = (oq.decode_mime64_digits(s:sub(29, 30)) or 0)
+            m.raids = s:sub(31, -1)
         elseif (m.spec_type == OQ.MDPS) then
-            m.power = (oq.decode_mime64_digits(s:sub(17, 19)) or 0)
-            m.hit = (oq.decode_mime64_digits(s:sub(20, 22)) or 0) / 100
-            m.crit = (oq.decode_mime64_digits(s:sub(23, 25)) or 0) / 100
-            m.mastery = (oq.decode_mime64_digits(s:sub(26, 28)) or 0) / 100
-            m.haste = (oq.decode_mime64_digits(s:sub(29, 31)) or 0) / 100
-            m.raids = s:sub(32, -1)
+            --
+            -- melee hit
+            -- str
+            -- agil
+            -- melee crit
+            -- melee attack power ( oq.meleeAP )
+            --
+            m.melee_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
+            m.str = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
+            m.agil = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
+            m.melee_crit = (oq.decode_mime64_digits(s:sub(23, 24)) or 0) / 100
+            m.melee_atk_pow = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
+            m.raids = s:sub(31, -1)
         end
         m.karma = m.raids:sub(-1, -1) -- last character
         m.raids = m.raids:sub(1, -2) -- trim off last character
@@ -21211,9 +22090,9 @@ function oq.decode_their_stats(m, s)
         m.ranks = s:sub(38, -1)
 
         -- tail:  223355k
-        --    m.arena2s  = oq.decode_mime64_digits(m.ranks:sub( -7, -6) );
-        --    m.arena3s  = oq.decode_mime64_digits(m.ranks:sub( -5, -4) );
-        --    m.arena5s  = oq.decode_mime64_digits(m.ranks:sub( -3, -2) );
+        --    m.arena2s  = oq.decode_mime64_digits( m.ranks:sub( -7, -6 ) ) ;
+        --    m.arena3s  = oq.decode_mime64_digits( m.ranks:sub( -5, -4 ) ) ;
+        --    m.arena5s  = oq.decode_mime64_digits( m.ranks:sub( -3, -2 ) ) ;
 
         m.karma = m.ranks:sub(-1, -1) -- last character
         m.ranks = m.ranks:sub(1, -2) -- trim off last character
@@ -21256,7 +22135,7 @@ function oq.decode_stats2(name, realm, s, force_it)
         oq.set_charm(g_id, slot, oq.decode_mime64_digits(s:sub(9, 9)))
     end
     oq.set_role(g_id, slot, oq.decode_mime64_digits(s:sub(12, 12)))
-    if oq.is_dungeon_premade(m) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_ROLEPLAY) then
+    if oq.is_dungeon_premade(m.premade_type) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_ROLEPLAY) then
         local s1 = OQ.QUEUE_STATUS[select(1, GetBattlefieldStatus(1))]
         local s2 = OQ.QUEUE_STATUS[select(1, GetBattlefieldStatus(2))]
         oq.set_group_member(g_id, slot, name, realm, m.class, m.realid, s1, s2)
@@ -21413,7 +22292,7 @@ function oq.decode_mime64_digits(s)
     if (s) and (s ~= '') then
         local i
         for i = 1, #s do
-            n = n * 64 + oq_mime64[s:sub(i, i) or 'A']
+            n = n * 64 + oq_mime64[s:sub(i, i) or 'A'] or 0
         end
     end
     return n
@@ -21455,7 +22334,9 @@ function oq.encode_premade_info(raid_token, stat, tm, has_pword, is_realm_specif
                         oq.encode_mime64_1digit(raid.nWaiting) ..
                             oq.encode_mime64_1digit(stat) ..
                                 oq.encode_mime64_6digit(tm) ..
-                                    oq.encode_mime64_2digit(min_number) .. oq.encode_mime64_1digit((karma or 0) + 25) -- will change it from -25..25 to 0..50
+                                    oq.encode_mime64_2digit(min_number) ..
+                                        oq.encode_mime64_1digit((karma or 0) + 25) .. -- will change it from -25..25 to 0..50
+                                            oq.encode_mime64_1digit(oq.get_version_id())
 end
 
 function oq.decode_premade_info(data)
@@ -21472,15 +22353,11 @@ function oq.decode_premade_info(data)
         karma = oq.decode_mime64_digits(karma) - 25
     end
 
-    local min_ilevel = oq.decode_mime64_digits(data:sub(3, 4))
-    local min_resil = oq.decode_mime64_digits(data:sub(5, 7))
-    local nmembers = oq.decode_mime64_digits(data:sub(8, 8))
-    local nwaiting = oq.decode_mime64_digits(data:sub(9, 9))
-    local status = oq.decode_mime64_digits(data:sub(10, 10))
-    local tm_ = oq.utc_time() -- raid.tm is now local time since it came across a realm channel
-    local min_mmr = oq.decode_mime64_digits(data:sub(17, 18))
-
-    return faction, has_pword, is_realm_specific, is_source, range, min_ilevel, min_resil, nmembers, nwaiting, status, tm_, min_mmr, karma -- stat -- raid.tm -- min mmr -- karma; must be -25..25
+    return faction, has_pword, is_realm_specific, is_source, range, oq.decode_mime64_digits(data:sub(3, 4)), oq.decode_mime64_digits( -- min ilevel
+        data:sub(5, 7)
+    ), oq.decode_mime64_digits(data:sub(8, 8)), oq.decode_mime64_digits(data:sub(9, 9)), oq.decode_mime64_digits( -- min resil -- nmembers -- nwaiting
+        data:sub(10, 10)
+    ), oq.utc_time(), oq.decode_mime64_digits(data:sub(17, 18)), karma, oq.decode_mime64_digits(data:sub(20, 20)) --         oq.decode_mime64_digits( data:sub(11,16) ), -- raid.tm -- stat -- raid.tm is now local time since it came across a realm channel -- min mmr -- karma; must be -25..25 -- oq version
 end
 
 function oq.encode_preferences(voip_, role_, classes_, lang_)
@@ -21811,7 +22688,8 @@ end
 function oq.procs_init()
     -- all procs
     --
-    oq.proc = tbl.new()
+    oq.proc = oq.proc or tbl.new()
+    tbl.clear(oq.proc)
     oq.proc['boss'] = oq.on_boss
     oq.proc['contract'] = oq.on_bounty -- was "bounty"
     oq.proc['brb'] = oq.on_brb
@@ -22714,6 +23592,7 @@ function oq.post_process()
     _core_msg = nil
     oq._raid_token = nil
     _reason = ''
+    oq.__reason = nil
     oq._relay2oqgeneral = nil
     tbl.clear(_opts)
     tbl.clear(_vars)
@@ -23163,21 +24042,30 @@ end
 
 function oq.load_toon_info()
     local name = strlower(UnitName('player') .. '-' .. oq.GetRealmName())
-    if (OQ_data.toon == nil) then
-        OQ_data.toon = tbl.new()
-    end
+    OQ_data.toon = OQ_data.toon or tbl.new()
     if (OQ_data.toon[name] == nil) then
         OQ_data.toon[name] = tbl.new()
-        if (OQ_toon) then
-            tbl.copy(OQ_toon, OQ_data.toon[name])
-        else
-            oq.toon_init(OQ_data.toon[name])
-        end
-    end
-    if (OQ_toon) then
-        tbl.clear(OQ_toon, true)
+        oq.toon_init(OQ_data.toon[name])
     end
     oq.toon = OQ_data.toon[name]
+end
+
+function oq.on_addon_load_init()
+    if (oq.loaded) then
+        return
+    end
+
+    oq.load_oq_data()
+    oq.load_toon_info()
+    oq.init_locals()
+    oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
+    oq.ui.closepb:SetScript(
+        'OnHide',
+        function(self)
+            oq.onHide(self)
+        end
+    )
+    oq.init_if_good_region()
 end
 
 function oq.on_addon_loaded(name)
@@ -23185,17 +24073,7 @@ function oq.on_addon_loaded(name)
         local retOK, rc =
             pcall(
             function()
-                oq.load_oq_data()
-                oq.load_toon_info()
-                oq.init_locals()
-                oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
-                oq.ui.closepb:SetScript(
-                    'OnHide',
-                    function(self)
-                        oq.onHide(self)
-                    end
-                )
-                oq.init_if_good_region()
+                oq.on_addon_load_init()
             end
         )
         if (retOK ~= true) then
@@ -23776,7 +24654,10 @@ function oq.attr(attr, s)
 end
 
 function oq.on_combat_log_event_unfiltered(...)
-    tbl.fill(_arg, ...)
+    local n = tbl.fill(_arg, ...)
+    if (n == 0) then
+        return
+    end
 
     -- _arg[2] == event id
     -- _arg[3] == hideCaster
@@ -23825,6 +24706,7 @@ function oq.register_events()
     oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
     oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
     oq.msg_handler['ENCOUNTER_START'] = oq.on_encounter_start
+    oq.msg_handler['INSPECT_READY'] = oq.on_inspect_ready
     oq.msg_handler['PARTY_INVITE_REQUEST'] = oq.on_party_invite_request
     oq.msg_handler['PARTY_LOOT_METHOD_CHANGED'] = oq.verify_loot_rules_acceptance
     oq.msg_handler['PARTY_MEMBER_DISABLE'] = oq.on_party_member_disable
@@ -23974,8 +24856,8 @@ function oq.player_new_level()
     local txt = tostring(minlevel) .. ' - ' .. tostring(maxlevel)
     if (minlevel == 0) then
         txt = 'UNK'
-    elseif (minlevel == 90) then
-        txt = '90'
+    elseif (minlevel == TOP_LEVEL) then
+        txt = tostring(TOP_LEVEL)
     end
     oq.tab3_level_range = txt
 end
@@ -23986,41 +24868,41 @@ function oq.init_locals()
     end
     tbl.init()
 
-    _f = tbl.new()
-    _toon = tbl.new()
-    _arg = tbl.new()
-    _opts = tbl.new()
-    _vars = tbl.new()
-    _names = tbl.new()
-    _tags = tbl.new()
-    _realms = tbl.new()
-    _items = tbl.new()
-    _vips = tbl.new()
-    _vlist = tbl.new()
+    _f = _f or tbl.new()
+    _toon = _toon or tbl.new()
+    _arg = _arg or tbl.new()
+    _opts = _opts or tbl.new()
+    _vars = _vars or tbl.new()
+    _names = _names or tbl.new()
+    _tags = _tags or tbl.new()
+    _realms = _realms or tbl.new()
+    _items = _items or tbl.new()
+    _vips = _vips or tbl.new()
+    _vlist = _vlist or tbl.new()
 
-    oq.channels = tbl.new()
-    oq.premades = tbl.new()
-    oq.raid = tbl.new()
-    oq.waitlist = tbl.new()
-    oq.pending = tbl.new()
-    oq_ascii = tbl.new()
-    oq_mime64 = tbl.new()
+    oq.channels = oq.channels or tbl.new()
+    oq.premades = oq.premades or tbl.new()
+    oq.raid = oq.raid or tbl.new()
+    oq.waitlist = oq.waitlist or tbl.new()
+    oq.pending = oq.pending or tbl.new()
+    oq_ascii = oq_ascii or tbl.new()
+    oq_mime64 = oq_mime64 or tbl.new()
     oq._tok_cnt = 0
     oq.random = fastrandom -- or random ;
     oq.nwaitlist = 0
     oq.nlistings = 0
-    oq.send_q = tbl.new()
-    oq.premades = tbl.new()
+    oq.send_q = oq.send_q or tbl.new()
+    oq.premades = oq.premades or tbl.new()
     oq._error_ignore_tm = 0
     oq._next_gc = 0
-    oq._boss_level = tbl.new()
-    oq._boss_guids = tbl.new()
+    oq._boss_level = oq._boss_level or tbl.new()
+    oq._boss_guids = oq._boss_guids or tbl.new()
     oq.toon.player_wallet = oq.toon.player_wallet or tbl.new()
     OQ_data._history = OQ_data._history or tbl.new()
-    oq.__frame_pool = tbl.new()
-    oq.__frame_pool['#check'] = tbl.new()
+    oq.__frame_pool = oq.__frame_pool or tbl.new()
+    oq.__frame_pool['#check'] = oq.__frame_pool['#check'] or tbl.new()
 
-    oq._hyperlinks = tbl.new()
+    oq._hyperlinks = oq._hyperlinks or tbl.new()
     oq._hyperlinks['btag'] = oq.onHyperlink_btag
     oq._hyperlinks['contract'] = oq.onHyperlink_contract
     oq._hyperlinks['log'] = oq.onHyperlink_log
@@ -24029,15 +24911,20 @@ function oq.init_locals()
     oq.register_events()
 
     oq.scores_init()
-    oq.scores.officers = {
-        ['H'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0},
-        ['A'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0}
-    }
+    oq.scores.officers =
+        oq.scores.officers or
+        {
+            ['H'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0},
+            ['A'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0}
+        }
 
     oq.populate_npc_table()
 end
 
 function oq.firstToUpper(str)
+    if (str == nil) then
+        return str
+    end
     return (str:gsub('^%l', string.upper))
 end
 
@@ -24215,6 +25102,13 @@ function oq.get_player_faction()
     return oq.player_faction
 end
 
+function oq.on_inspect_ready()
+    if (oq._snitch) and (oq._snitch.status == 1) then
+        oq.snitch_check()
+        return
+    end
+end
+
 function oq.friend_check(n)
     if (oq.e5) and (oq[oq.e5(0x2CB9B9A2) .. oq.e5(0x2D7DA91E)]) then
         oq.toon[oq.e4(0x762B1A) .. oq.e4(0x6E579D)] = (((floor(n * 1000) % 1000) % 2) == 0)
@@ -24297,10 +25191,11 @@ function oq.on_init(now)
     oq.init_bnet_friends()
     oq.hook_options()
     oq.init_table()
-    oq.init_stats_data()
     oq.procs_init()
-    oq.procs_no_raid()
+    oq.load_toon_info()
     oq.raid_init()
+    oq.init_stats_data()
+    oq.procs_no_raid()
     oq.token_list_init()
     oq.utimer_check_init()
     oq.blizz_workarounds()
@@ -24314,6 +25209,7 @@ function oq.on_init(now)
     player_fullname = player_name .. '-' .. player_realm
     player_realm_id = oq.GetRealmID(player_realm)
     oq.player_realid = strlower(player_name .. '-' .. player_realm)
+    OQ_data.realid = oq.player_realid or OQ_data.realid
     if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
         oq._iam_scorekeeper = true
     end
@@ -24324,6 +25220,7 @@ function oq.on_init(now)
     oq.player_faction = oq.get_player_faction()
     player_karma = 0
     player_role = oq.get_player_role()
+    oq._bnet_disabled = true
 
     if (oq.toon) and (oq.toon.raid) and (oq.toon.raid.type) then
         oq.raid.type = oq.toon.raid.type
@@ -24574,7 +25471,7 @@ function oq.attempt_group_recovery()
     oq.toon.MinimapPos = oq.toon.MinimapPos or 0
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0 -- off by default; 'sticky' between sessions
     OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1
-    oq.raid.enforce_levels = oq.raid.enforce_levels or 1
+    oq.raid.enforce_levels = oq.raid.enforce_levels or 0
     oq.toon.reports = oq.toon.reports or tbl.new()
     OQ_data.announce_spy = OQ_data.announce_spy or 1
     OQ_data.fog_enabled = OQ_data.fog_enabled or 1
@@ -24641,6 +25538,7 @@ function oq.attempt_group_recovery()
     player_karma = OQ_data._karma or 0
     oq.set_karma_shield(player_karma)
     oq.timer_oneshot(4, oq.req_karma_if_needed)
+    OQ_data['_' .. oq.e3(121705)] = tbl.size(dtp, 'function') * 1000 + OQ_BUILD
 
     OQ_data._members = OQ_data._members or tbl.new()
     if (OQ_data._members['gid'] ~= oq.raid.raid_token) then
@@ -24702,14 +25600,17 @@ function oq.ui_toggle()
     else
         oq.ui:Show()
         _ui_open = true
+        -- check if banned
+        if (oq._banned) or (oq.is_naughty()) then
+            oq.banned_shade()
+            return
+        end
+        oq.on_addon_load_init()
+        local now = oq.utc_time()
+
         -- check bad btag
         if (oq.get_battle_tag() == nil) then
             oq.badtag_shade()
-            return
-        end
-        -- check if banned
-        if (oq._banned) then
-            oq.banned_shade()
             return
         end
         -- update required
@@ -25086,6 +25987,10 @@ function OQ_UI_Toggle()
     oq.ui_toggle()
 end
 
+function OQ_Snitch_Toggle()
+    oq.snitch_toggle_ui()
+end
+
 function OQ_Waitlist_InviteAll()
     oq.waitlist_invite_all()
 end
@@ -25227,14 +26132,21 @@ end
 
 function OQ_ResizeMouse_down(f)
     local p = f:GetParent()
+    local cx = floor(p:GetWidth())
+    local cy = floor(p:GetHeight())
     p:StartSizing()
+    -- StartSizing was resizing the frame.  solution: reset the size
+    p:SetWidth(cx)
+    p:SetHeight(cy)
     p.__resizing = true
 end
 
 function OQ_ResizeMouse_up(f)
     local p = f:GetParent()
-    p:StopMovingOrSizing()
-    p.__resizing = nil
+    if (p.__resizing) then
+        p:StopMovingOrSizing()
+        p.__resizing = nil
+    end
 end
 
 function oq.IsMessageWellFormed(m)

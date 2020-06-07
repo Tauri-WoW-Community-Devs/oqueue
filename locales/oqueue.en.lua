@@ -16,17 +16,18 @@ local L = OQ._T -- for literal string translations
 BINDING_HEADER_OQUEUE = 'oQueue'
 BINDING_NAME_TOGGLE_OQUEUE = 'Toggle oQueue'
 BINDING_NAME_AUTO_INSPECT = 'Auto Inspect'
+BINDING_NAME_TOGGLE_SNITCH = 'Toggle snitch'
 BINDING_NAME_WAITLIST_INVITEALL = 'Invite All'
 
 OQ.TITLE_LEFT = 'oQueue v'
-OQ.TITLE_RIGHT = ' - Premade finder'
-OQ.PREMADE = 'Premade'
-OQ.FINDPREMADE = 'Find Premade'
-OQ.CREATEPREMADE = 'Create Premade'
-OQ.CREATE_BUTTON = 'Create premade'
-OQ.UPDATE_BUTTON = 'Update premade'
+OQ.TITLE_RIGHT = ' - Group finder'
+OQ.PREMADE = 'Group'
+OQ.FINDPREMADE = 'Find Group'
+OQ.CREATEPREMADE = 'Create Group'
+OQ.CREATE_BUTTON = 'Create group'
+OQ.UPDATE_BUTTON = 'Update group'
 OQ.WAITLIST = 'Wait List'
-OQ.HONOR_BUTTON = 'OQ premade'
+OQ.HONOR_BUTTON = 'OQ group'
 OQ.PLEASE_SELECT_BG = 'Please select a battleground'
 OQ.BAD_REALID = 'Invalid real-id or battle-tag.\n'
 OQ.QUEUE1_SELECTBG = '<select a battleground>'
@@ -71,8 +72,8 @@ OQ.JOIN_QUEUE = 'join queue'
 OQ.LEAVE_QUEUE = 'leave queue'
 OQ.LEAVE_QUEUE_BIG = 'LEAVE QUEUE'
 OQ.DAS_BOOT = 'DAS BOOT !!'
-OQ.DISBAND_PREMADE = 'Disband premade group'
-OQ.LEAVE_PREMADE = 'Leave premade group'
+OQ.DISBAND_PREMADE = 'Disband group'
+OQ.LEAVE_PREMADE = 'Leave group'
 OQ.RELOAD = 'Reload'
 OQ.ILL_BRB = 'Be right back'
 OQ.LUCKY_CHARMS = 'Lucky charms'
@@ -82,7 +83,7 @@ OQ.READY_CHK = 'Ready check'
 OQ.KARMA_ALL = 'Karma all'
 OQ.APPROACHING_CAP = 'APPROACHING CAP'
 OQ.CAPPED = 'CAPPED'
-OQ.HDR_PREMADE_NAME = 'Premades'
+OQ.HDR_PREMADE_NAME = 'Groups'
 OQ.HDR_LEADER = 'Leader'
 OQ.HDR_LEVEL_RANGE = 'Level(s)'
 OQ.HDR_ILEVEL = 'iLvl'
@@ -90,7 +91,7 @@ OQ.HDR_RESIL = 'Resil'
 OQ.HDR_POWER = 'PVP Power'
 OQ.HDR_TIME = 'Time'
 OQ.QUALIFIED = 'Qualified'
-OQ.PREMADE_NAME = 'Premade name'
+OQ.PREMADE_NAME = 'Group name'
 OQ.REALID = 'Real-Id or B-tag'
 OQ.REALID_MOP = 'Battle-tag'
 OQ.MIN_ILEVEL = 'Minimum iLvl'
@@ -100,9 +101,11 @@ OQ.BATTLEGROUNDS = 'Description'
 OQ.ENFORCE_LEVELS = 'enforce level bracket'
 OQ.NOTES = 'Notes'
 OQ.PASSWORD = 'Password'
-OQ.CREATEURPREMADE = 'Create your own premade'
+OQ.CREATEURPREMADE = 'Create your own group'
 OQ.LABEL_LEVEL = 'Level'
 OQ.LABEL_LEVELS = 'Levels'
+OQ.HDR_CLASS = 'class'
+OQ.HDR_ROLE = 'role'
 OQ.HDR_TOONNAME = 'Toon name'
 OQ.HDR_REALM = 'Realm'
 OQ.HDR_LEVEL = 'Level'
@@ -126,7 +129,7 @@ OQ.SETUP_ALTLIST = 'List of alts on this Battle.net account:\n(only for multi-bo
 OQ.SETUP_AUTOROLE = 'Auto set role'
 OQ.SETUP_CLASSPORTRAIT = 'Use class portraits'
 OQ.SETUP_GARBAGE = 'garbage collect (30 sec intervals)'
-OQ.SETUP_SHOUTADS = 'Announce premades'
+OQ.SETUP_SHOUTADS = 'Announce groups'
 OQ.SETUP_AUTOACCEPT_MESH_REQ = 'Auto accept Battle-tag mesh requests'
 OQ.SETUP_OK2SUBMIT_BTAG = 'Submit Battle-tag every 4 days'
 OQ.SETUP_AUTOHIDE_FRIENDREQS = 'Auto hide friend requests'
@@ -146,7 +149,7 @@ OQ.BANDWIDTH_DN = 'download (kBps)'
 OQ.OQSK_DTIME = 'time variance'
 OQ.SETUP_CHECKNOW = 'check now'
 OQ.SETUP_REMOVENOW = 'remove now'
-OQ.STILL_IN_PREMADE = 'please leave your current premade before creating a new one'
+OQ.STILL_IN_PREMADE = 'please leave your current group before creating a new one'
 OQ.DD_PROMOTE = 'promote to group lead'
 OQ.DD_KICK = 'remove member'
 OQ.DD_BAN = "BAN user's battle.tag"
@@ -154,24 +157,24 @@ OQ.DD_REFORM = 'reform group'
 OQ.DISABLED = 'oQueue disabled'
 OQ.ENABLED = 'oQueue enabled'
 OQ.THETIMEIS = 'the time is %d (GMT)'
-OQ.MSG_PREMADENAME = 'please enter a name for the premade'
-OQ.MSG_MISSINGNAME = '\nplease name your premade'
+OQ.MSG_PREMADENAME = 'please enter a name for the group'
+OQ.MSG_MISSINGNAME = '\nplease name your group'
 OQ.MSG_MISSINGVOIP = '\nplease select which VoIP will be used, if any'
-OQ.MSG_MISSINGTYPE = '\nplease select premade type'
+OQ.MSG_MISSINGTYPE = '\nplease select group type'
 OQ.MSG_REJECT = 'waitlist request not accepted.\nreason: %s'
-OQ.MSG_CANNOTCREATE_TOOLOW = 'Cannot create premade.  \nYou must be level 10 or higher'
+OQ.MSG_CANNOTCREATE_TOOLOW = 'Cannot create group.  \nYou must be level 10 or higher'
 OQ.MSG_NOTLFG =
-    'Please do not use oQueue as LookingForGroup advertisement. \nSome players may ban you from their premade if you do.'
-OQ.TAB_PREMADE = 'Premade'
-OQ.TAB_FINDPREMADE = 'Find Premade'
-OQ.TAB_CREATEPREMADE = 'Create Premade'
+    'Please do not use oQueue as LookingForGroup advertisement. \nSome players may ban you from their group if you do.'
+OQ.TAB_PREMADE = 'Group'
+OQ.TAB_FINDPREMADE = 'Find Group'
+OQ.TAB_CREATEPREMADE = 'Create Group'
 OQ.TAB_THESCORE = 'The Score'
 OQ.TAB_SETUP = 'Settings'
 OQ.TAB_BANLIST = 'Ban List'
 OQ.TAB_WAITLIST = 'Wait List'
 OQ.TAB_WAITLISTN = 'Wait List (%d)'
 OQ.CONNECTIONS = 'Connection  %d - %d'
-OQ.ANNOUNCE_PREMADES = '%d premades available'
+OQ.ANNOUNCE_PREMADES = '%d groups available'
 OQ.NEW_PREMADE = '(|cFF808080%d|r) |cFFC0C0C0%s|r : %s  |cFFC0C0C0%s|r'
 OQ.PREMADE_NAMEUPD = '(|cFF808080%d|r) |cFFC0C0C0%s|r : %s  |cFFC0C0C0%s|r'
 OQ.DLG_OK = 'ok'
@@ -184,29 +187,29 @@ OQ.DLG_READY = 'Ready'
 OQ.DLG_NOTREADY = 'NOT Ready'
 OQ.DLG_01 = 'Please enter toon name:'
 OQ.DLG_02 = 'Enter Battle'
-OQ.DLG_03 = 'Please name your premade:'
+OQ.DLG_03 = 'Please name your group:'
 OQ.DLG_04 = 'Please enter your real-id:'
 OQ.DLG_05 = 'Password:'
 OQ.DLG_06 = 'Please enter real-id or name of new group leader:'
 OQ.DLG_07 = '\nNEW VERSION Now Available !!\n\noQueue  v%s  build  %d\n'
 OQ.DLG_08 = 'You must leave your group in order to waitlist. \nLeave your group now?'
-OQ.DLG_09 = 'Only the group leader may create an OQ Premade'
+OQ.DLG_09 = 'Only the group leader may create an OQ Group'
 OQ.DLG_10 = 'The queue has popped.\n\nWhat is your decision?'
 OQ.DLG_11 = 'Your queue has popped.  Waiting for Raid Leader to make a decision.\nPlease stand by.'
 OQ.DLG_12 = 'Are you sure you want to leave the raid group?'
-OQ.DLG_13 = 'The premade leader has initiated a ready check'
+OQ.DLG_13 = 'The group leader has initiated a ready check'
 OQ.DLG_14 = 'The raider leader has requested a reload'
 OQ.DLG_15 = 'Banning: %s \nPlease enter your reason:'
-OQ.DLG_16 = 'Unable to select premade type.\nToo many members (max. %d)'
+OQ.DLG_16 = 'Unable to select group type.\nToo many members (max. %d)'
 OQ.DLG_17 = 'Please enter the battle-tag to ban:'
 OQ.DLG_18a = 'Version %d.%d.%d is now available'
 OQ.DLG_18b = '--  Required Update  --'
-OQ.DLG_19 = 'You must qualify for your own premade'
-OQ.DLG_20 = 'No groups allowed for this premade type'
-OQ.DLG_21 = 'Leave your premade before wait listing'
-OQ.DLG_21a = 'You are already in a premade. Leave your current group?'
-OQ.DLG_22 = 'Disband your premade before wait listing'
-OQ.DLG_22a = 'You are already in a premade. Disband and leave your current group?'
+OQ.DLG_19 = 'You must qualify for your own group'
+OQ.DLG_20 = 'No groups allowed for this group type'
+OQ.DLG_21 = 'Leave your group before wait listing'
+OQ.DLG_21a = 'You are already in a group. Leave your current group?'
+OQ.DLG_22 = 'Disband your group before wait listing'
+OQ.DLG_22a = 'You are already in a group. Disband and leave your current group?'
 OQ.DLG_23 = 'Armory link:\n\n  ctrl+C to copy the link \n  then paste it into your browser with ctrl+V\n'
 OQ.MENU_KICKGROUP = 'kick group'
 OQ.MENU_SETLEAD = 'set group leader'
@@ -215,17 +218,17 @@ OQ.NOBTAG_01 = ' battle-tag information not received in time.'
 OQ.NOBTAG_02 = ' please try again.'
 OQ.MINIMAP_HIDDEN = '(OQ) minimap button hidden'
 OQ.MINIMAP_SHOWN = '(OQ) minimap button shown'
-OQ.FINDMESH_OK = 'your connection is fine.  premades refresh on 30 second cycles'
+OQ.FINDMESH_OK = 'your connection is fine.  groups refresh on 30 second cycles'
 OQ.TIMEERROR_1 = 'OQ: your system time is significantly out of sync (%s).'
 OQ.TIMEERROR_2 = 'OQ: please update your system time and timezone.'
 OQ.SYS_YOUARE_AFK = 'You are now Away'
 OQ.SYS_YOUARENOT_AFK = 'You are no longer Away'
 OQ.ERROR_REGIONDATA = 'Region data has not loaded properly.'
-OQ.TT_LEAVEPREMADE = 'left-click:  de-waitlist\nright-click:  ban premade leader'
+OQ.TT_LEAVEPREMADE = 'left-click:  de-waitlist\nright-click:  ban group leader'
 OQ.TT_FINDMESH = 'request battle-tags from the scorekeeper\nto get connected to the mesh'
 OQ.TT_SUBMIT2MESH = 'submit your battle-tag to the scorekeeper\nto help grow the mesh'
 OQ.LABEL_TYPE = '|cFF808080type:|r  %s'
-OQ.LABEL_ALL = 'All premades'
+OQ.LABEL_ALL = 'All groups'
 OQ.LABEL_ALL_PENDING = 'All pending'
 OQ.LABEL_BGS = 'Battlegrounds'
 OQ.LABEL_RBGS = 'Rated BGs'
@@ -396,7 +399,7 @@ OQ.TIMEVARIANCE_DLG = {
     '  Your system time is significantly ',
     '  different from the mesh.  You must',
     '  correct it before being allowed to',
-    '  create a premade.',
+    '  create a group.',
     '',
     '  time variance:  %s',
     '',
@@ -406,7 +409,7 @@ OQ.LFGNOTICE_DLG = {
     '',
     'Warning:',
     '',
-    '  Do not use oQueue premade names for',
+    '  Do not use oQueue group names for',
     '  LFG or other types of personal',
     '  advertisement.  Many people will ban ',
     '  anyone using it as such.  If you get',
@@ -1210,15 +1213,15 @@ OQ.HINTS = {
     ],
     [3] = L['control+left-click on a leader or player on the wait list to get their armory link'],
     [4] = L['control+left-click on a friendly player will auto-inspect and show their gear'],
-    [5] = L['holding SHIFT on the find-premade tab will PAUSE the list until released'],
+    [5] = L['holding SHIFT on the find-group tab will PAUSE the list until released'],
     [6] = L[
         'avoid pug groups with no voice comms for a better experience.<br/><br/>try to reach out and communicate with the people in your group.  you may learn new techniques, strategies, or maybe make a friend.'
     ],
-    [7] = L['award karma to group members using the log or clicking their square on the main premade tab'],
+    [7] = L['award karma to group members using the log or clicking their square on the main group tab'],
     [8] = L['resize the window by dragging the bottom right corner'],
     [9] = L['list local group leaders by typing: <br/><br/>/oq show locals'],
     [10] = L[
-        "if you see no premades, your connection might be weak or broken.<br/><br/>if you have a weak or broken connection, hit find-mesh and wait for connections from the scorekeeper<br/><br/>also make sure 'auto-join oqgeneral' on setup is checked"
+        "if you see no groups, your connection might be weak or broken.<br/><br/>if you have a weak or broken connection, hit find-mesh and wait for connections from the scorekeeper<br/><br/>also make sure 'auto-join oqgeneral' on setup is checked"
     ],
     [11] = L[
         'hitting find-mesh will request mesh tags from the scorekeeper.  he will send you six(6) random tags active in the last hour.<br/><br/>they may or may not still be online, but will connect when they log in next'
@@ -1228,21 +1231,21 @@ OQ.HINTS = {
     ],
     [13] = L['gain more mesh connections by clicking the find-mesh button'],
     [14] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
-    [15] = L["right-click the red 'x' on the find-premade list to ban that group leader"],
+    [15] = L["right-click the red 'x' on the find-group list to ban that group leader"],
     [16] = L["if you're confused, find tiny in public vent"],
     [17] = L[
-        'click the spyglass at the top left of the find-premade tab to filter the list<br/><br/>you can use the following logical operators:<br/><br/> &amp; (and)<br/> | (or)<br/> ! (not)<br/><br/>ie:  rbgs | cta &amp; !yolo<br/><br/>meaning:<br/> rbgs or cta and not yolo'
+        'click the spyglass at the top left of the find-group tab to filter the list<br/><br/>you can use the following logical operators:<br/><br/> &amp; (and)<br/> | (or)<br/> ! (not)<br/><br/>ie:  rbgs | cta &amp; !yolo<br/><br/>meaning:<br/> rbgs or cta and not yolo'
     ],
     [18] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
     [19] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2<br/><br/>ie: soo &amp; i525'],
     [20] = L[
-        'leaders with good karma will have greenish names on the find-premade list.<br/><br/>leaders with bad karma will be shown in red<br/><br/>white is neutral'
+        'leaders with good karma will have greenish names on the find-group list.<br/><br/>leaders with bad karma will be shown in red<br/><br/>white is neutral'
     ],
     [21] = L[
         "your karma reflects the opinions of your performance and personality by those you've grouped with.<br/><br/>karma ranges from -25 to +25 and degrades by 1 pt, back towards 0, every 24 hours"
     ],
     [22] = L['karma - what goes around, comes around'],
-    [23] = L['right-click filter options on the find-premade tab to toggle exclusion of that type.'],
+    [23] = L['right-click filter options on the find-group tab to toggle exclusion of that type.'],
     [24] = L[
         'check the setup tab for various UI tweaks.<br/><br/>such as announcing contracts or showing class portaits on targets'
     ],

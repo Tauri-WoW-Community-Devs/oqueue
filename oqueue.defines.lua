@@ -39,6 +39,7 @@ OQ.MOON_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0
 OQ.SQUARE_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:16:32:16:32|t'
 OQ.REDX_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:32:48:16:32|t'
 OQ.SKULL_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:48:64:16:32|t'
+OQ.LILSKULL_HDR = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:14:14:0:0:64:64:48:64:16:32|t'
 OQ.PENDING_NOTE_UP = 'INTERFACE/BUTTONS/UI-GuildButton-OfficerNote-Up.png'
 OQ.PENDING_NOTE_DN = 'INTERFACE/BUTTONS/UI-GuildButton-PublicNote-Up.png'
 OQ.PENDING_NOTE_OFF = 'INTERFACE/BUTTONS/UI-GuildButton-OfficerNote-Disabled.png'
@@ -478,6 +479,7 @@ OQ.RDPS = 1
 OQ.MDPS = 2
 OQ.CASTER = 3
 OQ.TANK = 4
+OQ.HEALER = 5
 
 OQ.CLASS_SPEC = {
     [250] = {id = 1, type = OQ.TANK, n = 'DK.Blood', spy = 'Tank'},
@@ -486,7 +488,7 @@ OQ.CLASS_SPEC = {
     [102] = {id = 4, type = OQ.RDPS, n = 'DR.Balance', spy = 'Knockback'},
     [103] = {id = 5, type = OQ.RDPS, n = 'DR.Feral', spy = 'Melee'},
     [104] = {id = 6, type = OQ.TANK, n = 'DR.Guardian', spy = 'Tank'},
-    [105] = {id = 7, type = OQ.CASTER, n = 'DR.Restoration', spy = 'Healer'},
+    [105] = {id = 7, type = OQ.HEALER, n = 'DR.Restoration', spy = 'Healer'},
     [253] = {id = 8, type = OQ.RDPS, n = 'HN.Beast', spy = 'Knockback'},
     [254] = {id = 9, type = OQ.RDPS, n = 'HN.Marksmanship', spy = 'Ranged'},
     [255] = {id = 10, type = OQ.RDPS, n = 'HN.Survival', spy = 'Ranged'},
@@ -499,15 +501,15 @@ OQ.CLASS_SPEC = {
     [65] = {id = 17, type = OQ.RDPS, n = 'PA.Holy', spy = 'Healer'},
     [66] = {id = 18, type = OQ.TANK, n = 'PA.Protection', spy = 'Tank'},
     [70] = {id = 19, type = OQ.MDPS, n = 'PA.Retribution', spy = 'Melee'},
-    [256] = {id = 20, type = OQ.CASTER, n = 'PR.Discipline', spy = 'Healer'},
-    [257] = {id = 21, type = OQ.CASTER, n = 'PR.Holy', spy = 'Healer'},
+    [256] = {id = 20, type = OQ.HEALER, n = 'PR.Discipline', spy = 'Healer'},
+    [257] = {id = 21, type = OQ.HEALER, n = 'PR.Holy', spy = 'Healer'},
     [258] = {id = 22, type = OQ.CASTER, n = 'PR.Shadow', spy = 'Ranged'},
     [259] = {id = 23, type = OQ.MDPS, n = 'RO.Assassination', spy = 'Melee'},
     [260] = {id = 24, type = OQ.MDPS, n = 'RO.Combat', spy = 'Melee'},
     [261] = {id = 25, type = OQ.MDPS, n = 'RO.Subtlety', spy = 'Melee'},
     [262] = {id = 26, type = OQ.RDPS, n = 'SH.Elemental', spy = 'Knockback'},
     [263] = {id = 27, type = OQ.MDPS, n = 'SH.Enhancement', spy = 'Melee'},
-    [264] = {id = 28, type = OQ.CASTER, n = 'SH.Restoration', spy = 'Healer'},
+    [264] = {id = 28, type = OQ.HEALER, n = 'SH.Restoration', spy = 'Healer'},
     [265] = {id = 29, type = OQ.CASTER, n = 'LK.Affliction', spy = 'Knockback'},
     [266] = {id = 30, type = OQ.CASTER, n = 'LK.Demonology', spy = 'Knockback'},
     [267] = {id = 31, type = OQ.CASTER, n = 'LK.Destruction', spy = 'Knockback'},

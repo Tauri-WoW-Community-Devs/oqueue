@@ -80,9 +80,9 @@ function oq.tooltip_create()
 
     local x = 5
     local y = 8
-    local cy = 17
-    tooltip.nRows = 16
-    tooltip:SetHeight((tooltip.nRows + 1) * (cy) + 8)
+    local cy = 15
+    tooltip.nRows = 20
+    tooltip:SetHeight((tooltip.nRows + 1) * (cy) + 10)
     tooltip:SetWidth(210) -- 240
 
     tooltip.left = tbl.new()
@@ -278,6 +278,26 @@ function oq.karma_color(karma)
     return clr
 end
 
+function oq.tt_int(tt, ndx, left_txt, n)
+    tt.left[ndx]:SetText(left_txt)
+    tt.right[ndx]:SetText(tostring(n or 0))
+end
+
+function oq.tt_perc(tt, ndx, left_txt, n)
+    tt.left[ndx]:SetText(left_txt)
+    tt.right[ndx]:SetText(string.format('%.2f%%', n or 0))
+end
+
+function oq.tt_str(tt, ndx, left_txt, right_txt)
+    tt.left[ndx]:SetText(left_txt)
+    tt.right[ndx]:SetText(right_txt)
+end
+
+function oq.tt_raids(tt, ndx, left_txt, right_txt)
+    tt.left[ndx]:SetText(left_txt)
+    tt.right[ndx]:SetText(right_txt)
+end
+
 function oq.tooltip_set2(f, m, totheside, is_lead)
     if (m == nil) then
         return
@@ -310,8 +330,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
 
     tooltip.right[2]:SetText(oq.get_rank_icons(m.ranks))
 
-    tooltip.left[3]:SetText(m.bgroup)
-    tooltip.left[3]:SetTextColor(0.8, 0.8, 0.8, 1)
     local spec = oq.get_class_type(m.spec_id) or oq.get_class_spec(m.spec_id)
     if (spec) then
         tooltip.right[3]:SetText(spec.n:sub(4, -1))
@@ -328,7 +346,10 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
     tooltip.left[5]:SetText(OQ.TT_ILEVEL)
     tooltip.right[5]:SetText(m.ilevel)
 
-    if oq.is_dungeon_premade(m) or (m.premade_type == OQ.TYPE_RAID) then
+    if
+        oq.is_dungeon_premade(m.premade_type) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_QUESTS) or
+            (m.premade_type == OQ.TYPE_ROLEPLAY)
+     then
         tooltip.left[6]:SetText(OQ.TT_DKP)
         if (m.premade_type == OQ.TYPE_CHALLENGE) then
             tooltip.right[6]:SetText(comma_value(oq.decode_mime64_digits(m.raids and m.raids:sub(-3, -1)))) -- member dkp is the last 3 digits
@@ -339,23 +360,37 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
         end
 
         if (m.spec_type == OQ.TANK) then
-            tooltip.left[8]:SetText('dodge')
-            tooltip.right[8]:SetText(string.format('%.2f%%', m.dodge or 0))
-            tooltip.left[9]:SetText('parry')
-            tooltip.right[9]:SetText(string.format('%.2f%%', m.parry or 0))
-            tooltip.left[10]:SetText('block')
-            tooltip.right[10]:SetText(string.format('%.2f%%', m.block or 0))
-            tooltip.left[11]:SetText('mastery')
-            tooltip.right[11]:SetText(string.format('%.2f%%', m.mastery or 0))
-        else
-            tooltip.left[8]:SetText('hit')
-            tooltip.right[8]:SetText(string.format('%.2f%%', m.hit or 0))
-            tooltip.left[9]:SetText('crit')
-            tooltip.right[9]:SetText(string.format('%.2f%%', m.crit or 0))
-            tooltip.left[10]:SetText('mastery')
-            tooltip.right[10]:SetText(string.format('%.2f%%', m.mastery or 0))
-            tooltip.left[11]:SetText('haste')
-            tooltip.right[11]:SetText(string.format('%.2f%%', m.haste or 0))
+            oq.tt_perc(tooltip, 8, 'melee hit', m.melee_hit)
+            oq.tt_int(tooltip, 9, 'armor', m.armor)
+            oq.tt_int(tooltip, 10, 'stam', m.stam)
+            oq.tt_int(tooltip, 11, 'agil', m.agil)
+            oq.tt_int(tooltip, 12, 'str', m.str)
+        elseif (m.spec_type == OQ.CASTER) then
+            oq.tt_perc(tooltip, 8, 'spell hit', m.spell_hit)
+            oq.tt_int(tooltip, 9, 'spell dmg', m.spell_dmg)
+            oq.tt_perc(tooltip, 10, 'spell crit', m.spell_crit)
+            oq.tt_int(tooltip, 11, 'int', m.int)
+            oq.tt_int(tooltip, 12, 'spr', m.spr)
+        elseif (m.spec_type == OQ.HEALER) then
+            oq.tt_int(tooltip, 8, 'bonus heal', m.bonus_heal)
+            oq.tt_int(tooltip, 9, 'spr', m.spr)
+            oq.tt_int(tooltip, 10, 'heal mp5', m.heal_mp5)
+            oq.tt_int(tooltip, 11, 'int', m.int)
+            oq.tt_perc(tooltip, 12, 'spell crit', m.spell_crit)
+        elseif (m.spec_type == OQ.RDPS) then
+            oq.tt_perc(tooltip, 8, 'ranged hit', m.ranged_hit)
+            oq.tt_int(tooltip, 9, 'agil', m.agil)
+            oq.tt_int(tooltip, 10, 'stam', m.stam)
+            oq.tt_int(tooltip, 11, 'int', m.int)
+            oq.tt_int(tooltip, 12, 'spr', m.spr)
+            oq.tt_perc(tooltip, 13, 'ranged crit', m.ranged_crit)
+            oq.tt_int(tooltip, 14, 'ranged power', m.ranged_atk_pow)
+        elseif (m.spec_type == OQ.MDPS) then
+            oq.tt_perc(tooltip, 8, 'melee hit', m.melee_hit)
+            oq.tt_int(tooltip, 9, 'str', m.str)
+            oq.tt_int(tooltip, 10, 'agil', m.agil)
+            oq.tt_perc(tooltip, 11, 'melee crit', m.melee_crit)
+            oq.tt_int(tooltip, 12, 'melee power', m.melee_atk_pow)
         end
         if (m.premade_type == OQ.TYPE_CHALLENGE) then
             tooltip.left[14]:SetText('medals')
@@ -435,10 +470,10 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
             oq.vip_set_dragon(tooltip, 'golden-dragon', -20, nil)
         elseif (title == 'silver') then
             oq.vip_set_dragon(tooltip, 'dragon', -20, nil)
-        elseif (title == "general") then
-          oq.vip_set_dragon( tooltip, "general-".. oq._player_faction, -20, nil ) ;
-        elseif (title == "knight") then
-          oq.vip_set_dragon( tooltip, "knight-".. oq._player_faction, -20, nil ) ;
+        elseif (title == 'general') then
+            oq.vip_set_dragon(tooltip, 'general-' .. oq._player_faction, -20, nil)
+        elseif (title == 'knight') then
+            oq.vip_set_dragon(tooltip, 'knight-' .. oq._player_faction, -20, nil)
         else
             oq.vip_clear(tooltip)
         end
@@ -755,7 +790,7 @@ function oq.pm_tooltip_create()
     pm_tooltip.class = t
     pm_tooltip.class:SetTexture(nil)
 
-    pm_tooltip.nRows = 15
+    pm_tooltip.nRows = 16
     pm_tooltip:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
     pm_tooltip:SetWidth(210) -- 220
     pm_tooltip:SetHeight(12 + pm_tooltip.nRows * 16)
@@ -815,7 +850,7 @@ function oq.pm_tooltip_disqualified(raid, pm_tooltip)
         return
     end
 
-    ext.note:SetText(oq.__reason)
+    ext.note:SetText(oq.__reason .. ((oq.__reason_extra) and (L[' - '] .. L[oq.__reason_extra]) or ''))
     ext:Show()
     ext:SetPoint('TOP', pm_tooltip, 'BOTTOM', 0, -3)
 end
@@ -835,19 +870,19 @@ function oq.pm_tooltip_get_xpbar(easy, hard, flexi, nbosses, b1, b2) -- b1, b2 =
     local norm = '|TInterface\\Addons\\oqueue\\art\\green_block_64.tga:10:10:0:0|t'
     local none = '|TInterface\\Addons\\oqueue\\art\\grey_block_64.tga:10:10:0:0|t'
     local str = ''
-    local i
+
     easy = oq.decode_mime64_digits(easy)
     hard = oq.decode_mime64_digits(hard)
     flexi = oq.decode_mime64_digits(flexi)
     for i = 1, nbosses do
         if (oq.is_set(hard, bit.lshift(1, i - 1))) then
-            str = str .. '' .. hero
+            str = str .. hero
         elseif (oq.is_set(easy, bit.lshift(1, i - 1))) then
-            str = str .. '' .. norm
+            str = str .. norm
         elseif (oq.is_set(flexi, bit.lshift(1, i - 1))) then
-            str = str .. '' .. flex
+            str = str .. flex
         else
-            str = str .. '' .. none
+            str = str .. none
         end
         if ((b1) and (b1 == i)) or ((b2) and (b2 == i)) then
             str = str .. ' '
@@ -893,6 +928,8 @@ function oq.pm_tooltip_set(f, raid_token)
     local nWins = 0
     local nLosses = 0
     local rank = 0
+    local offset = nil
+    local is_long = nil
 
     pm_tooltip.left[1]:SetText(raid.name)
     pm_tooltip.right[1]:SetText('')
@@ -908,18 +945,26 @@ function oq.pm_tooltip_set(f, raid_token)
     pm_tooltip.left[3]:SetText(OQ.TT_REALM)
     pm_tooltip.right[3]:SetText(raid.leader_realm)
 
-    pm_tooltip.left[4]:SetText(OQ.TT_BATTLEGROUP)
-    pm_tooltip.right[4]:SetText(oq.find_bgroup(raid.leader_realm))
-
     pm_tooltip.left[5]:SetText(OQ.TT_MEMBERS .. '|cFF808080 / |r|cFF49CF69' .. OQ.TT_WAITLIST .. '|r')
     pm_tooltip.right[5]:SetText(string.format('%d |cFF808080/ |r|cFF49CF69%d |r', nMembers, nWaiting))
     pm_tooltip.left[6]:SetText(OQ.TT_ILEVEL)
     pm_tooltip.right[6]:SetText(string.format('%d', raid.min_ilevel))
 
+    pm_tooltip.right[pm_tooltip.nRows]:SetFont(OQ.FONT, 12, '')
+    pm_tooltip.right[pm_tooltip.nRows + 2]:SetFont(OQ.FONT, 12, '')
+
     if (raid.type == OQ.TYPE_RAID) or (raid.type == OQ.TYPE_DUNGEON) then
-        pm_tooltip:SetHeight(12 + (pm_tooltip.nRows + 1) * 16)
+        pm_tooltip:SetHeight(12 + (pm_tooltip.nRows + 2) * 16)
+        pm_tooltip.left[pm_tooltip.nRows + 2]:SetText(OQ.TT_OQVERSION)
+        pm_tooltip.right[pm_tooltip.nRows + 2]:SetText((raid.oq_ver == 0) and ('--') or oq.get_version_str(raid.oq_ver))
+        pm_tooltip.right[pm_tooltip.nRows + 2]:SetFont(OQ.FONT, 9, '')
+        offset = -10
+        is_long = nil
     else
         pm_tooltip:SetHeight(12 + pm_tooltip.nRows * 16)
+        pm_tooltip.left[pm_tooltip.nRows]:SetText(OQ.TT_OQVERSION)
+        pm_tooltip.right[pm_tooltip.nRows]:SetText((raid.oq_ver == 0) and ('--') or oq.get_version_str(raid.oq_ver))
+        pm_tooltip.right[pm_tooltip.nRows]:SetFont(OQ.FONT, 9, '')
     end
 
     --
@@ -944,8 +989,8 @@ function oq.pm_tooltip_set(f, raid_token)
         else
             pm_tooltip.right[10]:SetText(nWins .. ' - ' .. nLosses)
         end
-        pm_tooltip.left[pm_tooltip.nRows - 0]:SetWidth(pm_tooltip:GetWidth() + 20)
-        pm_tooltip.left[pm_tooltip.nRows - 0]:SetText(oq.get_rank_achieves(raid.leader_xp:sub(10, -1)))
+        pm_tooltip.left[pm_tooltip.nRows - 2]:SetWidth(pm_tooltip:GetWidth() + 20)
+        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(oq.get_rank_achieves(raid.leader_xp:sub(10, -1)))
     elseif (raid.type == OQ.TYPE_SCENARIO) then
         local nWins = oq.decode_mime64_digits(raid.leader_xp:sub(1, 3))
         local nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
@@ -1004,7 +1049,10 @@ function oq.pm_tooltip_set(f, raid_token)
             str = tostring(n) .. 'x '
         end
         pm_tooltip.right[11]:SetText(str .. OQ.LIL_GOLD_MEDAL)
-    elseif (raid.type == OQ.TYPE_RAID) or (raid.type == OQ.TYPE_DUNGEON) then
+    elseif
+        (raid.type == OQ.TYPE_RAID) or (raid.type == OQ.TYPE_DUNGEON) or (raid.type == OQ.TYPE_QUESTS) or
+            (raid.type == OQ.TYPE_ROLEPLAY)
+     then
         if (raid.min_mmr > 0) then
             pm_tooltip.left[6]:SetText(string.format('%s |cFF808080/ |r|cFF49CF69%s |r', OQ.TT_ILEVEL, OQ.TT_LOWEST))
             pm_tooltip.right[6]:SetText(
@@ -1033,41 +1081,42 @@ function oq.pm_tooltip_set(f, raid_token)
 
         local dots = ''
         local raids = raid.leader_xp
-        pm_tooltip.left[pm_tooltip.nRows - 5]:SetText('|cFFFFD331' .. OQ.LABEL_RAIDS .. '|r')
-        pm_tooltip.right[pm_tooltip.nRows - 5]:SetText('')
-        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(OQ.RAID_TOES)
-        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 6]:SetText('|cFFFFD331' .. OQ.LABEL_RAIDS .. '|r')
+        pm_tooltip.right[pm_tooltip.nRows - 6]:SetText('')
+
+        pm_tooltip.left[pm_tooltip.nRows - 5]:SetText(OQ.RAID_TOES)
+        pm_tooltip.right[pm_tooltip.nRows - 5]:SetText(
             oq.pm_tooltip_get_xpbar(raids:sub(1, 1), raids:sub(2, 2), nil, 4)
         )
-        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(OQ.RAID_HOF)
-        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(OQ.RAID_HOF)
+        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
             oq.pm_tooltip_get_xpbar(raids:sub(3, 3), raids:sub(4, 4), nil, 6, 3, nil)
         ) -- last 2 params: break insert
-        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(OQ.RAID_MV)
-        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(OQ.RAID_MV)
+        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
             oq.pm_tooltip_get_xpbar(raids:sub(5, 5), raids:sub(6, 6), nil, 6, 3, nil)
         ) -- last 2 params: break insert
 
-        pm_tooltip.left[pm_tooltip.nRows - 1]:SetText(OQ.RAID_TOT)
+        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(OQ.RAID_TOT)
         dots = oq.pm_tooltip_get_xpbar(raids:sub(7, 7), raids:sub(9, 9), nil, 6, 3, 6)
         dots = dots .. '' .. oq.pm_tooltip_get_xpbar(raids:sub(8, 8), raids:sub(10, 10), nil, 6, 3, nil)
-        pm_tooltip.right[pm_tooltip.nRows - 1]:SetText(dots)
-        pm_tooltip.left[pm_tooltip.nRows - 0]:SetText(OQ.RAID_RA_DEN)
+        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(dots)
+        pm_tooltip.left[pm_tooltip.nRows - 1]:SetText(OQ.RAID_RA_DEN)
         dots = ' ' .. oq.pm_tooltip_get_xpbar(nil, raids:sub(11, 11), nil, 1) .. ' '
-        pm_tooltip.right[pm_tooltip.nRows - 0]:SetText(dots)
-        pm_tooltip.left[pm_tooltip.nRows + 1]:SetText(OQ.RAID_SOO)
+        pm_tooltip.right[pm_tooltip.nRows - 1]:SetText(dots)
+        pm_tooltip.left[pm_tooltip.nRows - 0]:SetText(OQ.RAID_SOO)
 
         -- record: bbbwwLLLmmm   12,22
         dots = oq.pm_tooltip_get_xpbar(raids:sub(23, 23), raids:sub(26, 26), raids:sub(29, 29), 6, 4, nil) -- last 2 params: break insert
         dots = dots .. '' .. oq.pm_tooltip_get_xpbar(raids:sub(24, 24), raids:sub(27, 27), raids:sub(30, 30), 6, 2, 5) -- last 2 params: break insert
         dots = dots .. '' .. oq.pm_tooltip_get_xpbar(raids:sub(25, 25), raids:sub(28, 28), raids:sub(31, 31), 2)
-        pm_tooltip.right[pm_tooltip.nRows + 1]:SetText(dots)
+        pm_tooltip.right[pm_tooltip.nRows - 0]:SetText(dots)
     elseif (raid.type == OQ.TYPE_ARENA) then
         -- rmmm5wwwlll3wwwlll2wwwlllC
         local spec = oq.get_class_spec(oq.decode_mime64_digits(raid.leader_xp:sub(26, 26)))
-        pm_tooltip.left[pm_tooltip.nRows - 7]:SetText(L['specialization'])
+        pm_tooltip.left[pm_tooltip.nRows - 8]:SetText(L['specialization'])
         if (spec) then
-            pm_tooltip.right[pm_tooltip.nRows - 7]:SetText(spec.n:sub(4, -1))
+            pm_tooltip.right[pm_tooltip.nRows - 8]:SetText(spec.n:sub(4, -1))
 
             local t = CLASS_ICON_TCOORDS[OQ.LONG_CLASS[spec.n:sub(1, 2)]]
             if t then
@@ -1077,52 +1126,52 @@ function oq.pm_tooltip_set(f, raid_token)
             end
         end
 
-        pm_tooltip.left[pm_tooltip.nRows - 6]:SetText(L['best mmr'])
-        pm_tooltip.right[pm_tooltip.nRows - 6]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(2, 4)))
+        pm_tooltip.left[pm_tooltip.nRows - 7]:SetText(L['best mmr'])
+        pm_tooltip.right[pm_tooltip.nRows - 7]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(2, 4)))
 
-        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 5]:SetText(
             '2v2  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(19, 19))] or ''
         )
-        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
+        pm_tooltip.right[pm_tooltip.nRows - 5]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(20, 22)) ..
                 ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(23, 25))
         )
-        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(
             '3v3  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(12, 12))] or ''
         )
-        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
+        pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(13, 15)) ..
                 ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(16, 18))
         )
-        pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(
+        pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(
             '5v5  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(5, 5))] or ''
         )
-        pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(
+        pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(6, 8)) ..
                 ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(9, 11))
         )
 
-        pm_tooltip.right[pm_tooltip.nRows - 0]:SetText(
+        pm_tooltip.right[pm_tooltip.nRows - 1]:SetText(
             OQ.ARENA_RANKS[oq.decode_mime64_digits(raid.leader_xp:sub(1, 1))] or ''
         )
     end
 
     -- set dragon
-    oq.pm_tooltip_set_background_dragon(rank, oq._player_faction, back_set)
+    oq.pm_tooltip_set_background_dragon(rank, oq._player_faction, back_set, offset, is_long)
 
     oq.pm_tooltip_disqualified(raid, pm_tooltip)
     pm_tooltip:Show()
 end
 
-function oq.pm_tooltip_set_background_dragon(rank, faction, back_set)
+function oq.pm_tooltip_set_background_dragon(rank, faction, back_set, offset, is_long)
     if (rank == 4) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'golden-dragon')
+        oq.vip_set_dragon(pm_tooltip, 'golden-dragon', offset, is_long)
     elseif (rank == 3) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'dragon')
+        oq.vip_set_dragon(pm_tooltip, 'dragon', offset, is_long)
     elseif (rank == 2) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'general-' .. oq._player_faction)
+        oq.vip_set_dragon(pm_tooltip, 'general-' .. oq._player_faction, offset, is_long)
     elseif (rank == 1) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'knight-' .. oq._player_faction)
+        oq.vip_set_dragon(pm_tooltip, 'knight-' .. oq._player_faction, offset, is_long)
     elseif (back_set ~= true) then
         oq.vip_clear(pm_tooltip)
     end

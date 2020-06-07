@@ -68,6 +68,7 @@ function tbl.dump(t, s)
 end
 
 function tbl.fill(t, ...)
+    local n = 0
     if (t) then
         if (tbl._watchlist[t]) then
             print(debugstack())
@@ -77,8 +78,10 @@ function tbl.fill(t, ...)
         local i
         for i = 1, select('#', ...) do
             t[i] = select(i, ...)
+            n = n + 1
         end
     end
+    return n
 end
 
 function tbl.fill_match(t, str, ch)
@@ -113,7 +116,7 @@ function tbl.find_keybyvalue(t, v)
 end
 
 function tbl.init()
-    tbl._watchlist = tbl.new()
+    tbl._watchlist = tbl._watchlist or tbl.new()
 end
 
 function tbl.new()
@@ -162,14 +165,16 @@ function tbl.push(t, v)
     end
 end
 
-function tbl.size(t)
+function tbl.size(t, type_)
     if (t == nil) then
         return nil
     end
     local n = 0
     local i, v
     for i, v in pairs(t) do
-        n = n + 1
+        if (type_ == nil) or (type(v) == type_) then
+            n = n + 1
+        end
     end
     return n
 end

@@ -47,7 +47,7 @@
                        </Anchor>
                    </Anchors>
                </Texture>
-               <FontString name="OQFrameHeaderLogo" inherits="GameFontNormal" text="oQueue vx.xx - Premade finder">
+               <FontString name="OQFrameHeaderLogo" inherits="GameFontNormal" text="oQueue vx.xx - Group finder">
                    <Anchors>
                        <Anchor point="TOP" relativeTo="OQFrameHeader">
                            <Offset>
@@ -223,7 +223,7 @@
                </Frames> 
            </Frame>   
 
-           <Button name="$parentTab1" inherits="CharacterFrameTabButtonTemplate" id="1" text= "Premade" >
+           <Button name="$parentTab1" inherits="CharacterFrameTabButtonTemplate" id="1" text= "Group" >
                <Anchors>
                    <Anchor point="CENTER" relativePoint="BOTTOMLEFT">
                        <Offset>
@@ -246,7 +246,7 @@
                    </OnClick>
                </Scripts>
            </Button>
-           <Button name="$parentTab2" inherits="CharacterFrameTabButtonTemplate" id="2" text= "Find Premade" >
+           <Button name="$parentTab2" inherits="CharacterFrameTabButtonTemplate" id="2" text= "Find Group" >
                <Anchors>
                    <Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
                        <Offset>
@@ -269,7 +269,7 @@
                    </OnClick>
                </Scripts>
            </Button>
-           <Button name="$parentTab3" inherits="CharacterFrameTabButtonTemplate" id="3" text= "Create Premade" >
+           <Button name="$parentTab3" inherits="CharacterFrameTabButtonTemplate" id="3" text= "Create Group" >
                <Anchors>
                    <Anchor point="LEFT" relativeTo="$parentTab2" relativePoint="RIGHT">
                        <Offset>

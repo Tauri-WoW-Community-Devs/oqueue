@@ -5,6 +5,9 @@
   <Binding name="AUTO_INSPECT" header="OQUEUE">
     OQ_AutoInspect();
   </Binding>
+  <Binding name="TOGGLE_SNITCH">
+    OQ_Snitch_Toggle();
+  </Binding>
   <Binding name="WAITLIST_INVITEALL" header="OQUEUE">
     OQ_Waitlist_InviteAll();
   </Binding>

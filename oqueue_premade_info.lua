@@ -502,7 +502,7 @@ function oq.get_arena_experience(as_lead)
 end
 
 function oq.get_leader_experience()
-    if (oq.raid.type == OQ.TYPE_DUNGEON) or (oq.raid.type == OQ.TYPE_RAID) then
+    if (oq.raid.type == OQ.TYPE_DUNGEON) or (oq.raid.type == OQ.TYPE_RAID) or (oq.raid.type == OQ.TYPE_QUESTS) then
         return oq.get_raid_progression()
     end
     if (oq.raid.type == OQ.TYPE_BG) then
@@ -753,8 +753,10 @@ end
 function oq.is_boss_conflict(raid_id, maxBosses, boss_bits)
     local my_boss_bits = oq.get_boss_bits(raid_id, maxBosses)
     local i
+    oq.__reason_extra = nil
     for i = 1, maxBosses do
         if oq.is_set(my_boss_bits, 2 ^ i) and not oq.is_set(boss_bits, 2 ^ i) then
+            oq.__reason_extra = oq.get_boss_name(raid_id, i)
             return true
         end
     end
@@ -793,15 +795,16 @@ function oq.pdata_raid_conflict(pdata)
     end
     local D = oq.decode_mime64_digits(oq.raid.pdata:sub(4, 4)) -- difficulty
 
-    -- their bits
+    -- lockout only matters for 10/25 normal or heroic
     if (D >= 3) and (D <= 6) then
         local maxBosses = OQ.max_raid_bosses[raid_id] or 0
-        local boss_bits = oq.decode_mime64_digits(pdata:sub(10, 12))
-        -- lockout only matters for 10/25 normal or heroic
+        local boss_bits = oq.decode_mime64_digits(pdata:sub(10, 12)) -- their bits
         local my_boss_bits = oq.get_boss_bits(raid_id, maxBosses)
         local i
         for i = 1, maxBosses do
+            -- if they're locked on a boss and i am not... conflict
             if oq.is_set(boss_bits, 2 ^ i) and not oq.is_set(my_boss_bits, 2 ^ i) then
+                oq.__reason = oq.get_boss_name(raid_id, i)
                 return true
             end
         end
