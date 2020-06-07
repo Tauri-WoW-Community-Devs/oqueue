@@ -52,15 +52,6 @@ function oq.tooltip_create()
     end
     tooltip:SetBackdrop(oq.__backdrop20)
     tooltip:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
-    tooltip.emphasis_texture = tooltip:CreateTexture(nil, 'ARTWORK')
-    tooltip.emphasis_texture:SetTexture('')
-    tooltip.emphasis_texture:SetPoint('TOPLEFT', tooltip, 'TOPLEFT', 10, -10)
-    tooltip.emphasis_texture:SetPoint('BOTTOMRIGHT', tooltip, 'BOTTOMRIGHT', -10, 10)
-
-    tooltip.splat = tooltip:CreateTexture(nil, 'BORDER')
-    tooltip.splat:SetTexture('')
-    tooltip.splat:SetPoint('TOPLEFT', tooltip, 'TOPLEFT', 2, -2)
-    tooltip.splat:SetPoint('BOTTOMRIGHT', tooltip, 'BOTTOMRIGHT', -2, 2)
 
     -- class portrait
     local f = oq.CreateFrame('FRAME', 'OQTooltipPortraitFrame', tooltip)
@@ -321,8 +312,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
         return
     end
 
-    local back_set = oq.vip_set_emphasis(tooltip, strlower(m.realid or ''), -20)
-
     tooltip.left[1]:SetText(m.name .. ' (' .. tostring(m.level or 0) .. ')')
     tooltip.left[1]:SetTextColor(OQ.CLASS_COLORS[m.class].r, OQ.CLASS_COLORS[m.class].g, OQ.CLASS_COLORS[m.class].b, 1)
     tooltip.left[2]:SetText(m.realm)
@@ -463,21 +452,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
         tooltip.left[tooltip.nRows - 0]:SetText(oq.get_rank_achieves(m.ranks))
         tooltip.right[tooltip.nRows - 0]:SetText('')
     end
-    local title = select(5, oq.get_dragon_rank(m.premade_type, nil, oq.raid.leader_xp))
-    if (is_lead) and (back_set ~= true) and (title) then
-        -- set dragon
-        if (title == 'golden') then
-            oq.vip_set_dragon(tooltip, 'golden-dragon', -20, nil)
-        elseif (title == 'silver') then
-            oq.vip_set_dragon(tooltip, 'dragon', -20, nil)
-        elseif (title == 'general') then
-            oq.vip_set_dragon(tooltip, 'general-' .. oq._player_faction, -20, nil)
-        elseif (title == 'knight') then
-            oq.vip_set_dragon(tooltip, 'knight-' .. oq._player_faction, -20, nil)
-        else
-            oq.vip_clear(tooltip)
-        end
-    end
 
     -- adjust dimensions of the box
     local w = tooltip.left[1]:GetStringWidth()
@@ -559,15 +533,6 @@ function oq.long_tooltip_create()
     end
     tooltip:SetBackdrop(oq.__backdrop21)
     tooltip:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
-    tooltip.emphasis_texture = tooltip:CreateTexture(nil, 'BORDER')
-    tooltip.emphasis_texture:SetTexture('')
-    tooltip.emphasis_texture:SetPoint('TOPLEFT', tooltip, 'TOPLEFT', 10, -10)
-    tooltip.emphasis_texture:SetPoint('BOTTOMRIGHT', tooltip, 'BOTTOMRIGHT', -10, 10)
-
-    tooltip.splat = tooltip:CreateTexture(nil, 'BACKGROUND')
-    tooltip.splat:SetTexture('')
-    tooltip.splat:SetPoint('TOPLEFT', tooltip, 'TOPLEFT', 2, -2)
-    tooltip.splat:SetPoint('BOTTOMRIGHT', tooltip, 'BOTTOMRIGHT', -2, 2)
 
     -- class portrait
     local f = oq.CreateFrame('FRAME', 'OQTooltipPortraitFrame', tooltip)
@@ -770,16 +735,6 @@ function oq.pm_tooltip_create()
     end
     pm_tooltip:SetBackdrop(oq.__backdrop23)
 
-    pm_tooltip.emphasis_texture = pm_tooltip:CreateTexture(nil, 'BORDER')
-    pm_tooltip.emphasis_texture:SetTexture('')
-    pm_tooltip.emphasis_texture:SetPoint('TOPLEFT', pm_tooltip, 'TOPLEFT', 5, -5)
-    pm_tooltip.emphasis_texture:SetPoint('BOTTOMRIGHT', pm_tooltip, 'BOTTOMRIGHT', -5, 5)
-
-    pm_tooltip.splat = pm_tooltip:CreateTexture(nil, 'BACKGROUND')
-    pm_tooltip.splat:SetTexture('')
-    pm_tooltip.splat:SetPoint('TOPLEFT', pm_tooltip, 'TOPLEFT', 9, -9)
-    pm_tooltip.splat:SetPoint('BOTTOMRIGHT', pm_tooltip, 'BOTTOMRIGHT', -9, 9)
-
     local t = pm_tooltip:CreateTexture(nil, 'OVERLAY')
     --  t:SetTexture( "Interface\\TargetingFrame\\UI-Classes-Circles" ) ;
     t:SetAlpha(1.0)
@@ -924,12 +879,9 @@ function oq.pm_tooltip_set(f, raid_token)
     if ((raid_token == oq.raid.raid_token) and oq.iam_raid_leader()) then
         nMembers, _, _, nWaiting = oq.calc_raid_stats()
     end
-    local back_set = oq.premade_vip_check(pm_tooltip, raid_token, true)
+
     local nWins = 0
     local nLosses = 0
-    local rank = 0
-    local offset = nil
-    local is_long = nil
 
     pm_tooltip.left[1]:SetText(raid.name)
     pm_tooltip.right[1]:SetText('')
@@ -958,8 +910,6 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.left[pm_tooltip.nRows + 2]:SetText(OQ.TT_OQVERSION)
         pm_tooltip.right[pm_tooltip.nRows + 2]:SetText((raid.oq_ver == 0) and ('--') or oq.get_version_str(raid.oq_ver))
         pm_tooltip.right[pm_tooltip.nRows + 2]:SetFont(OQ.FONT, 9, '')
-        offset = -10
-        is_long = nil
     else
         pm_tooltip:SetHeight(12 + pm_tooltip.nRows * 16)
         pm_tooltip.left[pm_tooltip.nRows]:SetText(OQ.TT_OQVERSION)
@@ -996,7 +946,6 @@ function oq.pm_tooltip_set(f, raid_token)
         local nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(6, 8))
         local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp)
-        rank = r1
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -1014,7 +963,6 @@ function oq.pm_tooltip_set(f, raid_token)
         nWins, nLosses = oq.get_challenge_winloss_record(raid.leader_xp)
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(12, 14))
         local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp or 0)
-        rank = r1
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -1063,7 +1011,6 @@ function oq.pm_tooltip_set(f, raid_token)
         nWins, nLosses = oq.get_pve_winloss_record(raid.leader_xp)
         local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(17, 19))
         local tag, y, cx, cy, title, r1 = oq.get_dragon_rank(raid.type, dkp or 0)
-        rank = r1
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -1156,25 +1103,8 @@ function oq.pm_tooltip_set(f, raid_token)
         )
     end
 
-    -- set dragon
-    oq.pm_tooltip_set_background_dragon(rank, oq._player_faction, back_set, offset, is_long)
-
     oq.pm_tooltip_disqualified(raid, pm_tooltip)
     pm_tooltip:Show()
-end
-
-function oq.pm_tooltip_set_background_dragon(rank, faction, back_set, offset, is_long)
-    if (rank == 4) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'golden-dragon', offset, is_long)
-    elseif (rank == 3) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'dragon', offset, is_long)
-    elseif (rank == 2) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'general-' .. oq._player_faction, offset, is_long)
-    elseif (rank == 1) and (back_set ~= true) then
-        oq.vip_set_dragon(pm_tooltip, 'knight-' .. oq._player_faction, offset, is_long)
-    elseif (back_set ~= true) then
-        oq.vip_clear(pm_tooltip)
-    end
 end
 
 function oq.pm_tooltip_show()

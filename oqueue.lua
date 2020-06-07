@@ -32,7 +32,6 @@ local OQ_SEC_BETWEEN_ADS = 20
 local OQ_SEC_BETWEEN_PROMO = 20
 -- local OQ_MIN_PROMO_TIME = (OQ_SEC_BETWEEN_ADS - 5) ; -- allow for mesh latency
 local OQ_BOOKKEEPING_INTERVAL = 10
-local HAILTOTHEKINGBABY = 3600 -- no more then once an hour
 local OQ_MAX_ATOKEN_LIFESPAN = 120 -- 120 seconds before token removed from ATOKEN list
 local OQ_MIN_ATOKEN_RELAY_TM = 30 -- do not relay atokens more then once every 30 seconds
 local OQ_MAX_HONOR_WARNING = 3600
@@ -100,7 +99,6 @@ local _oqgeneral_count = 0
 local _oqgeneral_lockdown = true -- restricted until unlocked once the # of members of oqgeneral are determined
 local _flags = nil
 local _enemy = nil
-local _hailtiny = 0
 local _next_flag_check = 0
 local _announcePremades = nil -- used for delayed announcements when loading
 local _hop = 0
@@ -114,7 +112,6 @@ local _names = nil
 local _tags = nil
 local _realms = nil
 local _items = nil
-local _vips = nil
 local _vlist = nil
 local oq_ascii = nil
 local oq_mime64 = nil
@@ -5198,6 +5195,16 @@ function oq.report_score(winner, scores)
     end
 end
 
+function oq.report_rage()
+    if (_inside_bg) then
+        print(string.format(OQ.RAGEQUITS, OQ_data.nrage))
+    else
+        local min = floor((OQ_data.stats.bg_length) / 60)
+        local sec = OQ_data.stats.bg_length % 60
+        oq.log(true, string.format(OQ.RAGELASTGAME, OQ_data.nrage, min, sec))
+    end
+end
+
 function oq.show_raw_numbers()
     if (oq._show_raw) then
         oq._show_raw = nil
@@ -5845,8 +5852,6 @@ function oq.raid_create()
         message(OQ.MSG_CANNOTCREATE_TOOLOW)
     --    return ;
     end
-
-    OQ_data.realid = oq.player_realid
 
     player_realm = player_realm or oq.GetRealmName()
 
@@ -7245,7 +7250,6 @@ function oq.reshuffle_premades_now()
     cx = oq.tab2._list:GetWidth() - 2 * x
 
     tbl.clear(_items)
-    tbl.clear(_vips)
     local raid_token, p
     for raid_token, p in pairs(oq.premades) do
         if (p) then
@@ -7268,12 +7272,7 @@ function oq.reshuffle_premades_now()
              then
                 p.__y = 1
                 p._isvis = true
-                local btag = strlower(p.leader_rid or '')
-                if (oq.vip(btag)) and (oq.vip(btag).nosort == nil) then
-                    table.insert(_vips, raid_token)
-                else
-                    table.insert(_items, raid_token)
-                end
+                table.insert(_items, raid_token)
             else
                 p._row = oq.DeleteFrame(p._row)
             end
@@ -7281,19 +7280,10 @@ function oq.reshuffle_premades_now()
     end
 
     oq._npremades = 0
-    table.sort(_vips, oq.compare_premades)
     x = 11
     y = 4
     cy = OQ_data._rowheight or 24
     cx = oq.tab2._list:GetWidth() - 2 * x
-    local i, v
-    for i, v in pairs(_vips) do
-        oq.setpos(oq.premades[v]._row, x, y, cx, cy)
-        oq.premades[v].__x = x
-        oq.premades[v].__y = y
-        y = y + cy
-        oq._npremades = oq._npremades + 1
-    end
 
     table.sort(_items, oq.compare_premades)
     for i, v in pairs(_items) do
@@ -7600,30 +7590,19 @@ function oq.reshuffle_waitlist()
     n = 0
 
     tbl.clear(_items)
-    tbl.clear(_vips)
     for n, v in pairs(oq.tab7.waitlist) do
         if (v.token) and (oq.waitlist[v.token]) then
             if (oq.waitlist[v.token].realid == nil) then
                 oq.tab7.waitlist[n] = oq.DeleteFrame(v)
                 oq.waitlist[v.token] = tbl.delete(oq.waitlist[v.token])
             else
-                local btag = strlower(oq.waitlist[v.token].realid)
-                if (n ~= nil) and (oq.vip(btag)) and (oq.vip(btag).nosort == nil) then
-                    table.insert(_vips, n)
-                elseif (n ~= nil) then
+                if (n ~= nil) then
                     table.insert(_items, n)
                 end
             end
         end
     end
     oq._nwaitlist = 0
-    table.sort(_vips, oq.compare_waitlist)
-    for i, v in pairs(_vips) do
-        oq.setpos(oq.tab7.waitlist[v], x, y, cx, cy)
-        y = y + cy + 2
-        n = n + oq.tab7.waitlist[v].nMembers
-        oq._nwaitlist = oq._nwaitlist + 1
-    end
 
     table.sort(_items, oq.compare_waitlist)
     for i, v in pairs(_items) do
@@ -9670,346 +9649,6 @@ function oq.on_waitlist_item_click(self, button)
     end
 end
 
-function oq.vip(btag)
-    if (OQ.VIP[btag]) then
-        return OQ.VIP[btag]
-    end
-    if (OQ_data.vtags) and (OQ_data.vtags[btag]) then
-        local now = oq.utc_time()
-        if (OQ_data.vtags[btag].expires) and (now < OQ_data.vtags[btag].expires) then
-            return OQ_data.vtags[btag]
-        end
-    end
-    return nil
-end
-
-OQ.VIP = {
-    ['spudnic072#1418'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 255 / 255,
-        a = 1.0,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-Pandemonius',
-        r2 = 0 / 255,
-        g2 = 0 / 255,
-        b2 = 196 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 30,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['tiny#1846'] = {
-        r = 117 / 255,
-        g = 0 / 255,
-        b = 193 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/Challenges/ChallengeMode_Medal_Silver',
-        r2 = 97 / 255,
-        g2 = 20 / 255,
-        b2 = 173 / 255,
-        a2 = 0.9,
-        x1 = 0 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 128,
-        y2 = 128 / 128,
-        left = 25,
-        top = -40,
-        right = -25,
-        bottom = 60,
-        adjust_top = -30,
-        adjust_bottom = 70,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill',
-        orbit = 1
-    },
-    ['oathbreaker#1695'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 200 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-Ragnaros',
-        r2 = 77 / 255,
-        g2 = 0 / 255,
-        b2 = 153 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 30,
-        adjust_top = -70,
-        adjust_bottom = 0,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['oathbreaker#1308'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 200 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-Ragnaros',
-        r2 = 77 / 255,
-        g2 = 0 / 255,
-        b2 = 153 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 30,
-        adjust_top = -70,
-        adjust_bottom = 0,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['rathamus#1865'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 255 / 255,
-        a = 1.0,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-Pyroguard Emberseer',
-        r2 = 160 / 255,
-        g2 = 2 / 255,
-        b2 = 2 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 30,
-        adjust_top = -70,
-        adjust_bottom = 0,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    -- golden dragons: line highlight, sorted
-    ['golden-dragon'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 255 / 255,
-        a = 0.8,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-NefarianBWD',
-        r2 = 128 / 255,
-        g2 = 128 / 255,
-        b2 = 128 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 30,
-        nosort = nil
-    },
-    -- silver dragons: line highlight, no sort
-    ['dragona'] = {
-        r = 225 / 255,
-        g = 225 / 255,
-        b = 255 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/PetBattles/PetIcon-Dragon',
-        x1 = 0 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 256,
-        y2 = 100 / 256,
-        nosort = 1
-    },
-    ['dragon'] = {
-        r = 255 / 255,
-        g = 255 / 255,
-        b = 255 / 255,
-        a = 0.5,
-        bdrop = 'INTERFACE/EncounterJournal/UI-EJ-BOSS-Tsulong',
-        r2 = 128 / 255,
-        g2 = 128 / 255,
-        b2 = 64 / 255,
-        a2 = 0.9,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -95,
-        right = -30,
-        bottom = 30,
-        nosort = 1
-    },
-    -- generals: no line highlight, no sort
-    ['general-H'] = {
-        r = 140 / 255,
-        g = 2 / 255,
-        b = 2 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/Challenges/challenges-plat',
-        left = 25,
-        top = -55,
-        right = -25,
-        bottom = 45,
-        adjust_top = -30,
-        adjust_bottom = 70,
-        nosort = 1
-    },
-    ['general-A'] = {
-        r = 2 / 255,
-        g = 80 / 255,
-        b = 140 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/Challenges/challenges-plat',
-        left = 25,
-        top = -55,
-        right = -25,
-        bottom = 45,
-        adjust_top = -30,
-        adjust_bottom = 70,
-        nosort = 1
-    },
-    -- knights: no line highlight, no sort
-    ['knight-H'] = {
-        r = 128 / 255,
-        g = 2 / 255,
-        b = 2 / 255,
-        a = 0.75,
-        bdrop = 'INTERFACE/Challenges/ChallengeMode_Medal_Bronze',
-        r2 = 0 / 255,
-        g2 = 0 / 255,
-        b2 = 0 / 255,
-        a2 = 0.0,
-        left = 25,
-        top = -55,
-        right = -25,
-        bottom = 45,
-        adjust_top = -30,
-        adjust_bottom = 70,
-        nosort = 1
-    },
-    ['knight-A'] = {
-        r = 2 / 255,
-        g = 100 / 255,
-        b = 255 / 255,
-        a = 0.9,
-        bdrop = 'INTERFACE/Challenges/ChallengeMode_Medal_Bronze',
-        r2 = 0 / 255,
-        g2 = 0 / 255,
-        b2 = 0 / 255,
-        a2 = 0.0,
-        left = 25,
-        top = -55,
-        right = -25,
-        bottom = 45,
-        adjust_top = -30,
-        adjust_bottom = 70,
-        nosort = 1
-    },
-    -- angels and badboys: no line highlight, no sort
-    ['weanii#1434'] = {
-        r = 90 / 255,
-        g = 90 / 255,
-        b = 164 / 255,
-        a = 1.0,
-        bdrop = 'INTERFACE/TUTORIALFRAME/UI-TUTORIALFRAME-SPIRITREZ',
-        r2 = 90 / 255,
-        g2 = 90 / 255,
-        b2 = 200 / 255,
-        a2 = 0.9,
-        x1 = (197 - 60) / 512,
-        x2 = (197 + 60) / 512,
-        y1 = 0 / 128,
-        y2 = 128 / 128,
-        left = 5,
-        top = -10,
-        right = -5,
-        bottom = 10,
-        adjust_top = -20,
-        adjust_bottom = 60,
-        nosort = nil,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['buffy#1245'] = {
-        r = 209 / 255,
-        g = 153 / 255,
-        b = 166 / 255,
-        a = 1.0,
-        bdrop = '',
-        r2 = 209 / 255,
-        g2 = 153 / 255,
-        b2 = 166 / 255,
-        a2 = 0.75,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 60,
-        nosort = 1,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['kandie#1734'] = {
-        r2 = 254 / 255,
-        g2 = 0 / 255,
-        b2 = 226 / 255,
-        a2 = 1.0,
-        bdrop = '',
-        r2 = 254 / 255,
-        g2 = 0 / 255,
-        b2 = 226 / 255,
-        a2 = 0.75,
-        x1 = 18 / 128,
-        x2 = 128 / 128,
-        y1 = 0 / 64,
-        y2 = 64 / 64,
-        left = 5,
-        top = -90,
-        right = -30,
-        bottom = 60,
-        nosort = 1,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill'
-    },
-    ['gatemaster75#1240'] = {
-        r = 255 / 255,
-        g = 0 / 255,
-        b = 0 / 255,
-        a = 1.0,
-        bdrop = 'INTERFACE/ARCHEOLOGY/ArchRare-TrollVoodooDoll',
-        r2 = 220 / 255,
-        g2 = 0 / 255,
-        b2 = 0 / 255,
-        a2 = 0.6,
-        x1 = 170 / 512,
-        x2 = 370 / 512,
-        y1 = 0 / 256,
-        y2 = 256 / 256,
-        left = 50,
-        top = -50,
-        right = -50,
-        bottom = 50,
-        adjust_top = -30,
-        adjust_bottom = 60,
-        nosort = 1,
-        splat = 'INTERFACE/CHARACTERFRAME/BarFill',
-        nohilight = 1
-    }
-}
-
 OQ.patterns = {
     [0] = {
         r = 2 / 255,
@@ -10152,59 +9791,6 @@ function oq.on_vlist(token, id, expiration, vlist)
     end
 end
 
-function oq.vip_clear(f)
-    if (oq.__backdrop01 == nil) then
-        oq.__backdrop01 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop01)
-    if (f.emphasis_texture ~= nil) then
-        f.emphasis_texture:SetTexture('')
-        f.emphasis_texture:SetVertexColor(0, 0, 0)
-        f.emphasis_texture:SetTexCoord(0, 1, 0, 1)
-        f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', 5, -10)
-        f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', -5, 10)
-    end
-    oq.orbit_hide(f)
-    if (f.splat ~= nil) then
-        f.splat:SetTexture('')
-        f.splat:SetVertexColor(0, 0, 0)
-    end
-    f:SetBackdropColor(0, 0, 0)
-end
-
-function oq.vip_set(f, btag)
-    if (btag) and (oq.vip(btag)) then
-        local v = oq.vip(btag)
-        if (oq.__backdrop02 == nil) then
-            oq.__backdrop02 = {
-                bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-                tile = true,
-                tileSize = 16,
-                edgeSize = 16,
-                insets = {left = -7, right = -8, top = 1, bottom = 0}
-            }
-        end
-        f:SetBackdrop(oq.__backdrop02)
-        if (v.r2) and (v.nohilight == nil) then
-            f:SetBackdropColor(v.r2, v.g2, v.b2, v.a2)
-        elseif (v.nohilight == nil) then
-            f:SetBackdropColor(v.r, v.g, v.b, v.a)
-        else
-            f:SetBackdropColor(0, 0, 0, 1)
-        end
-        return 1
-    end
-    f:SetBackdrop(nil)
-    return nil
-end
-
 function oq.orbit_show(f)
     if (f.__orbit == nil) then
         f.__orbit = oq.CreateFrame('Frame', 'oQueueModel', f)
@@ -10301,128 +9887,6 @@ function oq.orbit_hide(f)
         f.__orbit.__model:Hide()
     end
     f:SetScript('OnUpdate', nil)
-end
-
-function oq.vip_set_emphasis(f, btag, dy, is_long)
-    if (btag) and (oq.vip(btag)) then
-        local v = oq.vip(btag)
-        if (oq.__backdrop03 == nil) then
-            oq.__backdrop03 = {
-                bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-                edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-                tile = nil,
-                tileSize = 16,
-                edgeSize = 16,
-                insets = {left = 1, right = 1, top = 1, bottom = 1}
-            }
-        end
-        f:SetBackdrop(oq.__backdrop03)
-        if (f.emphasis_texture ~= nil) then
-            f.emphasis_texture:SetTexture(v.bdrop)
-            if (v.orbit) then
-                oq.orbit_show(f)
-            else
-                oq.orbit_hide(f)
-            end
-            if (v.x1) then
-                f.emphasis_texture:SetTexCoord(v.x1, v.x2, v.y1, v.y2)
-            else
-                f.emphasis_texture:SetTexCoord(0, 1, 0, 1)
-            end
-            if (v.top) then
-                if (v.adjust_top and is_long) then
-                    f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', v.left, v.top + v.adjust_top)
-                else
-                    f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', v.left, v.top + (dy or 0))
-                end
-                if (v.adjust_bottom and is_long) then
-                    f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', v.right, v.bottom + v.adjust_bottom)
-                else
-                    f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', v.right, v.bottom)
-                end
-            else
-                f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', 5, -10)
-                f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', -5, 10)
-            end
-            if (v.splat) and (f.splat) then
-                f.splat:SetTexture(v.splat)
-                f.splat:SetAllPoints(f)
-                f.splat:SetVertexColor(v.r2, v.g2, v.b2, v.a2)
-            end
-            f.emphasis_texture:SetVertexColor(v.r, v.g, v.b, v.a)
-        end
-        f:SetBackdropColor(0, 0, 0)
-        return ((v.bdrop ~= nil) and (v.splat == nil)) or ((v.bdrop ~= nil) and (v.splat ~= nil))
-    end
-    oq.vip_clear(f)
-    return nil
-end
-
-function oq.vip_set_dragon(f, rank, dy, is_long)
-    if (f == nil) or (rank == nil) or (OQ.VIP[rank] == nil) then
-        return nil
-    end
-    local v = OQ.VIP[rank]
-    if (oq.__backdrop04 == nil) then
-        oq.__backdrop04 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = nil,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop04)
-    if (f.emphasis_texture ~= nil) then
-        f.emphasis_texture:SetTexture(v.bdrop)
-        if (v.x1 ~= nil) then
-            f.emphasis_texture:SetTexCoord(v.x1, v.x2, v.y1, v.y2)
-        else
-            f.emphasis_texture:SetTexCoord(0, 1, 0, 1)
-        end
-
-        if (v.top) then
-            if (v.adjust_top and is_long) then
-                f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', v.left, v.top + v.adjust_top)
-            else
-                f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', v.left, v.top + (dy or 0))
-            end
-            if (v.adjust_bottom and is_long) then
-                f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', v.right, v.bottom + v.adjust_bottom)
-            else
-                f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', v.right, v.bottom)
-            end
-        else
-            f.emphasis_texture:SetPoint('TOPLEFT', f, 'TOPLEFT', 5, -10)
-            f.emphasis_texture:SetPoint('BOTTOMRIGHT', f, 'BOTTOMRIGHT', -5, 10)
-        end
-        f.emphasis_texture:SetVertexColor(v.r, v.g, v.b, v.a)
-    end
-    f:SetBackdropColor(0, 0, 0)
-    return 1
-end
-
-function oq.premade_vip_check(f, token, emphasis)
-    if (oq.premades[token] == nil) then
-        return nil
-    end
-    if (emphasis) then
-        return oq.vip_set_emphasis(f, strlower(oq.premades[token].leader_rid or ''))
-    else
-        return oq.vip_set(f, strlower(oq.premades[token].leader_rid or ''))
-    end
-end
-
-function oq.waitlist_vip_check(f, token, emphasis)
-    if (oq.waitlist[token] == nil) then
-        return nil
-    end
-    if (emphasis) then
-        return oq.vip_set_emphasis(f, strlower(oq.waitlist[token].realid or ''))
-    else
-        return oq.vip_set(f, strlower(oq.waitlist[token].realid or ''))
-    end
 end
 
 function oq.toggle_raid_scroll(state)
@@ -10525,7 +9989,6 @@ function oq.create_premade_listing(parent, x, y, cx, cy, token, type)
         end
     end
 
-    oq.premade_vip_check(r._row, token)
     r._row.cy = cy
     --
     -- hilight
@@ -10724,7 +10187,6 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
             oq.on_waitlist_item_click(self, button)
         end
     )
-    oq.waitlist_vip_check(f, token)
 
     --
     -- highlight
@@ -12940,8 +12402,6 @@ function oq.tooltip_me()
     tooltip:SetFrameLevel(OQMainFrame:GetFrameLevel() + 10)
     oq.tooltip_clear()
 
-    local back_set = oq.vip_set_emphasis(tooltip, strlower(oq.player_realid or ''), -20, true)
-
     if (OQ.CLASS_COLORS[player_class] == nil) then
         return
     end
@@ -13040,18 +12500,6 @@ function oq.tooltip_me()
         tooltip.right[12]:SetText(
             oq.tooltip_game_record2(OQ_data.leader['rbg'].nWins, OQ_data.leader['rbg'].nLosses, true)
         )
-    end
-    -- set dragon
-    if ((bg_title == 'golden') or (rbg_title == 'golden')) and (back_set ~= true) then
-        oq.vip_set_dragon(tooltip, 'golden-dragon', -50, true)
-    elseif ((bg_title == 'silver') or (rbg_title == 'silver')) and (back_set ~= true) then
-        oq.vip_set_dragon(tooltip, 'dragon', -50, true)
-    elseif ((bg_title == 'general') or (rbg_title == 'general')) and (back_set ~= true) then
-        oq.vip_set_dragon(tooltip, 'general-' .. oq._player_faction, -50, true)
-    elseif ((bg_title == 'knight') or (rbg_title == 'knight')) and (back_set ~= true) then
-        oq.vip_set_dragon(tooltip, 'knight-' .. oq._player_faction, -50, true)
-    elseif (back_set ~= true) then
-        oq.vip_clear(tooltip)
     end
 
     tooltip.left[13]:SetText(OQ.TT_MMR)
@@ -17605,7 +17053,6 @@ end
 -- TODO is it still needed?
 function oq.get_battle_tag(forced)
     if (oq.player_realid) and (forced == nil) then
-        OQ_data.realid = oq.player_realid
         return oq.player_realid
     end
 
@@ -17631,7 +17078,6 @@ function oq.get_battle_tag(forced)
         oq._iam_scorekeeper = true
     end
 
-    OQ_data.realid = oq.player_realid
     return oq.player_realid
 end
 
@@ -17738,7 +17184,6 @@ function oq.populate_tab_setup()
 end
 
 function oq.onhide_tab_setup()
-    OQ_data.realid = oq.player_realid
 end
 
 function oq.is_my_req_token(req_tok)
@@ -19903,20 +19348,12 @@ end
 
 function oq.get_sorted_waitlist(players)
     tbl.clear(_items)
-    tbl.clear(_vips)
     tbl.clear(players)
     local i, n, v
     for n, v in pairs(oq.tab7.waitlist) do
-        local btag = strlower(oq.waitlist[v.token].realid)
-        if (n ~= nil) and (oq.vip(btag)) and (oq.vip(btag).nosort == nil) then
-            table.insert(_vips, n)
-        elseif (n ~= nil) then
+        if (n ~= nil) then
             table.insert(_items, n)
         end
-    end
-    table.sort(_vips, oq.compare_waitlist)
-    for i, v in pairs(_vips) do
-        table.insert(players, oq.tab7.waitlist[v].token)
     end
     table.sort(_items, oq.compare_waitlist)
     for i, v in pairs(_items) do
@@ -23660,73 +23097,6 @@ function oq.excited_cheer()
     PlaySoundFile('Sound\\interface\\levelup2.wav')
 end
 
-OQ.RANGED_SPELL = {
-    ['DK'] = 'death grip',
-    ['DR'] = 'entangling roots',
-    ['HN'] = 'arcane shot',
-    ['MG'] = 'frostbolt',
-    ['MK'] = 'crackling jade lightning', -- ?
-    ['PA'] = 'hammer of wrath',
-    ['PR'] = 'smite',
-    ['RO'] = 'throw',
-    ['SH'] = 'lightning bolt',
-    ['LK'] = 'drain life',
-    ['WA'] = 'shattering throw'
-}
-function oq.IsTargetInRange()
-    if (OQ.RANGED_SPELL[player_class] ~= nil) then
-        local in_range = IsSpellInRange(OQ.RANGED_SPELL[player_class], 'target')
-        if (in_range ~= nil) and (in_range == 1) then
-            return true
-        end
-    end
-    return nil
-end
-
-function oq.is_da_king(name)
-    if (oq.IsTargetInRange() == nil) then
-        return nil
-    end
-    if (name == 'tinystomper-magtheridon') and (oq.player_faction == 'A') then
-        return true
-    end
-    if (name == 'weegeezer-magtheridon') and (oq.player_faction == 'H') then
-        return true
-    end
-    return nil
-end
-
--- meant to be 'small' noises that will be replayed no more then once every 3 min
-OQ.RARE_ELITES = {
-    ['tinystomper - magtheridon'] = {tm = 0, snd = 'Sound/Creature/Rabbit/Pet_Rabbit_Clickable01.ogg'},
-    ['weegeezer - magtheridon'] = {tm = 0, snd = 'Sound/Creature/Rabbit/Pet_Rabbit_Clickable01.ogg'},
-    -- oath
-    ['hotshotone - magtheridon'] = {tm = 0, snd = 'Sound/Spells/Taunt.wav'},
-    ['oathbreakerz - magtheridon'] = {tm = 0, snd = 'Sound/Spells/Taunt.wav'},
-    ['shamanone - magtheridon'] = {tm = 0, snd = 'Sound/Spells/Taunt.wav'},
-    -- ronn
-    ['ronburggundy - magtheridon'] = {tm = 0, snd = 'Sound/Creature/Rabbit/Pet_Rabbit_Clickable01.ogg'},
-    ['billymayys - magtheridon'] = {tm = 0, snd = 'Sound/Creature/Rabbit/Pet_Rabbit_Clickable01.ogg'},
-    -- weanii
-    ["bareweanii - kil'jaeden"] = {tm = 0, snd = 'Sound/Creature/Babymurloc/Babymurloca.ogg'},
-    ["weanii - kil'jaeden"] = {tm = 0, snd = 'Sound/Creature/Babymurloc/Babymurloca.ogg'},
-    ['weaniigasmic - tichondrius'] = {tm = 0, snd = 'Sound/Creature/Babymurloc/Babymurloca.ogg'},
-    -- sorina & erick
-    ['sorina - icecrown'] = {tm = 0, snd = 'Sound/Creature/Gryphonpet/Gryphonpetclicable_01.ogg'},
-    ['erickah - icecrown'] = {tm = 0, snd = 'Sound/Creature/Cinderkitty/Pet_Cinderkitty_Clickable06.ogg'},
-    -- aellias
-    ["aellias - kel'thuzad"] = {tm = 0, snd = 'Sound/Item/Weapons/Mace1Hmetal/1Hmacemetalhitflesh1A.ogg'},
-    -- skitt
-    ['skitterin - stormreaver'] = {tm = 0, snd = 'Sound/Doodad/Fx_Kl_Hawk01.ogg'},
-    ['vendulka - stormreaver'] = {tm = 0, snd = 'Sound/Doodad/Fx_Kl_Hawk01.ogg'},
-    -- Rrog (10-aug-2013)
-    ['rrog - tichondrius'] = {tm = 0, snd = 'Sound/creature/Murloc/mMurlocAggroOld.ogg'},
-    ['rrogg - tichondrius'] = {tm = 0, snd = 'Sound/creature/Murloc/mMurlocAggroOld.ogg'}
-}
-function oq.is_rare(name)
-    return OQ.RARE_ELITES[name]
-end
-
 function oq.inspect_check()
     if
         ((OQ_data.ok2autoinspect == 1) and IsControlKeyDown() and UnitIsFriend('player', 'target') and
@@ -23788,30 +23158,21 @@ function oq.on_player_target_change()
         name = name .. ' - ' .. player_realm
     end
     name = strlower(name or '')
-    if oq.is_da_king(name) and ((_hailtiny == nil) or ((now - _hailtiny) > HAILTOTHEKINGBABY)) then
-        -- hail to the king, baby
-        _hailtiny = now
-        oq.excited_cheer()
-    elseif (OQ.RARE_ELITES[name]) and ((now - OQ.RARE_ELITES[name].tm) > 3 * 60) then
-        PlaySoundFile(OQ.RARE_ELITES[name].snd)
-        OQ.RARE_ELITES[name].tm = now
-    else
-        local guid = UnitGUID('target')
-        if (guid ~= nil) then
-            local id = tonumber(guid:sub(6, 10), 16)
-            local is_bty_target = oq.is_bounty_target(id)
-            if (is_bty_target) then
-                PlaySoundFile('Sound/Doodad/DwarfHorn.ogg')
-                if (oq.player_faction == 'H') then
-                    PlaySoundFile('Sound/Doodad/BellTollHorde.ogg')
-                else
-                    PlaySoundFile('Sound/Doodad/BellTollAlliance.ogg')
-                end
+
+    local guid = UnitGUID('target')
+    if (guid ~= nil) then
+        local id = tonumber(guid:sub(6, 10), 16)
+        local is_bty_target = oq.is_bounty_target(id)
+        if (is_bty_target) then
+            PlaySoundFile('Sound/Doodad/DwarfHorn.ogg')
+            if (oq.player_faction == 'H') then
+                PlaySoundFile('Sound/Doodad/BellTollHorde.ogg')
+            else
+                PlaySoundFile('Sound/Doodad/BellTollAlliance.ogg')
             end
         end
-        oq.save_boss_level() -- conditional
     end
-
+    oq.save_boss_level() -- conditional
     oq.inspect_check()
 
     if (Icebox) then
@@ -24877,7 +24238,6 @@ function oq.init_locals()
     _tags = _tags or tbl.new()
     _realms = _realms or tbl.new()
     _items = _items or tbl.new()
-    _vips = _vips or tbl.new()
     _vlist = _vlist or tbl.new()
 
     oq.channels = oq.channels or tbl.new()
@@ -25209,7 +24569,6 @@ function oq.on_init(now)
     player_fullname = player_name .. '-' .. player_realm
     player_realm_id = oq.GetRealmID(player_realm)
     oq.player_realid = strlower(player_name .. '-' .. player_realm)
-    OQ_data.realid = oq.player_realid or OQ_data.realid
     if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
         oq._iam_scorekeeper = true
     end
@@ -25220,7 +24579,6 @@ function oq.on_init(now)
     oq.player_faction = oq.get_player_faction()
     player_karma = 0
     player_role = oq.get_player_role()
-    oq._bnet_disabled = true
 
     if (oq.toon) and (oq.toon.raid) and (oq.toon.raid.type) then
         oq.raid.type = oq.toon.raid.type
