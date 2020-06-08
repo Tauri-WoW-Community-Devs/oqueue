@@ -674,16 +674,6 @@ function oq.verify_loot_rules_acceptance()
         return
     end
 
-    oq.log(true, 'This debug message is related to issue #6')
-    oq.log(
-        true,
-        'If you see the loot type change message too often - please show report the results below to our Github'
-    )
-    oq.log(true, '#6 - start')
-    oq.log(true, 'Previous loot method: ', OQ_data.loot_method)
-    oq.log(true, 'Current loot method: ', method)
-    oq.log(true, '#6 - end')
-
     f._method = method
     f.loot_text:SetText(L['loot.' .. method])
     oq.moveto(f, floor((GetScreenWidth() - f:GetWidth()) / 2), 200)
@@ -8317,7 +8307,8 @@ function oq.raid_cleanup_slot(i, j)
     oq.set_deserter(i, j, nil)
     oq.set_role(i, j, OQ.ROLES['NONE'])
     oq.set_textures(i, j)
-    OQ_data.loot_method = nil -- clear out any loot methods you accepted in previous group
+    -- Commenting this out. Loot method change should be triggered by wow event anyway
+    -- OQ_data.loot_method = nil
 end
 
 function oq.ui_raidleader()
