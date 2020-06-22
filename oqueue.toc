@@ -2,9 +2,9 @@
 ## Version: 2.0.2
 ## Interface: 50400
 ## Author: Tiny of the Zerg
-## Notes: Oath's premade finder using social mesh networking
+## Notes: Tauri cross realm group finder
 ## X-Category: PvP
-## X-Website: http://www.solidice.com/oqueue
+## X-Website: https://github.com/Tauri-WoW-Community-Devs/oqueue
 ## DefaultState: enabled
 ## SavedVariables: OQ_data
 
