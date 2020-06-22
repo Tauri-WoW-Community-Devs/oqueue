@@ -33,7 +33,6 @@ OQ.BUT_INPROGRESS = 'В бою.'
 OQ.BUT_NOTAVAILABLE = 'Недоступно'
 OQ.BUT_FINDMESH = 'Найти связи'
 OQ.BUT_SUBMIT2MESH = 'Отправ. b-tag'
-OQ.BUT_PULL_BTAG = 'Отозвать b-tag'
 OQ.BUT_BAN_BTAG = 'Ввести b-tag'
 OQ.BUT_INVITE_ALL = 'Взять всех'
 OQ.BUT_REMOVE_OFFLINE = 'Убрать оффлайн'
@@ -68,7 +67,6 @@ OQ.LUCKY_CHARMS = 'Расставить метки'
 OQ.IAM_BACK = 'Я вернулся'
 OQ.ROLE_CHK = 'Проверка ролей'
 OQ.READY_CHK = 'Готовность'
-OQ.KARMA_ALL = 'Репутация всем'
 OQ.APPROACHING_CAP = 'СКОРО ЗАХВАТЫВАТЬ'
 OQ.CAPPED = 'ЗАХВАЧЕН'
 OQ.HDR_PREMADE_NAME = 'Список премейдов'
@@ -108,7 +106,6 @@ OQ.RAFK_DISABLED = 'AFK выключен'
 OQ.SETUP_HEADING = 'Настройки и различные команды'
 OQ.SETUP_BTAG = 'Почтовый адрес battle.net'
 OQ.SETUP_CAPCHK = 'Проверка совместимости oQ'
-OQ.SETUP_REMOVEBTAG = 'Отозвать свой b-tag'
 OQ.SETUP_ALTLIST = 'Список альтов на b-net аккаунте:\n(Мультибоксинг)'
 OQ.SETUP_AUTOROLE = 'Автовыставление роли'
 OQ.SETUP_CLASSPORTRAIT = 'Использовать иконки классов'
@@ -203,8 +200,6 @@ OQ.SYS_YOUARE_AFK = 'Вы отсутствуете (AFK).'
 OQ.SYS_YOUARENOT_AFK = 'Вы вернулись.'
 OQ.ERROR_REGIONDATA = 'Региональные данные загружены неправильно.'
 OQ.TT_LEAVEPREMADE = 'ЛКМ: Скрыть премейд\nПКМ: Заблокировать лидера премейда'
-OQ.TT_FINDMESH = 'Запросить b-tag`и\nчтобы получить связи'
-OQ.TT_SUBMIT2MESH = 'Отправить b-tag\ntдля увеличения связей'
 OQ.LABEL_TYPE = '|cFF808080type:|r  %s'
 OQ.LABEL_ALL = 'Все премейды'
 OQ.LABEL_BGS = 'Поля боя'
@@ -276,7 +271,6 @@ OQ.HERO = 'Герой'
 OQ.WARBRINGER = 'Вестник войны'
 OQ.KHAN = 'Хан'
 OQ.RANAWAY = 'Дезертир. Убежал с поля боя.'
-OQ.TT_KARMA = 'Репутация'
 OQ.UP = '[+]'
 OQ.DOWN = '[-]'
 OQ.BAD_KARMA_BTAG = 'OQ: Неверный b-tag у выбранного игрока'
@@ -1213,37 +1207,31 @@ OQ.HINTS = {
     [8] = L['resize the window by dragging the bottom right corner'],
     [9] = L['list local group leaders by typing: <br/><br/>/oq show locals'],
     [10] = L[
-        "if you see no premades, your connection might be weak or broken.<br/><br/>if you have a weak or broken connection, hit find-mesh and wait for connections from the scorekeeper<br/><br/>also make sure 'auto-join oqchannel' on setup is checked"
-    ],
-    [11] = L[
-        'hitting find-mesh will request mesh tags from the scorekeeper.  he will send you six(6) random tags active in the last hour.<br/><br/>they may or may not still be online, but will connect when they log in next'
-    ],
-    [12] = L[
         "your mesh connection is in the lower right<br/><br/>[realm] - [bnet list]<br/><br/>your connection is 'weak' if the sum is less then 20"
     ],
-    [13] = L['gain more mesh connections by clicking the find-mesh button'],
-    [14] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
-    [15] = L["right-click the red 'x' on the find-premade list to ban that group leader"],
-    [16] = L["if you're confused, find tiny in public vent"],
-    [17] = L[
+    [11] = L['gain more mesh connections by clicking the find-mesh button'],
+    [12] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
+    [13] = L["right-click the red 'x' on the find-premade list to ban that group leader"],
+    [14] = L["if you're confused, find tiny in public vent"],
+    [15] = L[
         'click the spyglass at the top left of the find-premade tab to filter the list<br/><br/>you can use the following logical operators:<br/><br/> &amp; (and)<br/> | (or)<br/> ! (not)<br/><br/>ie:  rbgs | cta &amp; !yolo<br/><br/>meaning:<br/> rbgs or cta and not yolo'
     ],
-    [18] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
-    [19] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2'],
-    [20] = L[
+    [16] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
+    [17] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2'],
+    [18] = L[
         'leaders with good karma will have greenish names on the find-premade list.<br/><br/>leaders with bad karma will be shown in red<br/><br/>white is neutral'
     ],
-    [21] = L[
+    [19] = L[
         "your karma reflects the opinions of your performance and personality by those you've grouped with.<br/><br/>karma ranges from -25 to +25 and degrades by 1 pt, back towards 0, every 24 hours"
     ],
-    [22] = L['karma - what goes around, comes around'],
-    [23] = L['right-click filter options on the find-premade tab to toggle exclusion of that type.'],
-    [24] = L[
+    [20] = L['karma - what goes around, comes around'],
+    [21] = L['right-click filter options on the find-premade tab to toggle exclusion of that type.'],
+    [22] = L[
         'check the setup tab for various UI tweaks.<br/><br/>such as announcing contracts or showing class portaits on targets'
     ],
-    [25] = L[
+    [23] = L[
         "some folks have tried to claim it's bannable to queue with a full 25 for LFR.<br/><br/>this is completely false.<br/><br/>oQueue usage is perfectly fine with Blizzard and within all aspects of the EULA and TOS."
     ],
-    [26] = L['gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear'],
-    [27] = L["you'll never hit a home run, if you don't step up to the plate"]
+    [24] = L['gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear'],
+    [25] = L["you'll never hit a home run, if you don't step up to the plate"]
 }

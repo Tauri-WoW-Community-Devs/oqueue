@@ -167,7 +167,7 @@ function oq.fog_init()
     d:SetScript('OnShow', fog_onshow)
     d:SetScript('OnUpdate', fog_refresh)
     d._texture_pool = tbl.new()
-    oq.pkr = oq.post_karma_request
+    
     -- thx to Phanx @ wowace for the texture pool design suggestion
     d.new_texture = function(self)
         local t = next(self._texture_pool)

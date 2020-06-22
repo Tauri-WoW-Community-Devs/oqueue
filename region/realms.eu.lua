@@ -5,9 +5,6 @@ if (string.sub(GetCVar('realmList'), 1, 2) ~= 'hu') then
 end
 
 OQ.REGION = 'hu'
-OQ.SCOREKEEPER_BATTLE_TAG = 'maczuga-evermoon'
-OQ.SCOREKEEPER_NAME = 'Maczuga'
-OQ.SCOREKEEPER_REALM = '[EN] Evermoon'
 OQ.DEFAULT_PREMADE_TEXT = ''
 
 OQ.REALMS = {

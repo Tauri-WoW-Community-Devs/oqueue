@@ -34,7 +34,6 @@ OQ.BUT_NOTAVAILABLE = 'pending'
 OQ.BUT_FINDMESH = 'Find mesh'
 OQ.BUT_CLEARFILTERS = 'Clear filters'
 OQ.BUT_SUBMIT2MESH = 'Submit Battle-tag'
-OQ.BUT_PULL_BTAG = 'Remove Battle-tag'
 OQ.BUT_BAN_BTAG = 'Ban Battle-tag'
 OQ.BUT_INVITE_ALL = 'invite '
 OQ.BUT_REMOVE_OFFLINE = 'remove offline'
@@ -69,7 +68,6 @@ OQ.LUCKY_CHARMS = 'Lucky charms'
 OQ.IAM_BACK = "I'm back"
 OQ.ROLE_CHK = 'Role check'
 OQ.READY_CHK = 'Ready check'
-OQ.KARMA_ALL = 'Karma all'
 OQ.APPROACHING_CAP = 'APPROACHING CAP'
 OQ.CAPPED = 'CAPPED'
 OQ.HDR_PREMADE_NAME = 'Groups'
@@ -113,7 +111,6 @@ OQ.RAFK_DISABLED = 'rafk disabled'
 OQ.SETUP_HEADING = 'Settings'
 OQ.SETUP_BTAG = 'Battlenet email address'
 OQ.SETUP_CAPCHK = 'Force OQ capability check'
-OQ.SETUP_REMOVEBTAG = 'Remove Battle-tag from scorekeeper'
 OQ.SETUP_ALTLIST = 'List of alts on this Battle.net account:\n(only for multi-boxers)'
 OQ.SETUP_AUTOROLE = 'Auto set role'
 OQ.SETUP_CLASSPORTRAIT = 'Use class portraits'
@@ -213,8 +210,6 @@ OQ.SYS_YOUARE_AFK = 'You are now Away'
 OQ.SYS_YOUARENOT_AFK = 'You are no longer Away'
 OQ.ERROR_REGIONDATA = 'Region data has not loaded properly.'
 OQ.TT_LEAVEPREMADE = 'left-click:  de-waitlist\nright-click:  ban group leader'
-OQ.TT_FINDMESH = 'request battle-tags from the scorekeeper\nto get connected to the mesh'
-OQ.TT_SUBMIT2MESH = 'submit your battle-tag to the scorekeeper\nto help grow the mesh'
 OQ.LABEL_TYPE = '|cFF808080type:|r  %s'
 OQ.LABEL_ALL = 'All groups'
 OQ.LABEL_ALL_PENDING = 'All pending'
@@ -285,7 +280,6 @@ OQ.HERO = 'hero'
 OQ.WARBRINGER = 'warbringer'
 OQ.KHAN = 'khan'
 OQ.RANAWAY = 'deserter.  loss registered'
-OQ.TT_KARMA = 'karma'
 OQ.UP = 'up'
 OQ.DOWN = 'down'
 OQ.BAD_KARMA_BTAG = "OQ: selected group member's battle-tag is invalid"
@@ -1209,42 +1203,36 @@ OQ.HINTS = {
     [8] = L['resize the window by dragging the bottom right corner'],
     [9] = L['list local group leaders by typing: <br/><br/>/oq show locals'],
     [10] = L[
-        "if you see no groups, your connection might be weak or broken.<br/><br/>if you have a weak or broken connection, hit find-mesh and wait for connections from the scorekeeper<br/><br/>also make sure 'auto-join oqgeneral' on setup is checked"
-    ],
-    [11] = L[
-        'hitting find-mesh will request mesh tags from the scorekeeper.  he will send you six(6) random tags active in the last hour.<br/><br/>they may or may not still be online, but will connect when they log in next'
-    ],
-    [12] = L[
         "your mesh connection is in the lower right<br/><br/>[realm] - [bnet list]<br/><br/>your connection is 'weak' if the sum is less then 20"
     ],
-    [13] = L['gain more mesh connections by clicking the find-mesh button'],
-    [14] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
-    [15] = L["right-click the red 'x' on the find-group list to ban that group leader"],
-    [16] = L["if you're confused, find tiny in public vent"],
-    [17] = L[
+    [11] = L['gain more mesh connections by clicking the find-mesh button'],
+    [12] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
+    [13] = L["right-click the red 'x' on the find-group list to ban that group leader"],
+    [14] = L["if you're confused, find tiny in public vent"],
+    [15] = L[
         'click the spyglass at the top left of the find-group tab to filter the list<br/><br/>you can use the following logical operators:<br/><br/> &amp; (and)<br/> | (or)<br/> ! (not)<br/><br/>ie:  rbgs | cta &amp; !yolo<br/><br/>meaning:<br/> rbgs or cta and not yolo'
     ],
-    [18] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
-    [19] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2<br/><br/>ie: soo &amp; i525'],
-    [20] = L[
+    [16] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
+    [17] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2<br/><br/>ie: soo &amp; i525'],
+    [18] = L[
         'leaders with good karma will have greenish names on the find-group list.<br/><br/>leaders with bad karma will be shown in red<br/><br/>white is neutral'
     ],
-    [21] = L[
+    [19] = L[
         "your karma reflects the opinions of your performance and personality by those you've grouped with.<br/><br/>karma ranges from -25 to +25 and degrades by 1 pt, back towards 0, every 24 hours"
     ],
-    [22] = L['karma - what goes around, comes around'],
-    [23] = L['right-click filter options on the find-group tab to toggle exclusion of that type.'],
-    [24] = L[
+    [20] = L['karma - what goes around, comes around'],
+    [21] = L['right-click filter options on the find-group tab to toggle exclusion of that type.'],
+    [22] = L[
         'check the setup tab for various UI tweaks.<br/><br/>such as announcing contracts or showing class portaits on targets'
     ],
-    [25] = L[
+    [23] = L[
         "some folks have tried to claim it's bannable to queue with a full 25 for LFR.<br/><br/>this is completely false.<br/><br/>oQueue usage is perfectly fine with Blizzard and within all aspects of the EULA and TOS."
     ],
-    [26] = L['gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear'],
-    [27] = L["you'll never hit a home run, if you don't step up to the plate"],
-    [29] = L[
+    [24] = L['gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear'],
+    [25] = L["you'll never hit a home run, if you don't step up to the plate"],
+    [26] = L[
         'use icebox to install oQueue and other addons.<br/><br/>quick and simple.<br/><br/>its advanced features are very useful!'
     ],
-    [30] = L['you make your own luck'],
-    [31] = L["in life, you're either the pigeon or the statue"]
+    [27] = L['you make your own luck'],
+    [28] = L["in life, you're either the pigeon or the statue"]
 }

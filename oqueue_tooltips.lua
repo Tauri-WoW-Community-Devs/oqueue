@@ -250,22 +250,6 @@ function oq.get_medals(s)
     return str
 end
 
-function oq.karma_color(karma)
-    local clr = '|cFF000000'
-    if (karma > 15) then
-        clr = '|cFF14D847' -- 16..25; good, green
-    elseif (karma > 5) then
-        clr = '|cFF49CF69' -- 6..15; good-ish, green
-    elseif (karma > -5) then
-        clr = '|cFFC0C0C0' -- -4..-5; nuetral, grey
-    elseif (karma > -15) then
-        clr = '|cFF9D2D2D' -- -5..-15; bad, red
-    else
-        clr = '|cFFD81914' -- -16..-25; bad, red
-    end
-    return clr
-end
-
 function oq.tt_int(tt, ndx, left_txt, n)
     tt.left[ndx]:SetText(left_txt)
     tt.right[ndx]:SetText(tostring(n or 0))
@@ -318,14 +302,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
     local spec = oq.get_class_type(m.spec_id) or oq.get_class_spec(m.spec_id)
     if (spec) then
         tooltip.right[3]:SetText(spec.n:sub(4, -1))
-    end
-
-    tooltip.left[4]:SetText(OQ.TT_KARMA)
-
-    if (m.karma ~= nil) and (m.karma ~= 0) then
-        tooltip.right[4]:SetText(oq.karma_color(m.karma) .. '' .. tostring(m.karma) .. '|r')
-    else
-        tooltip.right[4]:SetText('--')
     end
 
     tooltip.left[5]:SetText(OQ.TT_ILEVEL)
@@ -878,11 +854,7 @@ function oq.pm_tooltip_set(f, raid_token)
 
     pm_tooltip.left[2]:SetText(OQ.TT_LEADER)
 
-    if (raid.karma) and (raid.karma ~= 0) then
-        pm_tooltip.right[2]:SetText(oq.karma_color(raid.karma) .. '(' .. tostring(raid.karma) .. ')|r  ' .. raid.leader)
-    else
-        pm_tooltip.right[2]:SetText(raid.leader)
-    end
+    pm_tooltip.right[2]:SetText(raid.leader)
 
     pm_tooltip.left[3]:SetText(OQ.TT_REALM)
     pm_tooltip.right[3]:SetText(raid.leader_realm)

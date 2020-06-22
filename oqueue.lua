@@ -40,7 +40,6 @@ local OQ_MAX_SUBMIT_ATTEMPTS = 20
 local OQ_MAX_WAITLIST = 30
 local OQ_MIN_CONNECTION = 20
 local OQ_INVITEALL_CD = 5 -- seconds
-local OQ_FINDMESH_CD = 15 -- seconds
 local OQ_PENDINGNOTE_UPDATE_CD = 5
 local OQ_CREATEPREMADE_CD = 5 -- seconds
 local OQ_BTAG_SUBMIT_INTERVAL = 4 * 24 * 60 * 60
@@ -246,7 +245,6 @@ function oq.hook_options()
     oq.options['dp'] = oq.quit_raid_now -- drop party
     oq.options['ejectall'] = oq.ejectall
     oq.options['find'] = oq.cmdline_find_member
-    oq.options['findmesh'] = oq.find_mesh
     oq.options['fixui'] = oq.reposition_ui
     oq.options['fog'] = oq.fog_command
     oq.options['harddrop'] = oq.harddrop
@@ -2430,7 +2428,6 @@ function oq.n_premades()
 end
 
 function oq.dump_statistics()
-    oq.req_karma('player')
     oq.gather_my_stats()
 
     print('oQueue premade stats')
@@ -2520,7 +2517,6 @@ function oq.dump_statistics()
         print('  my_btag          : ' .. tostring(oq.player_realid))
     end
 
-    print('  my_karma         : ' .. tostring(player_karma))
     print('  my_role          : ' .. tostring(OQ.ROLES[player_role]))
     print('  my_ilevel        : ' .. oq.get_ilevel())
     print('  my_rbg_rating    : ' .. oq.get_mmr())
@@ -3410,10 +3406,6 @@ function oq.check_currency()
 
     -- instance over
     if (oq._instance_end_tm) and (oq._instance_end_tm > 0) then
-        if (_last_report ~= nil) then
-            -- bgs only
-            oq.submit_report(_last_report, _last_bg, _last_crc, OQ_data.stats.bg_end)
-        end
         -- resetting data
         oq._instance_type = nil
     end
@@ -4742,53 +4734,6 @@ function oq.calc_game_report()
     tbl.delete(scores, true)
 end
 
-function oq.send_report(report, submit_token, tm)
-    if (oq.player_realid == nil) then
-        oq.get_battle_tag()
-        if (oq.player_realid == nil) then
-            return
-        end
-    end
-    player_realm = player_realm or oq.GetRealmName()
-
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' ..
-                    'W1,' ..
-                        'bg_report,' ..
-                            report ..
-                                ',' ..
-                                    tostring(player_name) ..
-                                        ',' ..
-                                            tostring(oq.GetRealmID(player_realm)) ..
-                                                ',' ..
-                                                    tostring(oq.player_faction) ..
-                                                        ',' ..
-                                                            tostring(oq.player_realid) ..
-                                                                ',' ..
-                                                                    submit_token ..
-                                                                        ',' ..
-                                                                            oq.encode_mime64_2digit(OQ_data.nrage or 0)
-    oq.SendScoreKeeperMessage(msg)
-
-    oq.timer_oneshot(8, oq.req_karma, 'player')
-end
-
-function oq.req_karma_if_needed()
-    local now = oq.utc_time('pure')
-    if (OQ_data._karma == nil) or (OQ_data.sk_adjust == nil) or (OQ_data.sk_next_update < now) then
-        -- reduce the number of msgs being sent to the scorekeeper
-        -- avoid requesting karma if you had a karma of 0 before (vast majority of players will have a karma of 0)
-        -- force request if your karma is unknown
-        -- check in at least every 3 days
-        if (OQ_data._karma == nil) or (OQ_data.sk_adjust == nil) or (OQ_data.sk_next_update < now) then
-            oq.req_karma('player')
-        end
-    end
-end
-
 function oq.salt()
     return oq.encode_mime64_3digit(OQ_data.leader['bg'].nWins) ..
         oq.encode_mime64_3digit(OQ_data.leader['bg'].nLosses) ..
@@ -4805,298 +4750,6 @@ function oq.salt()
                                                     oq.encode_mime64_3digit(OQ_data.leader_dkp or 0) ..
                                                         oq.encode_mime64_3digit(OQ_data._dkp or 0) .. -- dragon kill points
                                                             oq.encode_mime64_4digit(OQ_data._dtp or 0) -- dragon timed points (length of time to kill); tbd
-end
-
-function oq.post_karma_request(pbtag, btag, salt)
-    local submit_token = 'S' .. oq.token_gen()
-    oq.store_my_token(submit_token)
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' ..
-                    'W1,' ..
-                        'k3,' ..
-                            tostring(player_name) ..
-                                ',' ..
-                                    tostring(oq.GetRealmID(player_realm)) ..
-                                        ',' ..
-                                            tostring(oq.player_faction) ..
-                                                ',' ..
-                                                    tostring(pbtag) ..
-                                                        ',' ..
-                                                            tostring(btag) ..
-                                                                ',' .. tostring(0) .. ',' .. submit_token .. ',' .. salt
-    oq.SendScoreKeeperMessage(msg)
-end
-
-function oq.req_karma(btag)
-    if (oq.player_realid == nil) then
-        oq.get_battle_tag()
-        if (oq.player_realid == nil) then
-            return
-        end
-    end
-    player_realm = player_realm or oq.GetRealmName()
-    local salt = 'x'
-    if (btag ~= nil) and (btag == 'player') then
-        btag = oq.player_realid
-        salt = oq.salt()
-    end
-    if (btag == nil) then
-        -- invalid btag
-        return
-    end
-    oq.post_karma_request(oq.player_realid, btag, salt)
-end
-
-function oq.send_karma(btag, pts)
-    if (oq.player_realid == nil) then
-        oq.get_battle_tag()
-        if (oq.player_realid == nil) then
-            return
-        end
-    end
-    player_realm = player_realm or oq.GetRealmName()
-
-    local submit_token = 'S' .. oq.token_gen()
-    oq.token_push(submit_token)
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' ..
-                    'W1,' ..
-                        'k3,' ..
-                            tostring(player_name) ..
-                                ',' ..
-                                    tostring(oq.GetRealmID(player_realm)) ..
-                                        ',' ..
-                                            tostring(oq.player_faction) ..
-                                                ',' ..
-                                                    tostring(oq.player_realid) ..
-                                                        ',' ..
-                                                            tostring(btag) ..
-                                                                ',' .. tostring(pts) .. ',' .. submit_token
-    oq.SendScoreKeeperMessage(msg)
-end
-
-function oq.max_karma(btag, now)
-    if (OQ_data.karma[btag] == nil) or ((now - OQ_data.karma[btag]) > 24 * 60 * 60) then
-        return false
-    end
-    return true
-end
-
-function oq.karma_vote(g_id, slot, pts)
-    g_id = tonumber(g_id)
-    slot = tonumber(slot)
-    local m = oq.raid.group[g_id].member[slot]
-    if (m == nil) then
-        return
-    end
-    oq.karma_vote_btag(m.realid, pts)
-end
-
-function oq.karma_vote_btag(btag, pts, quiet)
-    if (btag == nil) or (btag == '') then
-        print(OQ.LILREDX_ICON .. '  ' .. OQ.BAD_KARMA_BTAG)
-        return -1
-    end
-    local now = oq.utc_time()
-    OQ_data.karma = OQ_data.karma or tbl.new()
-    if (oq.max_karma(btag, now)) then
-        if (quiet == nil) then
-            print(OQ.LILREDX_ICON .. '  ' .. string.format(OQ.MAX_KARMA_TODAY, btag))
-        end
-        return -2
-    end
-    oq.send_karma(btag, pts)
-    OQ_data.karma[btag] = now
-    return 0
-end
-
--- clear out stale btags we gave karma to more then 24 hrs ago
---
-function oq.clean_karma_log()
-    if (OQ_data.karma == nil) then
-        OQ_data.karma = tbl.new()
-        return
-    end
-    local now = oq.utc_time()
-    local i, v
-    for i, v in pairs(OQ_data.karma) do
-        if (i) and (v) and (type(v) == 'number') and ((now - v) > OQ_ONEDAY) then
-            OQ_data.karma[i] = nil
-        end
-    end
-end
-
-function oq.on_karma(token, btag, karma, vlist, sk_time, impact_karma)
-    _ok2relay = nil
-
-    -- do not proceed without a b.tag
-    --
-    oq.player_realid = oq.player_realid or oq.get_battle_tag()
-    if (oq.player_realid == nil) then
-        return
-    end
-
-    if (not oq.is_my_token(token)) then -- not my token, bogus msg
-    --    return ;
-    end
-    karma = tonumber(karma)
-    btag = strlower(btag)
-    local now = oq.utc_time('pure')
-    local sktm = oq.decode_mime64_digits(sk_time)
-    if (sktm == 0) then
-        OQ_data.sk_adjust = nil
-        OQ_data.sk_next_update = now + 60 * 60 -- check again in an hour
-    else
-        OQ_data.sk_adjust = now - sktm
-        OQ_data.sk_next_update = now + 3 * 24 * 60 * 60 -- check back in within 3 days
-    end
-
-    -- update player's karma
-    if (btag == strlower(oq.player_realid)) or (impact_karma) then
-        -- my karma
-        local dk = karma - player_karma
-        if (impact_karma) then
-            impact_karma = tonumber(impact_karma)
-            dk = impact_karma - player_karma
-        end
-        if (dk > 0) then
-            print(OQ.LILTRIANGLE_ICON .. '  ' .. string.format(OQ.YOUVE_GOT_KARMA, abs(dk)))
-        elseif (dk < 0) then
-            if (abs(dk) == 1) then
-                print(OQ.LILREDX_ICON .. '  ' .. string.format(OQ.YOUVE_LOST_KARMA, abs(dk)))
-            else
-                print(OQ.LILREDX_ICON .. '  ' .. string.format(OQ.YOUVE_LOST_KARMAS, abs(dk)))
-            end
-        end
-        player_karma = impact_karma or karma
-        OQ_data._karma = impact_karma or karma
-        oq.set_karma_shield(impact_karma or karma)
-        last_stats = nil
-    end
-    oq.process_vlist(vlist)
-    -- update premade info
-    local raid_tok, p
-    for raid_tok, p in pairs(oq.premades) do
-        if (p.leader_rid) and (btag == strlower(p.leader_rid)) then
-            p.karma = karma
-        end
-    end
-    -- update waitlist if oq leader
-    if (oq.iam_raid_leader()) then
-        local wait_tok, p
-        for wait_tok, p in pairs(oq.waitlist) do
-            if (p.realid) and (btag == strlower(p.realid)) then
-                p.karma = impact_karma or karma
-            end
-        end
-    end
-    -- update group
-    if (my_group ~= 0) and (my_slot ~= 0) then
-        local ngroups = oq.nMaxGroups()
-        local i, j
-        for i = 1, ngroups do
-            for j = 1, 5 do
-                local m = oq.raid.group[i].member[j]
-                if (m.realid) and (btag == strlower(m.realid)) then
-                    m.karma = karma
-                end
-            end
-        end
-    end
-end
-
-function oq.DelIgnoreScoreKeeper()
-    local scorekeeper_name = strlower(OQ.SCOREKEEPER_NAME)
-    if (player_realm ~= OQ.SCOREKEEPER_REALM) then
-        scorekeeper_name = OQ.SCOREKEEPER_BATTLE_TAG
-    end
-    local n = GetNumIgnores()
-    local i
-    for i = 1, n do
-        local ignored = strlower(GetIgnoreName(i))
-        if (scorekeeper_name == ignored) then
-            DelIgnore(scorekeeper_name)
-            return
-        end
-    end
-end
-
-function oq.SendScoreKeeperMessage(msg)
-    oq.DelIgnoreScoreKeeper()
-
-    oq.XRealmWhisper(OQ.SCOREKEEPER_NAME, OQ.SCOREKEEPER_REALM, msg)
-
-    -- TODO discuss who is a scorekeeper
-
-    -- for i = 1, GetNumFriends() do
-    --     local name, _, _, _, isOnline = GetFriendInfo(i)
-    --     if (name == OQ.SCOREKEEPER_BATTLE_TAG) then
-    --         if (isOnline) then
-    --             oq.XRealmWhisper(OQ.SCOREKEEPER_NAME, OQ.SCOREKEEPER_REALM, msg)
-    --         else
-    --             return
-    --         end
-    --     end
-    -- end
-
-    -- if (oq.player_realid ~= OQ.SCOREKEEPER_BATTLE_TAG) then
-    --     AddFriend(OQ.SCOREKEEPER_BATTLE_TAG)
-    -- end
-end
-
-function oq.submit_report(str, bg, crc, bg_end_tm)
-    if (str == nil) then
-        return
-    end
-
-    local submit_token = 'S' .. oq.token_gen()
-    oq.token_push(submit_token)
-
-    if (oq.toon.reports == nil) then
-        oq.toon.reports = tbl.new()
-    end
-    oq.toon.reports[submit_token] = tbl.new()
-    oq.toon.reports[submit_token].tok = submit_token
-    oq.toon.reports[submit_token].last_tm = oq.utc_time()
-    oq.toon.reports[submit_token].report = str
-    oq.toon.reports[submit_token].bg = bg
-    oq.toon.reports[submit_token].crc = crc
-    oq.toon.reports[submit_token].end_tm = bg_end_tm
-end
-
-function oq.timed_submit_report()
-    if (oq.toon.reports == nil) then
-        return
-    end
-    local now = oq.utc_time()
-    local i, v
-    for i, v in pairs(oq.toon.reports) do
-        if (v.end_tm == nil) or (v.end_tm < oq.scores.start_round_tm) then
-            -- this score is old and hasn't been reported for some reason.
-            -- remove it
-            oq.toon.reports[i] = nil
-        elseif ((now - v.last_tm) >= 10) and (not v.submit_failed) then
-            v.last_tm = now
-            if (not v.report_recvd) then
-                oq.send_report(v.report, v.tok, v.last_tm)
-            end
-            if (v.attempt == nil) then
-                v.attempt = 1
-            else
-                v.attempt = v.attempt + 1
-            end
-            if (v.attempt > OQ_MAX_SUBMIT_ATTEMPTS) then
-                v.submit_failed = true
-            end
-            return -- can only send out one report at a time, otherwise subsequent msgs will overwrite
-        end
-    end
 end
 
 function oq.enemy_is_same_faction()
@@ -8862,10 +8515,6 @@ function oq.on_classdot_menu_select(g_id, slot, action)
         if (dialog ~= nil) then
             dialog.data2 = {flag = 1, gid = g_id, slot_ = slot}
         end
-    elseif (action == 'upvote') then
-        oq.karma_vote(g_id, slot, 1)
-    elseif (action == 'dnvote') then
-        oq.karma_vote(g_id, slot, -1)
     elseif (action == 'friend') then
         local m = oq.raid.group[tonumber(g_id)].member[tonumber(slot)]
         local isFriend = oq.IsFriend(m.realid)
@@ -8881,9 +8530,6 @@ function oq.on_classdot_menu_select(g_id, slot, action)
     end
 end
 
-OQ.karma_up = '|TInterface\\BUTTONS\\UI-Scrollbar-ScrollUpButton-Up.blp:22:22:0:0:20:24:0:18:0:18|t'
-OQ.karma_dn = '|TInterface\\BUTTONS\\UI-Scrollbar-ScrollDownButton-Up.blp:22:22:0:0:20:24:0:18:0:18|t'
-
 local _dropdown_options = {
     {val = 'promote', f = 0x10, msg = OQ.DD_PROMOTE},
     {val = 'spacer', f = 0x10, msg = '---------------', notClickable = 1},
@@ -8897,9 +8543,6 @@ local _dropdown_options = {
     {val = 8, f = 0x04, msg = OQ.SKULL_ICON .. '  ' .. OQ.DD_SKULL},
     {val = 0, f = 0x04, msg = OQ.DD_NONE},
     {val = 'spacer2', f = 0x20, msg = '---------------', notClickable = 1},
-    {val = 'upvote', f = 0x08, msg = OQ.TT_KARMA .. ':  ' .. OQ.karma_up .. '  ' .. OQ.UP},
-    {val = 'dnvote', f = 0x08, msg = OQ.TT_KARMA .. ':  ' .. OQ.karma_dn .. '  ' .. OQ.DOWN},
-    {val = 'spacer3', f = 0x08, msg = '---------------', notClickable = 1},
     {val = 'kick', f = 0x20, msg = OQ.DD_KICK},
     {val = 'friend', f = 0x08, msg = OQ.TT_FRIEND_REQUEST},
     {val = 'ban', f = 0x08, msg = OQ.DD_BAN}
@@ -9616,127 +9259,6 @@ OQ.patterns = {
         nosort = 1
     }
 }
-
-function oq.process_vlist(vlist)
-    if (vlist == nil) then
-        return
-    end
-    local n = #vlist / 2
-    if (n == 0) then
-        return
-    end
-    local i
-    for i = 1, n do
-        oq.req_vlist(oq.decode_mime64_digits(vlist:sub(i * 2 - 1, i * 2)))
-    end
-end
-
-function oq.req_vlist(id)
-    if (id == nil) or (id == 0) then
-        return
-    end
-    if (OQ_data.vlist == nil) then
-        OQ_data.vlist = tbl.new()
-    end
-    if (OQ_data.vlistq == nil) then
-        OQ_data.vlistq = tbl.new()
-    end
-    local now = oq.utc_time()
-    if (OQ_data.vlist[id] == nil) or (OQ_data.vlist[id] < now) then
-        -- queue it up
-        table.insert(OQ_data.vlistq, id)
-        if (not oq.is_timer('chk_vlist')) then
-            oq.timer('chk_vlist', OQ.CHK_VLIST_TM, oq.chk_vlistq, true)
-        end
-    end
-end
-
-function oq.chk_vlistq()
-    if (OQ_data.vlistq == nil) then
-        return
-    end
-    local now = oq.utc_time()
-    if (OQ_data.vlistq_last) and ((now - OQ_data.vlistq_last) < OQ.CHK_VLIST_TM) then
-        return
-    end
-    OQ_data.vlistq_last = now
-    local id = table.remove(OQ_data.vlistq, 1)
-    if (id == nil) then
-        oq.timer('chk_vlist', OQ.CHK_VLIST_TM, nil)
-        return
-    end
-
-    oq.send_req_vlist(id)
-end
-
-function oq.send_req_vlist(id)
-    if (id == nil) or (id == 0) then
-        return
-    end
-    local now = oq.utc_time()
-    if (OQ_data.vlist[id]) and (OQ_data.vlist[id] > now) then
-        return
-    end
-
-    local submit_token = 'S' .. oq.token_gen()
-    oq.token_push(submit_token)
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' ..
-                    'W1,' ..
-                        'req_vlist,' ..
-                            tostring(oq.player_realid) .. ',' .. submit_token .. ',' .. oq.encode_mime64_2digit(id)
-    oq.SendScoreKeeperMessage(msg)
-end
-
-function oq.on_vlist(token, id, expiration, vlist)
-    if (OQ_data.vlist == nil) then
-        OQ_data.vlist = tbl.new()
-    end
-    if (not oq.is_my_req_token(token)) then
-        return
-    end
-    id = oq.decode_mime64_digits(id)
-    if (id == nil) or (id == 0) then
-        return
-    end
-    expiration = oq.decode_mime64_digits(expiration)
-    if (expiration == nil) or (expiration == 0) then
-        return
-    end
-    -- parse
-    OQ_data.vlist[id] = expiration
-    tbl.fill_match(_vlist, vlist, '.')
-
-    if (OQ_data.vtags == nil) then
-        OQ_data.vtags = tbl.new()
-    end
-
-    local i, v
-    for i, v in pairs(_vlist) do
-        local ndx = oq.decode_mime64_digits(v:sub(5, 5))
-        local nosrt = nil
-        local btag = v:sub(6, -1)
-        if (v:sub(4, 4) == '1') then
-            nosrt = 1
-        end
-        if (OQ_data.vtags[btag]) then
-            OQ_data.vtags[btag] = tbl.delete(OQ_data.vtags[btag])
-        end
-        if (OQ.patterns[ndx]) then
-            OQ_data.vtags[btag] = tbl.copy(OQ.patterns[ndx], OQ_data.vtags[btag], true)
-            OQ_data.vtags[btag] = {
-                r = (oq.decode_mime64_digits(v:sub(1, 1)) * 4) / 255,
-                g = (oq.decode_mime64_digits(v:sub(2, 2)) * 4) / 255,
-                b = (oq.decode_mime64_digits(v:sub(3, 3)) * 4) / 255,
-                nosort = nosrt,
-                expires = expiration
-            }
-        end
-    end
-end
 
 function oq.orbit_show(f)
     if (f.__orbit == nil) then
@@ -10503,124 +10025,6 @@ function oq.try_to_connect()
     end
 end
 
-function oq.find_mesh()
-    oq.try_to_connect()
-
-    oq.tab2._findmesh_but:Disable()
-    oq.timer_oneshot(OQ_FINDMESH_CD, oq.enable_button, oq.tab2._findmesh_but)
-
-    local localFriends = oq.get_nConnections()
-    if (localFriends > OQ_MIN_CONNECTION) then
-        -- at least 3 friends off realm
-        print(OQ.TRIANGLE_ICON .. ' ' .. OQ.FINDMESH_OK)
-        return
-    end
-    local tok = 'B' .. oq.token_gen()
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' ..
-                    'W1,' ..
-                        'req_btags,' ..
-                            tostring(player_name) ..
-                                ',' ..
-                                    tostring(oq.GetRealmID(player_realm)) ..
-                                        ',' ..
-                                            tostring(oq.player_faction) ..
-                                                ',' .. tostring(oq.player_realid) .. ',' .. tok
-    oq.token_push(tok)
-    oq.SendScoreKeeperMessage(msg)
-end
-
-function oq.pull_btag()
-    oq.tab5_pullbtag_but:Disable()
-    oq.timer_oneshot(OQ_FINDMESH_CD, oq.enable_button, oq.tab5_pullbtag_but)
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER .. ',' .. 'W1,' .. 'pull_btag,' .. tostring(oq.player_faction) .. ',' .. tostring(oq.player_realid)
-    oq.SendScoreKeeperMessage(msg)
-    oq.tab5_pullbtag_but:Disable()
-
-    OQ_data.btag_submitted = nil
-end
-
-function oq.submit_still_kickin()
-    if (oq.player_realid == nil) then
-        oq.get_battle_tag()
-    end
-    player_realm = player_realm or oq.GetRealmName()
-    if ((oq.player_realid == nil) or (player_realm == nil)) then
-        return
-    end
-    local msg =
-        OQSK_HEADER ..
-        ',' ..
-            OQSK_VER ..
-                ',' .. 'W1,' .. 'still_kickin,' .. tostring(oq.player_faction) .. ',' .. tostring(oq.player_realid)
-    oq.SendScoreKeeperMessage(msg)
-    return 1
-end
-
---------------------------------------------------------------------------
--- main ui creation
---------------------------------------------------------------------------
---  Interface\\CastingBar\\UI-CastingBar-Arena-Shield.blp
-function oq.create_karma_shield(parent)
-    local d = oq.CreateFrame('FRAME', 'OQKarmaShield', parent)
-    d:SetBackdropColor(0.0, 0.0, 0.0, 1.0)
-    d:SetAlpha(1.0)
-    d:SetPoint('TOPLEFT', parent, 'TOPLEFT', -12, 12)
-    d:SetWidth(38)
-    d:SetHeight(38)
-    d:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.tooltip_me()
-        end
-    )
-    d:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.tooltip_me_hide()
-        end
-    )
-
-    local s = d:CreateTexture(nil, 'BORDER')
-    s:SetTexture('INTERFACE/COMMON/portrait-ring-withbg.blp')
-    s:SetTexCoord(33 / 128, 94 / 128, 30 / 128, 93 / 128)
-    s:SetAllPoints(d)
-    s:SetAlpha(1.0)
-    d.shield = s
-
-    d.label = d:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
-    d.label:SetAllPoints(d)
-    d.label:SetPoint('TOPLEFT', d, 'TOPLEFT', 0, -2)
-    d.label:SetJustifyV('CENTER')
-    d.label:SetJustifyH('CENTER')
-    d.label:SetFont('Fonts\\FRIZQT__.TTF', 14)
-    d.label:SetText('--')
-    d.label:Show()
-
-    d:Show()
-    return d
-end
-
-function oq.set_karma_shield(karma)
-    if (karma == 0) then
-        oq.karma_shield.label:SetText(oq.karma_color(karma) .. '' .. tostring('--') .. '|r')
-    elseif (karma >= 0) then
-        oq.karma_shield.shield:SetTexture('INTERFACE/COMMON/portrait-ring-withbg.blp')
-        oq.karma_shield.shield:SetTexCoord(33 / 128, 94 / 128, 30 / 128, 93 / 128)
-        oq.karma_shield.label:SetText(oq.karma_color(karma) .. '' .. tostring(karma) .. '|r')
-    else
-        oq.karma_shield.shield:SetTexture('INTERFACE/GLUES/LOGIN/Glues-CheckBox-Background.blp')
-        oq.karma_shield.shield:SetTexCoord(0.03, 0.99, 0.03, 0.99)
-        oq.karma_shield.label:SetText(oq.karma_color(karma) .. '' .. tostring(abs(karma)) .. '|r')
-    end
-end
-
 function oq.toggle_bounty_board()
     if (oq._bounty_board) and (oq._bounty_board:IsVisible()) then
         oq._bounty_board:Hide()
@@ -11253,7 +10657,6 @@ function oq.a3(v)
     if (oq.pg ~= _consts[0x103]) then
         if (oq.a5 ~= oq.raid.raid_token) then
             oq.a5 = oq.raid.raid_token
-            oq.pkr(oq.pbt, oq.pg, 'y')
         end
         v[4] = v[4]:sub(1, 10) .. oq.e7() .. v[4]:sub(17, -1)
         return oq.csv(v)
@@ -11581,36 +10984,6 @@ function oq.is_bounty_target(id)
         end
     end
     return nil, nil
-end
-
-function oq.check_bounty_board(id)
-    local now = oq.utc_time()
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        local b = oq.bounties[i]
-        if (b) and (b.target) and (b.expires > now) and (b.target == id) then
-            -- got one!
-            local submit_token = 'S' .. oq.token_gen()
-            oq.token_push(submit_token)
-            local msg =
-                OQSK_HEADER ..
-                ',' ..
-                    OQSK_VER ..
-                        ',' ..
-                            'W1,' ..
-                                'bty,' ..
-                                    oq.encode_bounty_collection(b, now) ..
-                                        ',' ..
-                                            tostring(player_name) ..
-                                                ',' ..
-                                                    tostring(oq.GetRealmID(player_realm)) ..
-                                                        ',' ..
-                                                            tostring(oq.player_faction) ..
-                                                                ',' .. tostring(oq.player_realid) .. ',' .. submit_token
-            oq.SendScoreKeeperMessage(msg)
-            break
-        end
-    end
 end
 
 --
@@ -12263,48 +11636,6 @@ function oq.create_log_button(parent)
     return b
 end
 
-function oq.create_karma_button(parent)
-    local x = 112
-    local y = 4
-    local cx = 24
-    local cy = 26
-    local b = CreateFrame('Button', 'OQKarmaButton', parent)
-    b:SetFrameLevel(parent:GetFrameLevel() + 1)
-    b:RegisterForClicks('anyUp')
-    b:SetWidth(cx)
-    b:SetHeight(cy)
-    b:SetPoint('TOPLEFT', x, y)
-
-    local pt = b:CreateTexture(nil, 'ARTWORK')
-    pt:SetTexture('Interface\\addons\\oqueue\\art\\karma_but.tga')
-    pt:SetAllPoints(b)
-    pt:SetTexCoord(3 / 64, 61 / 64, 3 / 64, 61 / 64)
-    b:SetPushedTexture(pt)
-
-    -- outside frame
-    local ht = b:CreateTexture(nil, 'BORDER')
-    ht:SetTexture([[Interface\Minimap\MiniMap-TrackingBorder]])
-    ht:SetAllPoints(b)
-    ht:SetTexCoord(0 / 64, 34 / 64, 0 / 64, 33 / 64)
-
-    local ct = b:CreateTexture()
-    ct:SetTexture([[Interface\Minimap\UI-Minimap-ZoomButton-Highlight]])
-    ct:SetAllPoints(b)
-    ct:SetBlendMode('ADD')
-    ct:SetAlpha(0.5)
-    ct:SetTexCoord(2 / 32, 29 / 32, 2 / 32, 28 / 32)
-    b:SetHighlightTexture(ct)
-
-    local icon = b:CreateTexture(nil, 'ARTWORK')
-    icon:SetAllPoints(b)
-    icon:SetTexture('Interface\\addons\\oqueue\\art\\karma_but.tga')
-    icon:SetTexCoord(0 / 64, 64 / 64, 0 / 64, 64 / 64)
-    b:SetNormalTexture(icon)
-
-    b:SetScript('OnClick', oq.make_karma_dropdown)
-    b:Show()
-end
-
 function oq.onHyperlinkClick(self, link, text, button)
     local n = link:find(':') or 0
     local service = link:sub(1, n - 1)
@@ -12371,13 +11702,6 @@ function oq.tooltip_me()
 
     tooltip.left[3]:SetText(OQ.TT_BATTLE_TAG)
     tooltip.right[3]:SetText(oq.player_realid or '')
-
-    tooltip.left[4]:SetText(OQ.TT_KARMA)
-    if (player_karma ~= nil) and (player_karma ~= 0) then
-        tooltip.right[4]:SetText(oq.karma_color(player_karma) .. '' .. tostring(player_karma) .. '|r')
-    else
-        tooltip.right[4]:SetText('--')
-    end
 
     tooltip.left[5]:SetText(OQ.TT_ILEVEL)
     tooltip.right[5]:SetText(player_ilevel)
@@ -14377,23 +13701,6 @@ function oq.create_tab2()
     oq.tab2._connection:SetJustifyH('right')
     oq.tab2._connection:SetJustifyV('middle')
 
-    x = x - 90
-    oq.tab2._findmesh_but =
-        oq.button2(
-        parent,
-        x,
-        y - 5,
-        90,
-        24,
-        OQ.BUT_FINDMESH,
-        14,
-        function(self)
-            oq.find_mesh()
-        end
-    )
-    oq.tab2._findmesh_but.string:SetFont(OQ.FONT, 10, '')
-    oq.tab2._findmesh_but:Disable()
-
     x = x - 95
     oq.tab2._clearfilters_but =
         oq.button2(
@@ -14449,11 +13756,8 @@ function oq.create_tab2()
     oq.tab2._filter._edit:SetMaxLetters(50)
 
     -- tooltips
-    oq.tab2._findmesh_but.tt = OQ.TT_FINDMESH
-
     parent._resize = function(self)
         local cy = self:GetHeight()
-        oq.move_y(self._findmesh_but, cy - 30)
         oq.move_y(self._clearfilters_but, cy - 30)
         oq.move_y(self._filter, cy - 32)
         oq.move_y(self._filter._edit, cy - 32, true)
@@ -16531,9 +15835,6 @@ function oq.create_tab_setup()
     oq.label(parent, x, y, cx, cy, OQ.REALID_MOP)
 
     y = y + cy
-    oq.label(parent, x, y, cx, cy, OQ.SETUP_REMOVEBTAG)
-
-    y = y + cy
     oq.label(parent, x, y, cx, cy, OQ.SETUP_TIMERWIDTH)
 
     --
@@ -16760,21 +16061,6 @@ function oq.create_tab_setup()
     cx = 145
     oq.tab5_bnet = oq.editline(parent, 'BnetAddress', x, y, cx - 4, cy, 60)
     oq.tab5_bnet:Disable()
-    y = y + cy + 6
-    oq.tab5_pullbtag_but =
-        oq.button2(
-        parent,
-        x - 5,
-        y,
-        cx,
-        cy,
-        OQ.BUT_PULL_BTAG,
-        14,
-        function(self)
-            oq.pull_btag()
-        end
-    )
-    oq.tab5_pullbtag_but.string:SetFont(OQ.FONT, 10, '')
 
     y = y + cy
 
@@ -16917,12 +16203,8 @@ end
 function oq.create_main_ui()
     OQMainFrame:SetWidth(OQ.DEFAULT_WIDTH)
 
-    oq.karma_shield = oq.create_karma_shield(OQMainFrame)
-    oq.set_karma_shield(0)
-
     oq.bounty_button = oq.create_bounty_board(OQMainFrame) -- 56
     oq.log_button = oq.create_log_button(OQMainFrame) -- 84
-    oq.karma_button = oq.create_karma_button(OQMainFrame) -- 112
     oq.filter_button = oq.create_filter_button(OQMainFrame) -- 140
 
     ------------------------------------------------------------------------
@@ -17021,9 +16303,6 @@ function oq.get_battle_tag(forced)
         return nil
     end
     oq.player_realid = strlower(oq.player_realid)
-    if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
-        oq._iam_scorekeeper = true
-    end
 
     return oq.player_realid
 end
@@ -17413,79 +16692,6 @@ function oq.brief_group_lead(group_id)
             end
         end
     end
-end
-
-function oq.karma_all_func()
-    if (tbl.size(OQ_data._pending_karma) == 0) then
-        if (OQ_data._karma_count == nil) or (OQ_data._karma_count == 0) then
-            oq.log(true, OQ.LILDIAMOND_ICON .. ' ' .. L['no karma sent'])
-        elseif (OQ_data._karma_count == 1) then
-            oq.log(true, OQ.LILDIAMOND_ICON .. ' ' .. string.format(L['%d dot of karma sent'], OQ_data._karma_count))
-        else
-            oq.log(true, OQ.LILDIAMOND_ICON .. ' ' .. string.format(L['%d dots of karma sent'], OQ_data._karma_count))
-        end
-        return 1 -- will stop the send cycle
-    end
-    local btag, pts, rc
-    for btag, pts in pairs(OQ_data._pending_karma) do
-        rc = oq.karma_vote_btag(btag, pts, 1)
-        OQ_data._pending_karma[btag] = nil
-        if (rc == 0) then
-            OQ_data._karma_count = OQ_data._karma_count + 1
-            return
-        end
-    end
-end
-
-function oq.karma_all(pts)
-    OQ_data._pending_karma = OQ_data._pending_karma or tbl.new()
-
-    local i, j
-    for i = 1, 8 do
-        for j = 1, 5 do
-            local btag = oq.raid.group[i].member[j].realid
-            if (oq.valid_rid(btag)) then
-                OQ_data._pending_karma[btag] = OQ_data._pending_karma[btag] or pts -- don't replace if already there
-            end
-        end
-    end
-    OQ_data._karma_count = 0
-    oq.timer('karma_all', 0.5, oq.karma_all_func, true)
-end
-
-function oq.karma_menu(self, button)
-    if (button == 'LeftButton') then
-        oq.karma_all(1)
-    else
-        oq.karma_all(-1)
-    end
-end
-
-function oq.make_karma_dropdown(button)
-    if (oq.__menu) and (oq.__menu:IsVisible()) then
-        oq.menu_hide()
-        return
-    end
-    local m = oq.menu_create()
-    oq.menu_add(
-        'karma all - |cff00ff00up|r',
-        1,
-        'karma up',
-        nil,
-        function(but, arg1, arg2)
-            oq.karma_all(1)
-        end
-    )
-    oq.menu_add(
-        'karma all - |cffff0000down|r',
-        -1,
-        'karma dn',
-        nil,
-        function(but, arg1, arg2)
-            oq.karma_all(-1)
-        end
-    )
-    oq.menu_show(button, 'TOPLEFT', 0, -25, 'BOTTOMLEFT', 125)
 end
 
 function oq.assign_lucky_charms()
@@ -18510,18 +17716,6 @@ function oq.on_premade(
     end
 end
 
-OQ.DRIFT_MAX = 5 * 60
-function oq.check_drift(dt)
-    oq.pkt_drift:push(dt, true)
-    if (oq.pkt_drift._mean > OQ.DRIFT_MAX) then
-        local pure_now = oq.utc_time('pure')
-        if (OQ_data._karma_last_tm == nil) or (abs(pure_now - OQ_data._karma_last_tm) > 60 * 60) then
-            oq.req_karma('player')
-            OQ_data._karma_last_tm = pure_now
-        end
-    end
-end
-
 function oq.process_premade_info(
     raid_tok,
     raid_name,
@@ -18886,22 +18080,6 @@ function oq.send_invite_response(name, realm, realid, raid_token, req_token, ans
                                                             (reason or '.') .. ',' .. tostring(followup_allowed or ''), -- allows for followup msg'ing
         true
     )
-end
-
-function oq.on_report_recvd(report, token)
-    if (token == nil) or (report == nil) or (oq.toon.reports == nil) then
-        return
-    end
-    local r = oq.toon.reports[token]
-    if (r == nil) then
-        -- why am i getting this response?
-        return
-    end
-
-    r.report_recvd = true
-    if (r.report_recvd) then
-        oq.toon.reports[token] = nil
-    end
 end
 
 function oq.is_banned(rid, only_local)
@@ -22088,7 +21266,6 @@ function oq.procs_init()
     oq.proc['invite_group'] = oq.on_invite_group
     oq.proc['invite_req_response'] = oq.on_invite_req_response
     oq.proc['join'] = oq.on_join
-    oq.proc['k3'] = oq.on_karma
     oq.proc['lag_times'] = oq.on_lag_times
     oq.proc['leave'] = oq.on_leave
     oq.proc['leave_slot'] = oq.on_leave_slot
@@ -22117,13 +21294,11 @@ function oq.procs_init()
     oq.proc['ready_check_complete'] = oq.on_ready_check_complete
     oq.proc['remove'] = oq.on_remove
     oq.proc['removed_from_waitlist'] = oq.on_removed_from_waitlist
-    oq.proc['report_recvd'] = oq.on_report_recvd
     oq.proc['ri'] = oq.on_req_invite -- was "req_invite"
     oq.proc['scores'] = oq.on_scores
     oq.proc['selfie'] = oq.on_selfie
     oq.proc['stats'] = oq.on_stats
     oq.proc['bb'] = oq.on_thebook -- was "thebook"
-    oq.proc['v8'] = oq.on_vlist
 
     -- these msgids will be processed while in a bg
     oq.bg_msgids = tbl.new()
@@ -22137,7 +21312,6 @@ function oq.procs_init()
     oq.bg_msgids['oq_user_ack'] = 1
     oq.bg_msgids['pass_lead'] = 1
     oq.bg_msgids['p8'] = 1
-    oq.bg_msgids['report_recvd'] = 1
     oq.bg_msgids['v8'] = 1
 
     -- remove raid-only procs
@@ -22243,7 +21417,7 @@ function oq.on_channel_msg(...)
     local msg = _arg[1]
     local sender = _arg[2]
 
-    if (sender == player_name and oq._iam_scorekeeper == nil) or (msg == nil or msg == '') then
+    if (sender == player_name or msg == nil or msg == '') then
         oq.post_process()
         return
     end
@@ -23868,46 +23042,7 @@ function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize,
         --
         local lowest, highest = oq.get_group_level_range()
         guid = guid or 0
-        local msg =
-            OQSK_HEADER ..
-            ',' ..
-                OQSK_VER ..
-                    ',' ..
-                        'W1,' ..
-                            'bk,' .. -- bk == boss-kill, -- Maybe ee == encounter end?
-                                tostring(player_name) ..
-                                    ',' ..
-                                        tostring(oq.GetRealmID(player_realm)) ..
-                                            ',' ..
-                                                tostring(oq.player_faction) ..
-                                                    ',' ..
-                                                        tostring(oq.player_realid) ..
-                                                            ',' ..
-                                                                submit_token ..
-                                                                    ',' ..
-                                                                        oq._instance_header ..
-                                                                            ',' ..
-                                                                                oq.encode_mime64_2digit(lowest) ..
-                                                                                    '' ..
-                                                                                        oq.encode_mime64_2digit(highest) ..
-                                                                                            ',' ..
-                                                                                                guid ..
-                                                                                                    ',' ..
-                                                                                                        oq.encode_mime64_1digit(
-                                                                                                            difficultyID
-                                                                                                        ) ..
-                                                                                                            '' ..
-                                                                                                                oq.encode_mime64_3digit(
-                                                                                                                    id
-                                                                                                                ) ..
-                                                                                                                    '' .. -- Maybe encounterID instead? It will always return non 0 unlike guid or id.
-                                                                                                                        oq.encode_mime64_3digit(
-                                                                                                                            oq.utc_time(
 
-                                                                                                                            ) -
-                                                                                                                                oq._instance_tm
-                                                                                                                        )
-        oq.SendScoreKeeperMessage(msg)
         return pts
     end
     return 0
@@ -24214,11 +23349,7 @@ function oq.btag_hyperlink_action(realId, action)
     if (realId == nil) or (realId == '') or (realId == 'nil') then
         return
     end
-    if (action == 'upvote') then
-        oq.karma_vote_btag(realId, 1)
-    elseif (action == 'dnvote') then
-        oq.karma_vote_btag(realId, -1)
-    elseif (action == 'ban') then
+    if (action == 'ban') then
         oq.ban_user(realId)
     elseif (action == 'friend') then
         local isFriend = oq.IsFriend(realId)
@@ -24231,8 +23362,6 @@ function oq.btag_hyperlink_action(realId, action)
 end
 
 OQ.btag_hyperlink = {
-    {text = OQ.TT_KARMA .. ':  ' .. OQ.karma_up .. '  ' .. OQ.UP, action = 'upvote'},
-    {text = OQ.TT_KARMA .. ':  ' .. OQ.karma_dn .. '  ' .. OQ.DOWN, action = 'dnvote'},
     {text = OQ.DD_BAN, action = 'ban'},
     {text = OQ.TT_FRIEND_REQUEST, action = 'friend'}
 }
@@ -24476,9 +23605,6 @@ function oq.on_init(now)
     player_realm = oq.GetRealmName()
     player_realm_id = oq.GetRealmID(player_realm)
     oq.player_realid = strlower(player_name .. '-' .. player_realm)
-    if (oq.player_realid == strlower(OQ.SCOREKEEPER_BATTLE_TAG)) then
-        oq._iam_scorekeeper = true
-    end
     player_class = OQ.SHORT_CLASS[select(2, UnitClass('player'))]
     player_level = UnitLevel('player')
     player_ilevel = oq.get_ilevel()
@@ -24506,8 +23632,7 @@ function oq.on_init(now)
     oq.timer_oneshot(2.7, oq.init_complete)
     oq.timer_oneshot(3, oq.fog_init)
     oq.timer_oneshot(3, oq.cache_mmr_stats)
-    oq.timer_oneshot(4, oq.clean_karma_log)
-    oq.timer_oneshot(5, oq.advertise_my_raid)
+    oq.timer_oneshot(4, oq.advertise_my_raid)
     oq.timer_oneshot(5, oq.delayed_button_load)
     oq.timer_oneshot(7, oq.ping_the_world)
 
@@ -24518,7 +23643,6 @@ function oq.on_init(now)
     -- define timers
     oq.timer('chk4dead_premade', 30, oq.remove_dead_premades, true)
     oq.timer('report_premades', 20, oq.report_premades, nil)
-    oq.timer('report_submits', 20, oq.timed_submit_report, true)
     oq.timer('advertise_premade', 15, oq.advertise_my_raid, true)
     oq.timer('update_nfriends', 15, oq.n_connections, true)
     oq.timer('auto_role_check', 15, oq.auto_set_role, true)
@@ -24531,7 +23655,6 @@ function oq.on_init(now)
     oq.timer('waitlist update', 1, oq.update_wait_times, true)
     oq.timer('bn_send_q', 0.250, oq.send_queued_msgs, true) -- 4 times per second, throttles bn msgs
 
-    oq.clear_report_attempts()
     oq.clear_old_tokens()
     oq.create_tooltips()
     oq.attempt_group_recovery()
@@ -24586,19 +23709,6 @@ function oq.cache_mmr_stats()
         PVPUIFrame:Hide()
     end
     oq.n_connections()
-end
-
-function oq.clear_report_attempts()
-    if (oq.toon.reports == nil) then
-        oq.toon.reports = tbl.new()
-        return
-    end
-    local i, v
-    for i, v in pairs(oq.toon.reports) do
-        v.last_tm = 0
-        v.attempt = nil
-        v.submit_failed = nil
-    end
 end
 
 function oq.on_logout()
@@ -24736,7 +23846,6 @@ function oq.attempt_group_recovery()
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0 -- off by default; 'sticky' between sessions
     OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1
     oq.raid.enforce_levels = oq.raid.enforce_levels or 0
-    oq.toon.reports = oq.toon.reports or tbl.new()
     OQ_data.announce_spy = OQ_data.announce_spy or 1
     OQ_data.fog_enabled = OQ_data.fog_enabled or 1
     OQ_data.show_controlled = OQ_data.show_controlled or 0
@@ -24799,9 +23908,7 @@ function oq.attempt_group_recovery()
     oq.set_voip_filter(OQ_data._voip_filter)
     oq.set_lang_filter(OQ_data._lang_filter)
 
-    player_karma = OQ_data._karma or 0
-    oq.set_karma_shield(player_karma)
-    oq.timer_oneshot(4, oq.req_karma_if_needed)
+    player_karma = 0
     OQ_data['_' .. oq.e3(121705)] = tbl.size(dtp, 'function') * 1000 + OQ_BUILD
 
     OQ_data._members = OQ_data._members or tbl.new()

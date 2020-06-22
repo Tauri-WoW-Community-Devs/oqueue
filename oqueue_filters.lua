@@ -15,15 +15,6 @@ function oq.chat_filter(self, event, msg, author, ...)
     --    return true ;
     end
 
-    -- hide error msg if scorekeeper is temporarily offline or being ignored
-    if
-        (msg:find("No player named '" .. OQ.SCOREKEEPER_NAME .. "' is currently playing") ~= nil) or
-            ((msg:find(OQ.SCOREKEEPER_NAME) ~= nil) and (msg:find('is no longer being ignored') ~= nil))
-     then
-        -- ignore message
-        return true
-    end
-
     -- remove duplicate afk msgs
     if (oq._last_afkmsg == nil) then
         oq._last_afkmsg = 0
