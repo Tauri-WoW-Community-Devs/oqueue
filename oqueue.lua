@@ -643,6 +643,11 @@ function oq.verify_loot_rules_acceptance()
         return
     end
 
+    -- Do not show if you are solo running some dungeons/raids
+    if (not oq.iam_in_a_party()) then
+        return
+    end
+
     local instance, instanceType = IsInInstance()
     if (instance == nil) or ((instanceType ~= 'party') and (instanceType ~= 'raid')) then
         return
