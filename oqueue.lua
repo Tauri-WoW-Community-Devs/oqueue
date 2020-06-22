@@ -15181,50 +15181,6 @@ function oq.pending_note_shade(self)
     oq.shaded_dialog(oq.create_pending_note(oq.create_ui_shade(), self:GetParent().token), nil)
 end
 
-function oq.hint_next(f)
-    -- next page of hints; should wrap back to first page
-    oq.hint_page(f, (f._hint_page or 1) + 1)
-end
-
-function oq.hint_prev(f)
-    -- next page of hints; should wrap back to first page
-    oq.hint_page(f, (f._hint_page or 1) - 1)
-end
-
-function oq.hint_page(f, pg)
-    f._hint_page = pg or 1
-    local i, v
-    local max_hints = 0
-    for i, v in pairs(OQ.HINTS) do
-        max_hints = max(max_hints, i)
-    end
-    if (f._hint_page > max_hints) then
-        f._hint_page = 1
-    elseif (f._hint_page < 1) then
-        f._hint_page = max_hints
-    end
-    PlaySound('igCharacterInfoTab')
-
-    -- update contents
-    f.html:SetText(
-        string.format(
-            L[
-                "<html><body><h2 align=\"left\">Here are some hints</h2><br/><h1 alight='left'>#%d of %d</h1><br/><p>%s</p></body></html>"
-            ],
-            f._hint_page,
-            max_hints,
-            OQ.HINTS[f._hint_page]
-        )
-    )
-end
-
-function oq.reminder_due(t)
-    if ((oq.utc_time() - (t or 0)) > 7 * 24 * 60 * 60) then
-        return true
-    end
-    return nil
-end
-
 function oq.required_update_shade()
     oq.shaded_dialog(oq.create_required_updatebox(oq.create_ui_shade(), oq._major, oq._minor, oq._rev), true)
 end

@@ -145,7 +145,6 @@ function oq.frame_report(opt)
     print('--[ frame dump ]--')
     local n = 0
     local s = nil
-    local i, v
     for i, v in pairs(oq.__frame_pool) do
         if (arg == nil) or (strlower(i):find(arg)) then
             n = tbl.size(v)
@@ -168,9 +167,6 @@ function oq.frames_inuse_report(opt)
         arg = strlower(opt:sub(opt:find(' ') + 1, -1))
     end
     print('--[ frames inuse ]--')
-    local n = 0
-    local s = nil
-    local i, v
     for i, v in pairs(oq.__frame_pool['#check']) do
         if (arg == nil) or (strlower(v):find(arg)) then
             if (i.raid_token) then
@@ -648,7 +644,6 @@ end
 
 function oq.menu_clear()
     oq.__menu:Hide()
-    local i
     for i = 1, OQ.MAX_MENU_OPTIONS do
         if (oq.__menu_options[i]) then
             oq.__menu_options[i]:Hide()
@@ -700,8 +695,7 @@ function oq.menu_create()
             end
         )
 
-        local y = 8
-        local i
+        local y
         for i = 1, OQ.MAX_MENU_OPTIONS do
             local m = oq.CreateFrame('BUTTON', 'OQMenuOption', oq.__menu)
             y = oq.__menu._cy * (i - 1)
@@ -779,7 +773,6 @@ function oq.menu_add(text, arg1, arg2, checked, func)
         oq.menu_create()
     end
 
-    local i
     for i = 1, OQ.MAX_MENU_OPTIONS do
         if (oq.__menu_options[i]) and (oq.__menu_options[i]._text == nil) then
             local m = oq.__menu_options[i]
@@ -798,7 +791,6 @@ end
 function oq.menu_show_core(f, width)
     if (oq.__menu) then
         local n = 0
-        local i
         for i = 1, OQ.MAX_MENU_OPTIONS do
             if (oq.__menu_options[i]) and (oq.__menu_options[i]._text ~= nil) then
                 n = n + oq.__menu._cy
@@ -824,17 +816,6 @@ function oq.menu_show(f, my_corner, adj_x, adj_y, their_corner, width)
     if (oq.__menu) then
         oq.menu_show_core(f, width)
         oq.__menu:SetPoint(my_corner, adj_x, adj_y, their_corner, 0, 0)
-        oq.__menu:Show()
-    end
-end
-
-function oq.menu_show_aligned(f, adj_x, adj_y, width)
-    if (oq.__menu) then
-        oq.menu_show_core(UIParent, width)
-
-        oq.__menu:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', f:GetLeft(), f:GetBottom() - 2)
-        oq.__menu:SetWidth(oq.__menu._width)
-        oq.__menu:SetHeight(oq.__menu._height)
         oq.__menu:Show()
     end
 end
@@ -880,7 +861,7 @@ function oq.combo_box(parent, x, y, edit_cx, cy, populate_list_func, init_text)
     cb.__width = edit_cx + 22
     cb:SetScript(
         'OnClick',
-        function(self, button)
+        function(self)
             if (oq.menu_is_visible()) then
                 oq.menu_hide()
             else
@@ -904,7 +885,7 @@ function oq.button_pulldown(parent, x, y, cx, cy, populate_list_func, init_textu
     cb._populate = populate_list_func
     cb:SetScript(
         'OnClick',
-        function(self, button)
+        function(self)
             if (oq.menu_is_visible()) then
                 oq.menu_hide()
             else
@@ -936,7 +917,7 @@ function oq.pushbutton_pulldown(parent, x, y, cx, cy, populate_list_func, init_t
         init_texture,
         init_texture,
         nil,
-        function(self, button)
+        function(self)
             if (oq.menu_is_visible()) then
                 oq.menu_hide()
             else

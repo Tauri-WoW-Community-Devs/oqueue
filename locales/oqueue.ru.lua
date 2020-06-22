@@ -272,11 +272,6 @@ OQ.KHAN = 'Хан'
 OQ.RANAWAY = 'Дезертир. Убежал с поля боя.'
 OQ.UP = '[+]'
 OQ.DOWN = '[-]'
-OQ.BAD_KARMA_BTAG = 'OQ: Неверный b-tag у выбранного игрока'
-OQ.MAX_KARMA_TODAY = 'OQ: Сегодня вы уже отнимали репутацию у игрока %s'
-OQ.YOUVE_GOT_KARMA = 'Вы получили %d репутации.'
-OQ.YOUVE_LOST_KARMA = 'Вы потеряли %d репутации.'
-OQ.YOUVE_LOST_KARMAS = 'Вы потеряли %d репутации.'
 OQ.INSTANCE_LASTED = 'Инстанс длился'
 OQ.SHOW_ILEVEL = 'Показать ИЛ'
 OQ.SOCKET = 'Разъем'
@@ -1181,47 +1176,3 @@ L['I accept loot method'] = 'Я подтвердил метод добычи'
 L['Loot method unacceptable'] = 'Я не принял метод добычи'
 L["I'm leaving due to loot method"] = 'Я ухожу из-за такого метода добычи'
 L['** PAUSED **'] = '** ПАУЗА **'
-
-OQ.HINTS = {
-    [1] = L["</p><br/><h3 align=\"center\">|cffE9EB15Don't Panic|r</h3><p>"],
-    [2] = L[
-        "if your buddy is always standing in the fire, he might not see it due to being color blind<br/><br/>click the '+' button next to color blind support on the setup tab to cycle through the various color schemes."
-    ],
-    [3] = L['control+left-click on a leader or player on the wait list to get their armory link'],
-    [4] = L['control+left-click on a friendly player will auto-inspect and show their gear'],
-    [5] = L['holding SHIFT on the find-premade tab will PAUSE the list until released'],
-    [6] = L[
-        'avoid pug groups with no voice comms for a better experience.<br/><br/>try to reach out and communicate with the people in your group.  you may learn new techniques, strategies, or maybe make a friend.'
-    ],
-    [7] = L['award karma to group members using the log or clicking their square on the main premade tab'],
-    [8] = L['resize the window by dragging the bottom right corner'],
-    [9] = L['list local group leaders by typing: <br/><br/>/oq show locals'],
-    [10] = L[
-        "your mesh connection is in the lower right<br/><br/>[realm] - [bnet list]<br/><br/>your connection is 'weak' if the sum is less then 20"
-    ],
-    [11] = L['gain more mesh connections by clicking the find-mesh button'],
-    [12] = L['clicking the remove-now button will remove mesh connections.  use with caution'],
-    [13] = L["right-click the red 'x' on the find-premade list to ban that group leader"],
-    [14] = L["if you're confused, find tiny in public vent"],
-    [15] = L[
-        'click the spyglass at the top left of the find-premade tab to filter the list<br/><br/>you can use the following logical operators:<br/><br/> &amp; (and)<br/> | (or)<br/> ! (not)<br/><br/>ie:  rbgs | cta &amp; !yolo<br/><br/>meaning:<br/> rbgs or cta and not yolo'
-    ],
-    [16] = L['you can use wildcards in the spyglass filter<br/><br/>ie:  flex.*1'],
-    [17] = L['more advanced filters are possible<br/><br/>ie: flex.*1 | flex.*2'],
-    [18] = L[
-        'leaders with good karma will have greenish names on the find-premade list.<br/><br/>leaders with bad karma will be shown in red<br/><br/>white is neutral'
-    ],
-    [19] = L[
-        "your karma reflects the opinions of your performance and personality by those you've grouped with.<br/><br/>karma ranges from -25 to +25 and degrades by 1 pt, back towards 0, every 24 hours"
-    ],
-    [20] = L['karma - what goes around, comes around'],
-    [21] = L['right-click filter options on the find-premade tab to toggle exclusion of that type.'],
-    [22] = L[
-        'check the setup tab for various UI tweaks.<br/><br/>such as announcing contracts or showing class portaits on targets'
-    ],
-    [23] = L[
-        "some folks have tried to claim it's bannable to queue with a full 25 for LFR.<br/><br/>this is completely false.<br/><br/>oQueue usage is perfectly fine with Blizzard and within all aspects of the EULA and TOS."
-    ],
-    [24] = L['gear slots with a red glow contain pvp gear<br/><br/>gear slots with a blue glow contain pve gear'],
-    [25] = L["you'll never hit a home run, if you don't step up to the plate"]
-}
