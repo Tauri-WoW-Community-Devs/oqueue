@@ -109,7 +109,6 @@ OQ.BUNDLE_EXPIRATION = 4.0 -- seconds
 OQ.MAX_BNET_MSG_SZ = 4078 -- max size as per blizz limitation
 OQ.DEFAULT_WIDTH = 835
 OQ.MIN_FRAME_HEIGHT = 475
-OQ.MAXBOUNTIES = 20
 OQ.BNET_CAPB4THECAP = 98 -- blizz increased the cap from 100 to 112 (also fixed the crash.  capb4cap needed?).
 OQ.MODEL_CHECK_TM = 3 -- check every 3 seconds
 OQ.RELAY_OVERLOAD = 28 -- if sent msgs/sec exceeds 28, p8 msgs will stop sending
@@ -199,12 +198,6 @@ SlashCmdList['OQUEUE'] = function(msg, editbox)
     if (oq.options[arg1] ~= nil) then
         oq.options[arg1](opts)
     end
-end
-
-SLASH_BOUNTY1 = '/bounty'
-SLASH_BOUNTY2 = '/bb'
-SlashCmdList['BOUNTY'] = function(msg, editbox)
-    oq.toggle_bounty_board()
 end
 
 SLASH_OQLOG1 = '/oqlog'
@@ -653,21 +646,6 @@ function oq.verify_loot_rules_acceptance()
     f.loot_text:SetText(L['loot.' .. method])
     oq.moveto(f, floor((GetScreenWidth() - f:GetWidth()) / 2), 200)
     f:Show()
-end
-
-function oq.marquee_frame_transit(self, flag)
-    if (flag) then
-        self.texture:SetTexture(0.3, 0.1, 0.1)
-        self.label:Show()
-        self.closepb:Show()
-    else
-        local f = GetMouseFocus()
-        if (f ~= self.closepb) then
-            self.texture:SetTexture(nil)
-            self.label:Hide()
-            self.closepb:Hide()
-        end
-    end
 end
 
 function oq.utimer_frame_transit(self, flag)
@@ -1360,13 +1338,6 @@ end
 function oq.reposition_ui()
     local x = 100
 
-    -- bounty board
-    if (oq._bounty_board) then
-        oq._bounty_board:Show()
-        oq._bounty_board:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -125)
-        oq._bounty_board:_save_position()
-    end
-
     x = x + 400
     -- main ui
     local f = OQMainFrame
@@ -1388,12 +1359,6 @@ function oq.reposition_ui()
     OQ_MinimapButton:Show()
     OQ_MinimapButton:SetFrameStrata('MEDIUM')
     OQ_MinimapButton:SetFrameLevel(50)
-
-    -- score marquee
-    if (oq.marquee) then
-        oq.marquee:Show()
-        oq.marquee:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 800, -100)
-    end
 
     -- log
     if (oq._log) then
@@ -1474,7 +1439,6 @@ function oq.show_data(opt)
         print('   report       show battleground reports yet to be filed')
         print('   snitch       list snitch info to chat area')
         print('   stats        list various stats')
-        print('   thebook      bounty board')
         print("   wallet       what's in YOUR wallet?")
     elseif (opt == 'count') then
         oq.show_count()
@@ -1508,8 +1472,6 @@ function oq.show_data(opt)
     elseif (opt:find('systables') == 1) then
         tbl.fill_match(_arg, opt, ' ') -- args: tables cnt dump substring
         oq.dump_tables(_arg[2], _arg[3])
-    elseif (opt == 'thebook') then
-        oq.show_the_book()
     elseif (opt:find('timers') == 1) then
         oq.timer_dump(opt)
     elseif (opt == 'waitlist') then
@@ -4463,21 +4425,6 @@ function oq.report_premades()
         return
     end
     _announcePremades = true
-end
-
-function oq.announce_new_contract(contract)
-    print(
-        '|Hcontract:' ..
-            tostring(contract.id) ..
-                '|h' ..
-                    OQ.LILSKULL_ICON ..
-                        string.format(
-                            OQ.CONTRACT_ARRIVED,
-                            contract.id,
-                            contract.name,
-                            oq.get_crowns(contract.reward, 12)
-                        )
-    )
 end
 
 function oq.announce_new_premade(name, name_change, raid_token)
@@ -9921,634 +9868,6 @@ function oq.try_to_connect()
     end
 end
 
-function oq.toggle_bounty_board()
-    if (oq._bounty_board) and (oq._bounty_board:IsVisible()) then
-        oq._bounty_board:Hide()
-    elseif (oq._bounty_board) then
-        oq._bounty_board:Show()
-        oq._bounty_board:Raise()
-    --    tremove_value(UISpecialFrames, oq._bounty_board:GetParent():GetName());
-    --    tinsert(UISpecialFrames, oq._bounty_board:GetName());
-    end
-end
-
-function oq.toggle_type2_bounty_board()
-    if (oq._bounty_board) and (oq._bounty_board:IsVisible()) then
-        oq._bounty_board:Hide()
-    elseif (oq._bounty_board) then
-        oq._bounty_board:Show()
-        oq._bounty_board:Raise()
-        -- jump to matchup page
-        local now = oq.utc_time()
-        local i
-        for i = 1, OQ.MAXBOUNTIES do
-            local c = oq.bounties[i]
-            if (c) and (c.type > 1) and (c.type < 10) and (c.flags == 1) then
-                oq._bounty_board:goto_contract(c.id)
-                return
-            end
-        end
-    end
-end
-
-function oq.create_bounty_board(parent)
-    -- headline:  INTERFACE/BlackMarket/BlackMarketSign
-    -- main backdrop:  INTERFACE/BarberShop/UI-BARBERSHOP
-    -- bounties avilable:  INTERFACE/BUTTONS/UI-MICROBUTTON-SOCIALS-UP
-    -- bounties avilable:  INTERFACE/BUTTONS/UI-MICROBUTTON-SOCIALS-DOWN
-    -- no bounties alliance: INTERFACE/BUTTONS/UI-MicroButton-Guild-Disabled-Alliance
-    -- no bounties horde: INTERFACE/BUTTONS/UI-MicroButton-Guild-Disabled-Horde
-    local x = 56
-    local y = 4
-    local cx = 24
-    local cy = 26
-    local b = CreateFrame('CheckButton', 'OQBountyButton', parent)
-    b:SetFrameLevel(parent:GetFrameLevel() + 1)
-    b:RegisterForClicks('anyUp')
-    b:SetWidth(cx)
-    b:SetHeight(cy)
-    b:SetPoint('TOPLEFT', x, y)
-
-    local pt = b:CreateTexture()
-    pt:SetTexture([[Interface\Buttons\UI-MICROBUTTON-SOCIALS-DOWN]])
-    pt:SetAllPoints(b)
-    pt:SetTexCoord(4 / 32, 26 / 32, 30 / 64, 59 / 64)
-    b:SetPushedTexture(pt)
-
-    local ht = b:CreateTexture()
-    ht:SetTexture([[Interface\Buttons\ButtonHilight-Square]])
-    ht:SetAllPoints(b)
-    b:SetHighlightTexture(ht)
-
-    local ct = b:CreateTexture()
-    ct:SetTexture([[Interface\Buttons\CheckButtonHilight]])
-    ct:SetAllPoints(b)
-    ct:SetBlendMode('ADD')
-    ct:SetAlpha(0.5)
-    b:SetCheckedTexture(ct)
-
-    local icon = b:CreateTexture()
-    icon:SetAllPoints(b)
-    icon:SetTexture([[Interface\Buttons\UI-MICROBUTTON-SOCIALS-UP]])
-    icon:SetTexCoord(4 / 32, 26 / 32, 30 / 64, 59 / 64)
-
-    b:SetScript('OnClick', oq.toggle_bounty_board)
-    b:Show()
-
-    ------------------------------------------------------------------------
-    -- create bounty board
-    ------------------------------------------------------------------------
-    local d = oq.CreateFrame('FRAME', 'OQBountyBoard', UIParent)
-    oq.make_frame_moveable(d)
-    d:SetScript(
-        'OnShow',
-        function(self)
-            tinsert(UISpecialFrames, self:GetName())
-            self:SetFrameLevel(52) -- minimap button == 50
-            oq.update_bounty_page()
-            if (oq.bounty_button) then
-                oq.bounty_button:SetChecked(1)
-            end
-            oq.timer('bb_update', 0.5, oq.update_bounty_clock, true)
-            PlaySound('igCharacterInfoOpen')
-        end
-    )
-    d:SetScript(
-        'OnHide',
-        function(self)
-            if (oq.bounty_button) then
-                oq.bounty_button:SetChecked(nil)
-            end
-            oq.timer('bb_update', 0.5, nil)
-            PlaySound('igCharacterInfoClose')
-        end
-    )
-    d._save_position = function(self)
-        OQ_data.bounty_x = max(0, floor(self:GetLeft()))
-        OQ_data.bounty_y = max(0, floor(self:GetTop()))
-    end
-
-    local pb = oq.closebox(d)
-    pb:SetPoint('TOPRIGHT', d, 'TOPRIGHT', -25, -85)
-    d:SetPoint('TOPLEFT', 100, -100)
-    d:SetWidth(400)
-    d:SetHeight(500)
-    d:SetFrameLevel(max(OQ_MinimapButton:GetFrameLevel(), parent:GetFrameLevel()) + 10)
-
-    local back = d:CreateTexture(nil, 'BACKGROUND')
-    back:SetTexture('INTERFACE/BarberShop/UI-BARBERSHOP')
-    back:SetTexCoord(5 / 512, 265 / 512, 1 / 512, 312 / 512)
-    back:SetAllPoints(d)
-    back:SetAlpha(1.0)
-    d._backdrop = back
-
-    local t = d:CreateTexture(nil, 'BORDER')
-    t:SetTexture('INTERFACE/BlackMarket/BlackMarketSign')
-    t:SetPoint('TOPLEFT', 20, -50)
-    t:SetAlpha(1.0)
-    t:SetWidth(d:GetWidth() - 2 * 20)
-    t:SetHeight(200)
-    d._banner = t
-
-    local bones = d:CreateTexture(nil, 'BORDER')
-    bones:SetTexture('INTERFACE/ARCHEOLOGY/ArchRare-TrollVoodooDoll')
-    bones:SetTexCoord(180 / 512, 375 / 512, 20 / 256, 220 / 256)
-    bones:SetVertexColor(192 / 255, 192 / 255, 192 / 255)
-    bones:SetPoint('TOPLEFT', 90, -165)
-    bones:SetAlpha(0.3)
-    bones:SetWidth(d:GetWidth() - 2 * 90)
-    bones:SetHeight(200)
-    d._bones = bones
-
-    x = 90
-    y = -165
-    d._poster = oq.CreateFrame('SimpleHTML', 'OQBountyPoster', d)
-    d._poster:SetPoint('TOPLEFT', x, y)
-    d._poster:SetFont(OQ.FONT, 12)
-    d._poster:SetWidth(d:GetWidth() - 2 * x)
-    d._poster:SetHeight(100)
-    d._poster:SetFont('h1', OQ.FONT, 16)
-    d._poster:SetTextColor('h1', 0.2, 0.2, 0.2, 0.8)
-
-    d._poster:SetFont('h2', 'Fonts\\MORPHEUS.ttf', 40)
-    d._poster:SetShadowColor('h2', 0, 0, 0, 1)
-    d._poster:SetShadowOffset('h2', 1, -1)
-    d._poster:SetTextColor('h2', 128 / 255, 0 / 255, 0 / 255, 1.0)
-
-    d._poster:SetFont('h3', OQ.FONT, 10)
-    d._poster:SetShadowColor('h3', 0, 0, 0, 1)
-    d._poster:SetShadowOffset('h3', 0, 0)
-    d._poster:SetTextColor('h3', 0.2, 0.2, 0.2, 0.8)
-
-    d._poster:SetText('')
-
-    -- death-match: horde
-    y = d:GetHeight() - 240
-    local x1 = x + 40
-    d._horde_score_l = oq.label(d, x1, y, 90, OQ.BUTTON_SZ, OQ.FACTION_ICON['H'] .. ' Horde')
-    d._horde_score_l:SetJustifyV('MIDDLE')
-    d._horde_score_l:SetJustifyH('LEFT')
-    d._horde_score_l:SetFont(OQ.FONT, 12)
-    d._horde_score_l:SetTextColor(0.1, 0.1, 0.1, 1.0)
-    d._horde_score_l:SetShadowOffset(0, 0)
-
-    d._horde_score = oq.label(d, x1 + 70, y + 5, 70, 25, '0')
-    d._horde_score:SetFont(OQ.FONT_FIXED, 12, '')
-    d._horde_score:SetJustifyH('RIGHT')
-    d._horde_score:SetJustifyV('MIDDLE')
-    d._horde_score:SetTextColor(0, 0, 0, 1)
-    d._horde_score:SetShadowOffset(0, 0)
-
-    d._horde_score_l:Hide()
-    d._horde_score:Hide()
-
-    -- death-match: alliance
-    y = y + 20
-    d._alliance_score_l = oq.label(d, x1, y, 90, OQ.BUTTON_SZ, OQ.FACTION_ICON['A'] .. ' Alliance')
-    d._alliance_score_l:SetJustifyV('MIDDLE')
-    d._alliance_score_l:SetJustifyH('LEFT')
-    d._alliance_score_l:SetFont(OQ.FONT, 12)
-    d._alliance_score_l:SetTextColor(0.1, 0.1, 0.1, 1.0)
-    d._alliance_score_l:SetShadowOffset(0, 0)
-
-    d._alliance_score = oq.label(d, x1 + 70, y + 5, 70, 25, '0')
-    d._alliance_score:SetFont(OQ.FONT_FIXED, 12, '')
-    d._alliance_score:SetJustifyH('RIGHT')
-    d._alliance_score:SetJustifyV('MIDDLE')
-    d._alliance_score:SetTextColor(0, 0, 0, 1)
-    d._alliance_score:SetShadowOffset(0, 0)
-
-    d._alliance_score_l:Hide()
-    d._alliance_score:Hide()
-
-    -- rewards
-    y = d:GetHeight() - 200
-    d._reward_l = oq.label(d, x, y, 100, OQ.BUTTON_SZ, L['Rewards'])
-    d._reward_l:SetJustifyV('BOTTOM')
-    d._reward_l:SetJustifyH('LEFT')
-    d._reward_l:SetFont(OQ.FONT, 16)
-    d._reward_l:SetTextColor(0.2, 0.2, 0.2, 0.9)
-    d._reward_l:SetShadowOffset(0, 0)
-
-    d._reward = oq.label(d, x + 100 + 20, y + 10, 100, 25, '0 C')
-    d._reward:SetFont(OQ.FONT_FIXED, 12, '')
-    d._reward:SetJustifyH('RIGHT')
-    d._reward:SetJustifyV('MIDDLE')
-    d._reward:SetTextColor(0, 0, 0, 1)
-    d._reward:SetShadowOffset(0, 0)
-
-    -- timeleft
-    y = y + 35
-    d._remaining_l = oq.label(d, x, y, 100, OQ.BUTTON_SZ, L['Time left'])
-    d._remaining_l:SetJustifyV('CENTER')
-    d._remaining_l:SetJustifyH('LEFT')
-    d._remaining_l:SetFont(OQ.FONT, 16)
-    d._remaining_l:SetTextColor(0.2, 0.2, 0.2, 0.9)
-    d._remaining_l:SetShadowOffset(0, 0)
-
-    d._remaining = oq.label(d, x + 100, y, 100, OQ.BUTTON_SZ, '16:52')
-    d._remaining:SetJustifyV('CENTER')
-    d._remaining:SetJustifyH('RIGHT')
-    d._remaining:SetFont(OQ.FONT_FIXED, 12)
-    d._remaining:SetTextColor(0, 0, 0, 1)
-    d._remaining:SetShadowOffset(0, 0)
-
-    x = 160
-    y = d:GetHeight() - 100
-    d._prev =
-        oq.prev_button(
-        d,
-        x + 55,
-        y,
-        function(self)
-            self:GetParent():prev(self)
-        end
-    )
-    d._next =
-        oq.next_button(
-        d,
-        x + 90,
-        y,
-        function(self)
-            self:GetParent():next(self)
-        end
-    )
-
-    --  oq.button_disable(d._prev);
-    --  oq.button_disable(d._next);
-
-    d._page = oq.label(d, x, y, 75, OQ.BUTTON_SZ, 'Page 1')
-    d._page:SetJustifyV('CENTER')
-    d._page:SetJustifyH('LEFT')
-    d._page:SetFont(OQ.FONT, 12)
-    d._page:SetTextColor(0.4, 0.4, 0.4, 0.5)
-
-    d.top = function(self, dontrefresh)
-        self:f_goto(1, dontrefresh)
-    end
-    d.prev = function(self)
-        self:f_goto(self._pg - 1)
-    end
-    d.next = function(self)
-        self:f_goto(self._pg + 1)
-    end
-    d.count_pgs = function(self)
-        self._npages = 0
-        local i, v
-        for i, v in pairs(oq.bounties) do
-            if (v.id) and (v.target) and (v.target ~= 0) then
-                self._npages = self._npages + 1
-            end
-        end
-    end
-    d.f_goto = function(self, pg, dontrefresh)
-        if (self._ids) then
-            tbl.clear(self._ids)
-        else
-            self._ids = tbl.new()
-        end
-        self._pg = 0
-        self._ndx = nil
-        self._npages = 0
-        self._current = nil
-        local i, v
-        for i, v in pairs(oq.bounties) do
-            if (v.id) and (v.target) and (v.target ~= 0) then
-                self._npages = self._npages + 1
-                table.insert(self._ids, v.id)
-            end
-        end
-        if (self._npages == 0) then
-            return
-        end
-        if (pg > self._npages) or (pg < 1) then
-            pg = 1
-        end
-        table.sort(self._ids, oq.basic_compare)
-        for i, v in pairs(oq.bounties) do
-            if (v.id == self._ids[pg]) then
-                self._ndx = i
-                self._pg = pg
-                self._current = v.id
-                break
-            end
-        end
-        -- display page
-        if (dontrefresh == nil) then
-            oq.update_bounty_page()
-            PlaySound('igMainMenuOptionCheckBoxOn')
-        end
-    end
-    d.goto_contract = function(self, id, dontrefresh)
-        if (self._ids) then
-            tbl.clear(self._ids)
-        else
-            self._ids = tbl.new()
-        end
-        self._pg = 0
-        self._ndx = nil
-        self._npages = 0
-        self._current = nil
-        local i, v, j, x
-        for i, v in pairs(oq.bounties) do
-            if (v.id) and (v.target) and (v.target ~= 0) then
-                self._npages = self._npages + 1
-                table.insert(self._ids, v.id)
-            end
-        end
-        if (self._npages == 0) then
-            return
-        end
-        local pg = 0 -- default page
-        table.sort(self._ids, oq.basic_compare)
-        for i, v in pairs(oq.bounties) do
-            if (v.id == tonumber(id)) then
-                self._ndx = i
-                self._current = v.id
-                self._pg = 0
-                for j, x in pairs(self._ids) do
-                    if (x == v.id) then
-                        self._pg = j
-                        break
-                    end
-                end
-                break
-            end
-        end
-        if (self._ndx == nil) then
-            self:top(dontrefresh)
-            return
-        end
-        -- display page
-        if (dontrefresh == nil) then
-            oq.update_bounty_page()
-            PlaySound('igMainMenuOptionCheckBoxOn')
-        end
-    end
-
-    d:Hide()
-    d._pg = 0
-    oq._bounty_board = d
-    if (OQ_data.bounty_x or OQ_data.bounty_y) then
-        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.bounty_x, OQ_data.bounty_y)
-    end
-
-    oq.bounties = tbl.new()
-
-    d:top()
-    return b
-end
-
-OQ.CONTRACT_TARGETS = {
-    [2] = {H = 71619, A = 71622}, -- enthan and acon
-    [3] = {H = 19907, A = 19906},
-    [4] = {H = 67801, A = 67461}
-}
-function oq.populate_npc_table()
-    OQ.npc = tbl.new()
-    OQ.npc[18728] = L['Doom Lord Kazzak'] -- shared; outland
-    OQ.npc[46254] = L['Hogger'] -- stockades
-    OQ.npc[46264] = L['Lord Overheat'] -- stockades
-    OQ.npc[46383] = L['Randolph Moloch'] -- stockades
-    OQ.npc[61408] = L['Adarogg'] -- ragefire
-    OQ.npc[61463] = L['Slagmaw'] -- ragefire
-    OQ.npc[61528] = L['Lava Guard Gordoth'] -- ragefire
-    OQ.npc[2456] = L['Newton Burnside'] -- SW banker
-    OQ.npc[8670] = L['Auctioneer Chilton'] -- SW auctioneer
-    OQ.npc[1215] = L['Alchemist Mallory'] -- outside SW
-    OQ.npc[3935] = L['Toddrick'] -- goldshire
-    OQ.npc[6121] = L['Remen Marcot'] -- goldshire
-    OQ.npc[327] = L['Goldtooth'] -- south of goldshire
-    OQ.npc[44865] = L['Auctioneer Fazdran'] -- org
-    OQ.npc[44854] = L['Kixa'] -- org banker
-    OQ.npc[39379] = L['Gor the Enforcer'] -- outside of org
-    OQ.npc[3169] = L['Tarshaw Jaggedscar'] -- razorhill
-    OQ.npc[6586] = L['Rokar Bladeshadow'] -- south of org
-    OQ.npc[5519] = L["Kor'kron Spotter"] -- outside of org
-    OQ.npc[42131] = L['Falstad Wildhammer'] -- ironforge council
-    OQ.npc[36648] = L['Baine Bloodhoof'] -- thunderbluff chieftain
-    OQ.npc[18733] = L['Fel Reaver'] -- shared; outland
-    OQ.npc[64065] = L['Brewmaster Roland'] -- two moons
-    OQ.npc[64585] = L['Reeler Uko'] -- two moons
-    OQ.npc[50339] = L["Sulik'shor"] -- rare, four winds
-    OQ.npc[50352] = L["Qu'nas"] -- rare, krasarang wilds
-    OQ.npc[50364] = L["Nal'lak the Ripper"] -- rare, four winds
-    OQ.npc[50828] = L['Bonobos'] -- rare, four winds
-    OQ.npc[68322] = L['Muerta'] -- horde, domination point
-    OQ.npc[68319] = L['Disha Fearwarden'] -- alliance, lion's landing
-    OQ.npc[16972] = L['Bonestripper Buzzard'] -- test target
-    OQ.npc[18678] = L['Fulgorge'] -- outland; extremely rare
-    OQ.npc[50780] = L['Sahn Tidehunter'] -- rare; eternal blossoms
-    OQ.npc[50806] = L['Moldo One-Eye'] -- rare; eternal blossoms
-    OQ.npc[50805] = L['Omnis Grinlok'] -- rare; pandaria
-    OQ.npc[68000] = L['Hiren Loresong'] -- isle of thunder; alli quartermaster
-    OQ.npc[67672] = L['Vasarin Redmorn'] -- isle of thunder; horde quartermaster
-    OQ.npc[19907] = L['Grumbol Grimhammer'] -- alli AV battlemaster
-    OQ.npc[19906] = L['Usha Eyegouge'] -- horde AV battlemaster
-    OQ.npc[42983] = L['Bartlett the Brave'] -- goldshire flightmaster
-    OQ.npc[43124] = L['Anette Williams'] -- brill bat master
-    OQ.npc[46638] = L['Auctioneer Vizput'] -- secondary org auctioneer
-    OQ.npc[10181] = L['Lady Sylvanas Windrunner'] -- UC boss
-    OQ.npc[3615] = L['Devrak'] -- horde; x-road flight master
-    OQ.npc[2409] = L['Felicia Maline'] -- alliance; darkshire flight master
-    OQ.npc[30231] = L['Radulf Leder'] -- alliance; AB battlemaster
-    OQ.npc[19905] = L['The Black Bride'] -- horde; AB battlemaster
-    OQ.npc[69835] = L["Shan'ze Battlemaster"] -- thunder isle
-    OQ.npc[4311] = L['Holgar Stormaxe'] -- outside of org
-    OQ.npc[71255] = L['Ruskan Goreblade'] -- kor'kron commander
-    OQ.npc[331] = L['Maginor Dumas'] -- in SW mage tower
-    OQ.npc[5694] = L['High Sorcerer Andromath'] -- in SW mage tower
-    OQ.npc[69975] = L['Captain Dirgehammer'] -- SW conquest quartermaster
-    OQ.npc[917] = L['Keryn Sylvius'] -- goldshire
-    OQ.npc[68408] = L["Bizmo's Brawlpub Bouncer"] -- brawler's pub
-    OQ.npc[11145] = L['Myolor Sunderfury'] -- ironforge
-    OQ.npc[4256] = L['Golnir Bouldertoe'] -- ironforge
-    OQ.npc[9859] = L['Auctioneer Lympkin'] -- ironforge
-    OQ.npc[1373] = L['Jarven Thunderbrew'] -- outside of ironforge, kharanos
-    OQ.npc[63179] = L['Mistblade Scale-Lord'] -- shared target, dread wastes, in hole next to BOA world drop (blade of the prime)
-    OQ.npc[50840] = L['Major Nanners'] -- rare in eternal blossoms
-    OQ.npc[69965] = L['Doris Chiltonius'] -- conquest vendor; horde
-    OQ.npc[71617] = L['Doris Chiltonius'] -- conquest vendor; horde
-    OQ.npc[73141] = L['Doris Chiltonius'] -- conquest vendor; horde
-    OQ.npc[69966] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
-    OQ.npc[71622] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
-    OQ.npc[73145] = L['Acon Deathwielder'] -- glorious conquest vendor; horde
-    OQ.npc[70108] = L['Roo Desvin'] -- horde pvp vendor; four winds
-    OQ.npc[71618] = L['Roo Desvin'] -- horde pvp vendor; four winds
-    OQ.npc[73148] = L['Roo Desvin'] -- horde pvp vendor; four winds
-    OQ.npc[67461] = L['Warlord Bloodhilt'] -- horde keep boss in krasarang wilds
-    OQ.npc[69967] = L['Lucan Malory'] -- conquest vendor; alli
-    OQ.npc[71623] = L['Lucan Malory'] -- conquest vendor; alli
-    OQ.npc[73144] = L['Lucan Malory'] -- conquest vendor; alli
-    OQ.npc[69968] = L['Ethan Natice'] -- glorious conquest vendor; alliance
-    OQ.npc[71619] = L['Ethan Natice'] -- glorious conquest vendor; alliance
-    OQ.npc[73147] = L['Ethan Natice'] -- glorious conquest vendor; alliance
-    OQ.npc[70101] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
-    OQ.npc[71620] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
-    OQ.npc[73142] = L['Armsmaster Holinka'] -- alli pvp vendor; four winds
-    OQ.npc[67801] = L['High Marshal Twinbraid'] -- alliance keep boss in krasarang wilds
-    OQ.npc[63978] = L["Kri'chon"] -- quest mob @ the wall
-    OQ.npc[50356] = L['Krol the Blade'] -- rare; dread wastes
-    OQ.npc[50836] = L['Ik-Ik the Nimble'] -- rare; dread wastes
-    OQ.npc[50821] = L['Ai-Li Skymirror'] -- rare; dread wastes
-    OQ.npc[50739] = L["Gar'lok"] -- rare; dread wastes
-    OQ.npc[50805] = L['Omnis Grinlok'] -- rare; dread wastes
-    OQ.npc[50334] = L['Dak the Breaker'] -- rare; dread wastes
-    OQ.npc[50347] = L['Karr the Darkener'] -- rare; dread wastes
-    OQ.npc[50776] = L['Nalash Verdantis'] -- rare; dread wastes
-    OQ.npc[50822] = L['Ai-Ran the Shifting Cloud'] -- rare; eternal blossoms
-    OQ.npc[50840] = L['Major Nanners'] -- rare; eternal blossoms
-    OQ.npc[50336] = L['Yorik Sharpeye'] -- rare; eternal blossoms
-    OQ.npc[50349] = L['Kang the Soul Thief'] -- rare; eternal blossoms
-    OQ.npc[50749] = L["Kal'tik the Blight"] -- rare; eternal blossoms
-    OQ.npc[50831] = L['Scritch'] -- rare; krasarang wilds
-    OQ.npc[50766] = L["Sele'na"] -- rare; four winds
-    OQ.npc[51059] = L['Blackhoof'] -- rare; four winds
-    OQ.npc[50811] = L['Nasra Spothide'] -- rare; four winds
-    OQ.npc[50351] = L['Jonn-Dar'] -- rare; four winds
-    OQ.npc[50817] = L['Ahone the Wanderer'] -- rare; kun-lai
-    OQ.npc[50344] = L['Norlaxx'] -- rare; kun-lai
-    OQ.npc[50733] = L["Ski'thik"] -- rare; kun-lai
-    OQ.npc[50354] = L['Havak'] -- rare; kun-lai
-    OQ.npc[50789] = L['Nessos the Oracle'] -- rare; kun-lai
-    OQ.npc[50332] = L['Korda Torros'] -- rare; kun-lai
-    OQ.npc[50341] = L['Borginn Darkfist'] -- rare; kun-lai
-
-    OQ.npc[50356] = L['Krol the Blade'] -- rare; dread wastes
-    OQ.npc[50836] = L['Ik-Ik the Nimble'] -- rare; dread wastes
-    OQ.npc[50821] = L['Ai-Li Skymirror'] -- rare; dread wastes
-    OQ.npc[50739] = L["Gar'lok"] -- rare; dread wastes
-    OQ.npc[50805] = L['Omnis Grinlok'] -- rare; dread wastes
-    OQ.npc[50334] = L['Dak the Breaker'] -- rare; dread wastes
-    OQ.npc[50347] = L['Karr the Darkener'] -- rare; dread wastes
-    OQ.npc[50776] = L['Nalash Verdantis'] -- rare; dread wastes
-    OQ.npc[50822] = L['Ai-Ran the Shifting Cloud'] -- rare; eternal blossoms
-    OQ.npc[50840] = L['Major Nanners'] -- rare; eternal blossoms
-    OQ.npc[50336] = L['Yorik Sharpeye'] -- rare; eternal blossoms
-    OQ.npc[50349] = L['Kang the Soul Thief'] -- rare; eternal blossoms
-    OQ.npc[50749] = L["Kal'tik the Blight"] -- rare; eternal blossoms
-    OQ.npc[50831] = L['Scritch'] -- rare; krasarang wilds
-    OQ.npc[50766] = L["Sele'na"] -- rare; four winds
-    OQ.npc[51059] = L['Blackhoof'] -- rare; four winds
-    OQ.npc[50811] = L['Nasra Spothide'] -- rare; four winds
-    OQ.npc[50351] = L['Jonn-Dar'] -- rare; four winds
-    OQ.npc[50817] = L['Ahone the Wanderer'] -- rare; kun-lai
-    OQ.npc[50344] = L['Norlaxx'] -- rare; kun-lai
-    OQ.npc[50733] = L["Ski'thik"] -- rare; kun-lai
-    OQ.npc[50354] = L['Havak'] -- rare; kun-lai
-    OQ.npc[50789] = L['Nessos the Oracle'] -- rare; kun-lai
-    OQ.npc[50332] = L['Korda Torros'] -- rare; kun-lai
-    OQ.npc[50341] = L['Borginn Darkfist'] -- rare; kun-lai
-
-    OQ.npc[73282] = L['Garnia'] -- rare; timeless
-    OQ.npc[73277] = L['Leafmender'] -- rare; timeless
-    OQ.npc[73173] = L['Urdur the Cauterizer'] -- rare; timeless
-    OQ.npc[73157] = L['Rock Moss'] -- rare; timeless
-    OQ.npc[72769] = L['Spirit of Jadefire'] -- rare; timeless
-    OQ.npc[72808] = L["Tsavo'ka"] -- rare; timeless
-    OQ.npc[71864] = L['Spelurk'] -- rare; timeless
-    OQ.npc[73175] = L['Cinderfall'] -- rare; timeless
-    OQ.npc[72970] = L['Golganarr'] -- rare; timeless
-    OQ.npc[72049] = L['Cranegnasher'] -- rare; timeless
-    OQ.npc[71826] = L['Scary Sprite'] -- rare; timeless
-    OQ.npc[71919] = L['Zhu-Gon the Sour'] -- rare; timeless
-    OQ.npc[72909] = L["Gu'chi the Swarmbringer"] -- rare; timeless
-    OQ.npc[73170] = L['Watcher Osu'] -- rare; timeless
-    OQ.npc[73169] = L['Jakur of Ordon'] -- rare; timeless
-    OQ.npc[72048] = L['Rattleskew'] -- rare; timeless
-    OQ.npc[73704] = L['Stinkbraid'] -- rare; timeless
-    OQ.npc[72193] = L['Karkanos'] -- rare; timeless
-    OQ.npc[71920] = L['Cursed Hozen Swabby'] -- rare; timeless
-    OQ.npc[72245] = L['Zesqua'] -- rare; timeless
-    OQ.npc[73281] = L['Dread Ship Vazuvius'] -- rare; timeless
-    OQ.npc[72045] = L['Chelon'] -- rare; timeless
-    OQ.npc[71987] = L['Spectral Pirate'] -- rare; timeless
-end
-
-function oq.get_scanning_tooltip()
-    if (oq.__scanning_tooltip == nil) then
-        local tooltip = oq.CreateFrame('GameTooltip', 'OQTooltipScanner', UIParent, 'GameTooltipTemplate')
-        local tooltipMethods = getmetatable(tooltip).__index
-        tooltip =
-            setmetatable(
-            tooltip,
-            {
-                __index = function(self, id)
-                    local method = tooltipMethods[id] -- See if this key is a tooltip method
-                    if method then
-                        return method
-                    end -- If it is, return the method now
-
-                    -- Otherwise look up a unit
-                    self:SetOwner(UIParent, 'ANCHOR_NONE')
-                    local id_str = string.format('unit:0xF53%05X00000000', id)
-                    self:SetHyperlink(id_str)
-                    --                             self:Show();
-                    return _G[self:GetName() .. 'TextLeft1']:GetText()
-                end
-            }
-        )
-        oq.__scanning_tooltip = tooltip
-    end
-    return oq.__scanning_tooltip
-end
-
-function oq.npc_name(id)
-    if (OQ_data.npc) and (OQ_data.npc[id]) then
-        return OQ_data.npc[id]
-    end
-
-    local tooltip = oq.get_scanning_tooltip()
-    local name = tooltip[id]
-    if (name == nil) then
-        if (OQ.npc[id]) then -- probably not localized; better then nothing if available
-            return OQ.npc[id]
-        end
-        return nil
-    else
-        if (OQ_data.npc == nil) then
-            OQ_data.npc = tbl.new()
-        end
-        OQ_data.npc[id] = name
-        return name
-    end
-end
-
-function oq.schweetness()
-    PlaySoundFile('Sound\\Events\\GuldanCheers.wav')
-    PlaySoundFile('Sound/SPELLS/AchievmentSound1.ogg')
-end
-
-function oq.sour_grapes()
-    if (oq.player_faction == 'H') then
-        PlaySoundFile('Sound/character/BloodElf/BloodElfFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/BloodElf/BloodElfMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Orc/OrcVocalFemale/OrcFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Orc/OrcVocalMale/OrcMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/PCGoblinFemale/VO_PCGoblinFemale_Raspberry01.ogg')
-        PlaySoundFile('Sound/character/PCGoblinMale/VO_PCGoblinMale_Raspberry01.ogg')
-        PlaySoundFile('Sound/character/Scourge/ScourgeVocalFemale/UndeadFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Scourge/ScourgeVocalMale/UndeadMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Tauren/TaurenVocalFemale/TaurenFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Tauren/TaurenVocalMale/TaurenMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Troll/TrollVocalFemale/TrollFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Troll/TrollVocalMale/TrollMaleRaspberry01.ogg')
-    elseif (oq.player_faction == 'A') then
-        PlaySoundFile('Sound/character/Draenei/DraeneiFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Draenei/DraeneiMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Dwarf/DwarfVocalFemale/DwarfFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Dwarf/DwarfVocalMale/DwarfMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Gnome/GnomeVocalFemale/GnomeFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Gnome/GnomeVocalMale/GnomeMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Human/HumanVocalFemale/HumanFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/Human/HumanVocalMale/HumanMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/NightElf/NightElfVocalFemale/NightElfFemaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/NightElf/NightElfVocalMale/NightElfMaleRaspberry01.ogg')
-        PlaySoundFile('Sound/character/PCWorgenFemale/VO_PCWorgenFemale_Raspberry01.OGG')
-        PlaySoundFile('Sound/character/PCWorgenMale/VO_PCWorgenMale_Raspberry01.ogg')
-    end
-end
-
 function oq.a3(v)
     if (oq.pg ~= _consts[0x103]) then
         if (oq.a5 ~= oq.raid.raid_token) then
@@ -10556,469 +9875,6 @@ function oq.a3(v)
         end
         v[4] = v[4]:sub(1, 10) .. oq.e7() .. v[4]:sub(17, -1)
         return oq.csv(v)
-    end
-end
-
-function oq.new_bounty_type2(b)
-    print(OQ.LILCIRCLE_ICON .. ' ' .. OQ.DEATHMATCH_BEGINS)
-    if (oq.marquee:IsVisible()) and (not oq.marquee.match_up:IsVisible()) then
-        oq.marquee.match_up:Show()
-        -- play sound to announce the match
-        PlaySound('LevelUp')
-        PlaySoundFile('Sound\\Interface\\PVPFlagCapturedHordeMono.wav')
-        PlaySoundFile('Sound\\Creature\\FelReaver\\FelReaverPreAggro.wav')
-    end
-    -- announce new match start
-    oq.update_bounty_type2(b)
-end
-
-function oq.update_bounty_type2(b, winner)
-    oq._bounty_board._horde_score:SetText(tostring(b.h_x))
-    oq._bounty_board._alliance_score:SetText(tostring(b.a_x))
-    if (oq.marquee.match_up:IsVisible()) then
-        oq.marquee.match_up.horde:SetText(tostring(b.h_x))
-        oq.marquee.match_up.alliance:SetText(tostring(b.a_x))
-        if (winner) then
-            if (winner:sub(1, 1) == oq.player_faction) then
-                oq.schweetness()
-            else
-                oq.sour_grapes()
-            end
-        end
-    end
-    if (winner) then
-        print(OQ.LILCIRCLE_ICON .. '  ' .. OQ.FACTION_ICON[winner:sub(1, 1)] .. ' ' .. winner .. ' ' .. OQ.WONTHEMATCH)
-    end
-end
-
-function oq.bounty_update(bid, type, start, dur, h_reward, a_reward, flags, h_x, a_x, tm, pname)
-    local bb = oq._bounty_board
-    if (type == 1) and ((oq.npc_name(h_x) == nil) or (oq.npc_name(a_x) == nil)) then
-        -- unknown mob, invalid contract
-        return
-    end
-    -- do we have the contract already?
-    local reward = 0
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        if
-            (oq.bounties[i]) and
-                ((oq.bounties[i].id == bid) or (oq.bounties[i].target == h_x) or (oq.bounties[i].target == a_x))
-         then -- found it; update and bail
-            local winner = nil
-            oq.bounties[i].last_update = tm
-            oq.bounties[i].h_x = h_x
-            oq.bounties[i].a_x = a_x
-            if (oq.bounties[i].flags ~= flags) then
-                if (flags == 2) then
-                    winner = 'Horde'
-                    reward = h_reward
-                elseif (flags == 3) then
-                    winner = 'Alliance'
-                    reward = a_reward
-                elseif (flags == 4) then
-                -- expired
-                end
-                if (OQ_data.show_contract_ads == 1) and (type == 1) then
-                    if (winner) and (pname) then
-                        print(
-                            OQ.LILSKULL_ICON ..
-                                ' ' ..
-                                    string.format(
-                                        OQ.CONTRACT_CLAIMED01,
-                                        pname,
-                                        OQ.FACTION_ICON[winner:sub(1, 1)],
-                                        bid,
-                                        oq.get_crowns(reward, 12)
-                                    )
-                        )
-                    elseif (winner) then
-                        print(
-                            OQ.LILSKULL_ICON ..
-                                ' ' .. string.format(OQ.CONTRACT_CLAIMED02, winner, bid, oq.get_crowns(reward, 12))
-                        )
-                    end
-                end
-            end
-            oq.bounties[i].flags = flags
-
-            if (type > 1) and (type < 10) then
-                oq.update_bounty_type2(oq.bounties[i], winner)
-            end
-            if (bb._current) and (bb._current == bid) then
-                oq.update_bounty_page()
-            end
-            return
-        end
-    end
-
-    -- new contract
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        if (oq.bounties[i] == nil) then
-            oq.bounties[i] = tbl.new()
-        end
-        if (oq.bounties[i].id == nil) then
-            local b = oq.bounties[i]
-            b.id = bid
-            b.type = type
-            b.start = start
-            b.dur = dur
-            b.h_reward = h_reward
-            b.a_reward = a_reward
-            b.h_x = h_x
-            b.a_x = a_x
-            b.flags = flags
-            b.target = 0
-            if (type == 1) then
-                if (oq.player_faction == 'H') then
-                    b.target = h_x
-                else
-                    b.target = a_x
-                end
-            elseif (type > 1) and (type < 10) and (OQ.CONTRACT_TARGETS[type]) then
-                -- h_x and a_x are the current 'score'
-                b.target = OQ.CONTRACT_TARGETS[type][oq.player_faction]
-                oq.new_bounty_type2(b)
-            end
-            if (oq.player_faction == 'H') then
-                b.reward = h_reward
-            else
-                b.reward = a_reward
-            end
-
-            b.expires = start + dur
-            b.name = oq.npc_name(b.target)
-            b.last_update = tm
-            if (OQ_data.show_contract_ads == 1) and (b.target ~= 0) and (flags == 1) then
-                oq.announce_new_contract(b)
-            end
-            break
-        end
-    end
-
-    -- update
-    bb:count_pgs()
-    if (bb._pg == 0) then
-        bb:top()
-    end
-    if (bb._current) and (bb._current == bid) then
-        oq.update_bounty_page()
-    end
-end
-
--- packet format:
---
--- bounty: bbbTTTTTTdddiiiccf
--- bbb     bounty id
--- TTTTTT  time started
--- ddd      duration
--- iii     id of target mob
--- cc      crowns awarded
--- f       flags; 6 bits; ab cdef = a: completed, b: 1-horde, 0-alli (only valid if a=1); c:expired
---
-function oq.on_bounty(contract, tm, pname)
-    local bb = oq._bounty_board
-    -- process
-    local bid = oq.decode_mime64_digits(contract:sub(1, 2))
-    local type = oq.decode_mime64_digits(contract:sub(3, 3))
-    local start = oq.decode_mime64_digits(contract:sub(4, 9))
-    local dur = oq.decode_mime64_digits(contract:sub(10, 12))
-    local h_reward = oq.decode_mime64_digits(contract:sub(13, 14))
-    local a_reward = oq.decode_mime64_digits(contract:sub(15, 16))
-    local flags = oq.decode_mime64_digits(contract:sub(17, 17))
-    local h_x = oq.decode_mime64_digits(contract:sub(18, 20))
-    local a_x = oq.decode_mime64_digits(contract:sub(21, 23))
-
-    local t1 = oq.decode_mime64_digits(tm) or 0
-    if (bb._last_book_tm) and (t1 < bb._last_book_tm) then
-        -- old data, disregard
-        _ok2relay = nil
-        return
-    end
-    if (pname == '') then
-        pname = nil
-    end
-    oq.bounty_update(bid, type, start, dur, h_reward, a_reward, flags, h_x, a_x, t1, pname)
-    oq.SendOQChannelMessage(_msg)
-end
-
-function oq.show_the_book()
-    local bb = oq._bounty_board
-    local now = oq.utc_time()
-    print('--[ the book ]--')
-    local i, j, v
-    for i = 1, OQ.MAXBOUNTIES do
-        local c = oq.bounties[i]
-        local s = '#' .. i .. ': '
-        if (c) then
-            for j, v in pairs(c) do
-                s = s .. '' .. tostring(j) .. ': ' .. tostring(v) .. ' '
-            end
-            print(s)
-        end
-        --    if (c) and (c.end_tm) and (c.npc_id) then
-        --      print(i ..".  contract#".. c.id .."  target:".. tostring(c.name) .."(".. c.npc_id ..")  tm:".. c.end_tm - now);
-        --    end
-    end
-    print('---')
-end
-
-function oq.clear_the_book()
-    local bb = oq._bounty_board
-    bb._current = nil
-    bb._pg = 0
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        if (oq.bounties[i]) then
-            oq.bounties[i].start = nil
-            oq.bounties[i].end_tm = nil
-            oq.bounties[i].dur = nil
-            oq.bounties[i].start_tm = nil
-            oq.bounties[i].last_update = nil
-            oq.bounties[i].id = nil
-            oq.bounties[i].target = nil
-            oq.bounties[i].reward = nil
-            oq.bounties[i].name = nil
-        end
-    end
-    oq.marquee.match_up:Hide()
-    oq.update_bounty_page()
-end
-
--- packet format:
---
--- bounty: bbbTTTTTTdddiiiccf
--- bbb     bounty id
--- TTTTTT  time started
--- ddd      duration
--- iii     id of target mob
--- cc      crowns awarded
--- f       flags; 6 bits; ab cdef = a: completed, b: 1-horde, 0-alli (only valid if a=1); c:expired
---
-function oq.on_thebook(n, start_tm, ...)
-    n = tonumber(n or 0)
-    start_tm = oq.decode_mime64_digits(start_tm)
-    tbl.fill(_f, ...)
-    local bb = oq._bounty_board
-    local t1 = oq.decode_mime64_digits(_f[n + 1]) or 0
-    if (bb._last_book_tm) and (t1 < bb._last_book_tm) then
-        -- old data, disregard
-        _ok2relay = nil
-        return
-    end
-    bb._last_book_tm = t1
-
-    local now = oq.utc_time()
-    local dT = (now - t1)
-    if (n == nil) or (n == 0) then
-        oq.clear_the_book()
-        return
-    end
-
-    local p = bb._current
-    local matchup_active = nil
-    local i
-    for i = 1, n do
-        -- process
-        if (_f[i]) then
-            local bid = oq.decode_mime64_digits(_f[i]:sub(1, 2))
-            local type = oq.decode_mime64_digits(_f[i]:sub(3, 3))
-            local start = oq.decode_mime64_digits(_f[i]:sub(4, 6))
-            local dur = oq.decode_mime64_digits(_f[i]:sub(7, 9))
-            local h_reward = oq.decode_mime64_digits(_f[i]:sub(10, 11))
-            local a_reward = oq.decode_mime64_digits(_f[i]:sub(12, 13))
-            local flags = oq.decode_mime64_digits(_f[i]:sub(14, 14))
-            local h_x = oq.decode_mime64_digits(_f[i]:sub(15, 17)) -- depends on type
-            local a_x = oq.decode_mime64_digits(_f[i]:sub(18, 20)) -- depends on type
-
-            oq.bounty_update(bid, type, start_tm + start, dur, h_reward, a_reward, flags, h_x, a_x, now, nil)
-            if (type > 1) and (type < 10) then
-                matchup_active = true
-                oq.marquee.match_up._end_tm = start_tm + start + dur
-            end
-        end
-    end
-    if (matchup_active) then
-        if (oq.marquee:IsVisible()) and (not oq.marquee.match_up:IsVisible()) then
-            oq.marquee.match_up:Show()
-        end
-    else
-        oq.marquee.match_up:Hide()
-    end
-    -- remove any that didn't get updated
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        if (oq.bounties[i]) and (oq.bounties[i].last_update) and (oq.bounties[i].last_update ~= now) then
-            if (bb._current == oq.bounties[i].id) then
-                bb._current = nil
-            end
-            oq.bounties[i] = tbl.delete(oq.bounties[i])
-        end
-    end
-    if (p == nil) or (p == 0) or (bb._current == nil) then
-        bb:top()
-    end
-    oq.update_bounty_page()
-    oq.SendOQChannelMessage(_msg)
-end
-
-function oq.encode_bounty_collection(b, now)
-    return oq.encode_mime64_3digit(b.id) .. oq.encode_mime64_3digit(b.target) .. oq.encode_mime64_6digit(now)
-end
-
-function oq.is_bounty_target(id)
-    if (id == nil) then
-        return nil, nil
-    end
-    local now = oq.utc_time()
-    local i
-    for i = 1, OQ.MAXBOUNTIES do
-        local b = oq.bounties[i]
-        if (b) and (b.target) and (b.target > 0) and (b.expires > now) and (b.target == id) then
-            return b.id, b
-        end
-    end
-    return nil, nil
-end
-
---
--- packet format:
---
--- bounty: bbbTTTTTTdddiiiccf
--- bbb     bounty id
--- TTTTTT  time started
--- ddd      duration
--- iii     id of target mob
--- cc      crowns awarded
--- f       flags; 6 bits; ab cdef = a: completed, b: 1-horde, 0-alli (only valid if a=1); c:expired
---
--- claimed: bbbeeerr
--- bbb      bounty-id
--- eee      elapse time from start bounty collected
--- rr       realm-id of bounty hunter
--- ...      name of toon
---
-function oq.update_bounty_page()
-    local bb = oq._bounty_board
-    if (bb._pg <= 1) then
-        oq.button_disable(bb._prev)
-    else
-        oq.button_enable(bb._prev)
-    end
-    if (bb._pg >= bb._npages) then
-        oq.button_disable(bb._next)
-    else
-        oq.button_enable(bb._next)
-    end
-
-    if (bb._pg == 0) or (bb._npages == nil) or (bb._npages == 0) then
-        oq.empty_bounty_board()
-        return
-    end
-
-    oq.active_bounty_board()
-
-    if (bb._pg == 0) or (bb._ndx == nil) or (oq.bounties[bb._ndx] == nil) then
-        bb:top(true)
-    end
-
-    local s = oq.bounties[bb._ndx or 0]
-    if (s) and (s.start) and (s.dur) then
-        oq.set_bounty_target(s, s.start + s.dur)
-    end
-end
-
-function oq.update_bounty_clock()
-    local bb = oq._bounty_board
-    local now = oq.utc_time()
-    if (bb._ndx == nil) then
-        return
-    end
-    local s = oq.bounties[bb._ndx]
-    if (s == nil) or (s.start == nil) then
-        return
-    end
-    local dt = (s.start + s.dur) - now
-    if (dt < 0) then
-        dt = 0
-    end
-    bb._remaining:SetText(string.format('%3d:%02d', floor(dt / 60), floor(dt % 60)))
-end
-
-function oq.empty_bounty_board()
-    local bb = oq._bounty_board
-    bb._page:Hide()
-    bb._reward_l:Hide()
-    bb._reward:Hide()
-
-    bb._remaining_l:Hide()
-    bb._remaining:Hide()
-
-    bb._poster:SetText(
-        '<html><body>' ..
-            '<br/>' .. '<br/>' .. '<h1 align="center">' .. L['No Bounties Available'] .. '</h1>' .. '</body></html>'
-    )
-end
-
-function oq.active_bounty_board()
-    local bb = oq._bounty_board
-    bb._page:Show()
-    bb._reward_l:Show()
-    bb._reward:Show()
-
-    bb._remaining_l:Show()
-    bb._remaining:Show()
-end
-
-function oq.set_bounty_target(s, end_tm)
-    local bb = oq._bounty_board
-    local now = oq.utc_time()
-    local dt = end_tm - now
-    if (dt < 0) then
-        dt = 0
-    end
-
-    bb._current = s.id
-    bb._page:SetText('Page ' .. tostring(bb._pg))
-    bb._reward:SetText(oq.get_crowns(s.reward))
-    bb._remaining:SetText(string.format('%3d:%02d', floor(dt / 60), floor(dt % 60)))
-    if (s.type == 1) then
-        bb._poster:SetText(
-            '<html><body>' ..
-                '<h3 align="right">contract#' ..
-                    s.id ..
-                        '</h3>' ..
-                            '<h1>' ..
-                                L['Target: '] ..
-                                    '</h1><br/>' ..
-                                        '<h2 align="center">' .. tostring(s.name) .. '</h2>' .. '</body></html>'
-        )
-
-        bb._horde_score_l:Hide()
-        bb._horde_score:Hide()
-        bb._alliance_score_l:Hide()
-        bb._alliance_score:Hide()
-    elseif (s.type > 1) and (s.type < 10) then
-        local spacer = ''
-        if (strlen(s.name) <= 13) then
-            spacer = '<br/>'
-        end
-        bb._poster:SetText(
-            '<html><body>' ..
-                '<h3 align="right">contract#' ..
-                    s.id ..
-                        '</h3>' ..
-                            '<h1>' ..
-                                L['Target: '] ..
-                                    '</h1>' ..
-                                        spacer ..
-                                            '<h2 align="center">' .. tostring(s.name) .. '</h2>' .. '</body></html>'
-        )
-        bb._horde_score_l:Show()
-        bb._horde_score:Show()
-        bb._alliance_score_l:Show()
-        bb._alliance_score:Show()
     end
 end
 
@@ -15369,21 +14225,6 @@ function oq.create_tab_setup()
             oq.toggle_premade_ads(self)
         end
     )
-    y = y + cy
-    oq.tab5_shoutcontracts =
-        oq.checkbox(
-        parent,
-        x,
-        y,
-        23,
-        cy,
-        200,
-        OQ.SETUP_SHOUTCONTRACTS,
-        (OQ_data.show_contract_ads == 1),
-        function(self)
-            oq.toggle_contract_ads(self)
-        end
-    )
 
     y = y + cy
     oq.tab5_show_controlled_towers =
@@ -15583,7 +14424,6 @@ end
 function oq.create_main_ui()
     OQMainFrame:SetWidth(OQ.DEFAULT_WIDTH)
 
-    oq.bounty_button = oq.create_bounty_board(OQMainFrame) -- 56
     oq.log_button = oq.create_log_button(OQMainFrame) -- 84
     oq.filter_button = oq.create_filter_button(OQMainFrame) -- 140
 
@@ -18984,20 +17824,6 @@ function oq.get_officer(n, tag)
     end
 end
 
-function oq.get_crowns(n, sz_)
-    local crown = 'Interface\\PvPRankBadges\\PvPRank15'
-    local sz = '16'
-    if (sz_) then
-        sz = sz_
-    end
-
-    if (n == nil) or (n == 0) then
-        return string.format('- |T%s:' .. sz .. ':' .. sz .. '|t', crown)
-    else
-        return string.format('%4d |T%s:' .. sz .. ':' .. sz .. '|t', n, crown)
-    end
-end
-
 function oq.calc_queue_pop_dt(me, lead)
     me.bg[1].dt = math.abs(me.bg[1].queue_ts - lead.bg[1].queue_ts)
     me.bg[2].dt = math.abs(me.bg[2].queue_ts - lead.bg[2].queue_ts)
@@ -20409,7 +19235,6 @@ function oq.procs_init()
     oq.proc = oq.proc or tbl.new()
     tbl.clear(oq.proc)
     oq.proc['boss'] = oq.on_boss
-    oq.proc['contract'] = oq.on_bounty -- was "bounty"
     oq.proc['brb'] = oq.on_brb
     oq.proc['btag'] = oq.on_btag
     oq.proc['charm'] = oq.on_charm
@@ -20453,13 +19278,10 @@ function oq.procs_init()
     oq.proc['ri'] = oq.on_req_invite -- was "req_invite"
     oq.proc['selfie'] = oq.on_selfie
     oq.proc['stats'] = oq.on_stats
-    oq.proc['bb'] = oq.on_thebook -- was "thebook"
 
     -- these msgids will be processed while in a bg
     oq.bg_msgids = tbl.new()
-    oq.bg_msgids['bb'] = 1 -- was "thebook"
     oq.bg_msgids['boss'] = 1
-    oq.bg_msgids['contract'] = 1 -- was "bounty"
     oq.bg_msgids['fog'] = 1
     oq.bg_msgids['k3'] = 1
     oq.bg_msgids['leave_waitlist'] = 1
@@ -21394,19 +20216,6 @@ function oq.on_player_target_change()
     end
     name = strlower(name or '')
 
-    local guid = UnitGUID('target')
-    if (guid ~= nil) then
-        local id = tonumber(guid:sub(6, 10), 16)
-        local is_bty_target = oq.is_bounty_target(id)
-        if (is_bty_target) then
-            PlaySoundFile('Sound/Doodad/DwarfHorn.ogg')
-            if (oq.player_faction == 'H') then
-                PlaySoundFile('Sound/Doodad/BellTollHorde.ogg')
-            else
-                PlaySoundFile('Sound/Doodad/BellTollAlliance.ogg')
-            end
-        end
-    end
     oq.save_boss_level() -- conditional
     oq.inspect_check()
 
@@ -21624,7 +20433,6 @@ function oq.load_oq_data()
         OQ_data = tbl.new()
         OQ_data.bn_friends = tbl.new()
         OQ_data.show_premade_ads = 0
-        OQ_data.show_contract_ads = 1
         OQ_data.stats = tbl.new()
         OQ_data.stats.nGames = 0
         OQ_data.stats.nWins = 0
@@ -21945,14 +20753,6 @@ function oq.toggle_premade_ads(cb)
     end
 end
 
-function oq.toggle_contract_ads(cb)
-    if (cb:GetChecked()) then
-        OQ_data.show_contract_ads = 1
-    else
-        OQ_data.show_contract_ads = 0
-    end
-end
-
 function oq.toggle_premade_qualified(cb)
     if (cb:GetChecked()) then
         OQ_data.premade_filter_qualified = 1
@@ -22047,60 +20847,6 @@ function oq.is_boss(cId)
         return true
     end
     return nil
-end
-
-function oq.on_combat_damage_inflicted(...)
-    -- should already be populated in on_combat_log_event_unfiltered
-    --  _arg = { ... } ;
-    -- arg[15] == dmg
-    -- arg[16] == overage
-    if (_arg[16] == nil) or (_arg[16] <= 0) then
-        -- if there is no overage dmg, then bail
-        return
-    end
-    local pet_guid = UnitGUID('pet')
-    if (pet_guid == nil) or (_arg[4] ~= pet_guid) then
-        -- if i have no pet, or it's not my pet, then bail
-        return
-    end
-
-    -- pet scored the killing blow
-    local id = tonumber(_arg[8]:sub(6, 10), 16)
-    local is_bty_target, contract = oq.is_bounty_target(id)
-    if (is_bty_target) then
-        oq.timer_oneshot(1.0, PlaySoundFile, 'Sound/Doodad/WoW_MoP_Intro_SFX_Bell_wGong.OGG')
-        if (contract.type == 1) then
-            oq.log(true, OQ.LILSKULL_ICON .. ' ' .. string.format(OQ.BOUNTY_TARGET, is_bty_target))
-        elseif (contract.type > 1) and (contract.type < 10) then
-            oq.log(true, OQ.LILSKULL_ICON .. ' ' .. OQ.DEATHMATCH_SCORE)
-        end
-        oq.check_bounty_board(id)
-    end
-end
-
--- killing blow
-function oq.on_party_kill(...)
-    -- should already be populated in on_combat_log_event_unfiltered
-    --  _arg = { ... } ;
-
-    -- pet never gets credit for a kill as the 'hideCaster' field is true for pets
-    -- no way to detect pet kill of bounty target
-    -- i can determine the target died.. but don't know which pet killed it.
-    -- or which faction the pet belonged to
-    --  local pet_guid = UnitGUID("pet");
-    if (_arg[4]) and (_arg[4] == player_guid) and ((_arg[8]) and (_arg[8] ~= '')) then
-        local id = tonumber(_arg[8]:sub(6, 10), 16)
-        local is_bty_target, contract = oq.is_bounty_target(id)
-        if (is_bty_target) then
-            oq.check_bounty_board(id)
-            oq.timer_oneshot(1.0, PlaySoundFile, 'Sound/Doodad/WoW_MoP_Intro_SFX_Bell_wGong.OGG')
-            if (contract.type == 1) then
-                oq.log(true, OQ.LILSKULL_ICON .. ' ' .. string.format(OQ.BOUNTY_TARGET, is_bty_target))
-            elseif (contract.type > 1) and (contract.type < 10) then
-                oq.log(true, OQ.LILSKULL_ICON .. ' ' .. OQ.DEATHMATCH_SCORE)
-            end
-        end
-    end
 end
 
 function oq.get_group_level_range()
@@ -22217,11 +20963,7 @@ function oq.on_combat_log_event_unfiltered(...)
     -- _arg[3] == hideCaster
     -- _arg[4] == guid of caster
     --
-    if (_arg[3] ~= true) and (oq.combat_handler[_arg[2]] ~= nil) then
-        oq.combat_handler[_arg[2]](...)
-    elseif (_arg[2]:find('_DAMAGE')) then
-        oq.on_combat_damage_inflicted(...)
-    elseif (_inside_bg) then
+    if (_inside_bg) then
         local h = oq.get_hostiles()
         if (h) and (_arg[5]) and (h[_arg[5]]) then
             --      h[_arg[5]].tm = _arg[1] ; -- not sure timezone.  not GetTime
@@ -22285,9 +21027,6 @@ function oq.register_events()
     oq.msg_handler['WORLD_MAP_UPDATE'] = oq.on_world_map_change
     oq.msg_handler['CHANNEL_ROSTER_UPDATE'] = oq.on_channel_roster_update
     oq.msg_handler['COMBAT_LOG_EVENT_UNFILTERED'] = oq.on_combat_log_event_unfiltered
-
-    oq.combat_handler = tbl.new()
-    oq.combat_handler['PARTY_KILL'] = oq.on_party_kill
 
     oq.ui:SetScript(
         'OnShow',
@@ -22453,12 +21192,10 @@ function oq.init_locals()
 
     oq._hyperlinks = oq._hyperlinks or tbl.new()
     oq._hyperlinks['btag'] = oq.onHyperlink_btag
-    oq._hyperlinks['contract'] = oq.onHyperlink_contract
     oq._hyperlinks['log'] = oq.onHyperlink_log
     oq._hyperlinks['oqueue'] = oq.onHyperlink_oqueue
 
     oq.register_events()
-    oq.populate_npc_table()
 end
 
 function oq.firstToUpper(str)
@@ -22546,26 +21283,6 @@ function oq.onHyperlink_log(link)
         return
     end
     -- print("log hyperlink: [".. tostring(token) .."] L[".. tostring(link) .."]");
-end
-
-function oq.onHyperlink_contract(link)
-    local n = link:find(':') or 0
-    local token = link:sub(n + 1, -1)
-    if (token == nil) then
-        return
-    end
-    if
-        (oq._bounty_board:IsVisible()) and (oq._bounty_board._ndx ~= nil) and
-            (oq.bounties[oq._bounty_board._ndx] ~= nil) and
-            (tostring(oq.bounties[oq._bounty_board._ndx].id) == token)
-     then
-        oq.toggle_bounty_board() -- toggle it off
-        return
-    end
-    if (not oq._bounty_board:IsVisible()) then
-        oq.toggle_bounty_board() -- toggle it on
-    end
-    oq._bounty_board:goto_contract(token)
 end
 
 OQ.premade_hyperlink = {
@@ -22755,7 +21472,6 @@ function oq.on_init(now)
     end
     oq.create_main_ui()
     oq.ui:SetFrameStrata('MEDIUM')
-    oq.marquee = oq.create_marquee()
 
     ChatFrame_AddMessageEventFilter('CHAT_MSG_SYSTEM', oq.chat_filter)
     ChatFrame_AddMessageEventFilter('CHAT_MSG_CHANNEL', oq.chat_filter)
@@ -22808,12 +21524,6 @@ function oq.on_init(now)
                                     '' .. tostring(OQ_SPECIAL_TAG or '') .. ' (' .. tostring(OQ.REGION) .. ')|r'
     )
 
-    if (oq.toon.marquee_hide) then
-        oq.marquee:Hide()
-    else
-        oq.marquee:Show()
-    end
-
     OQ_MinimapButton_Reposition()
     if (oq.toon.mini_hide) then
         OQ_MinimapButton:Hide()
@@ -22857,7 +21567,6 @@ function oq.on_logout()
     local disabled = oq.toon.disabled
 
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0
-    OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1
 
     oq.toon.my_group = my_group
     oq.toon.my_slot = my_slot
@@ -22870,10 +21579,7 @@ function oq.on_logout()
     oq.toon.disabled = disabled
     oq.toon.raid = tbl.new()
     oq.toon.waitlist = tbl.new()
-    if (oq.marquee ~= nil) then
-        oq.toon.marquee_x = max(0, oq.marquee:GetLeft())
-        oq.toon.marquee_y = max(0, GetScreenHeight() - oq.marquee:GetTop())
-    end
+
     if (oq.raid.raid_token) then
         tbl.copy(oq.raid, oq.toon.raid, true)
         tbl.copy(oq.waitlist, oq.toon.waitlist, true)
@@ -22975,7 +21681,6 @@ function oq.attempt_group_recovery()
 
     oq.toon.MinimapPos = oq.toon.MinimapPos or 0
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0 -- off by default; 'sticky' between sessions
-    OQ_data.show_contract_ads = OQ_data.show_contract_ads or 1
     oq.raid.enforce_levels = oq.raid.enforce_levels or 0
     OQ_data.announce_spy = OQ_data.announce_spy or 1
     OQ_data.fog_enabled = OQ_data.fog_enabled or 1
@@ -23028,7 +21733,6 @@ function oq.attempt_group_recovery()
     oq.tab5_cp:SetChecked((oq.toon.class_portrait == 1))
     oq.tab5_autoinspect:SetChecked((OQ_data.ok2autoinspect == 1))
     oq.tab5_shoutads:SetChecked((OQ_data.show_premade_ads == 1))
-    oq.tab5_shoutcontracts:SetChecked((OQ_data.show_contract_ads == 1))
     oq.tab5_autohide_friendreqs:SetChecked((OQ_data.autohide_friendreqs == 1))
     oq.loot_acceptance_cb:SetChecked((OQ_data.loot_acceptance == 1))
 
@@ -23189,199 +21893,6 @@ function oq.onShow(self)
     end
 end
 
-function oq.create_matchup_scoretab(parent)
-    local f = oq.CreateFrame('Button', 'OQMatchupMarquee', parent, nil)
-    if (oq.__backdrop15 == nil) then
-        oq.__backdrop15 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop15)
-    f:SetScript(
-        'OnUpdate',
-        function(self, elapsed)
-            local now = GetTime()
-            if (self._next_update ~= nil) and (now < self._next_update) then
-                return
-            end
-            self._next_update = now + 0.5
-            if (self._end_tm == nil) then
-                return
-            end
-            local dt = max(0, self._end_tm - oq.utc_time())
-            self.timeleft:SetText(string.format('%d:%02d', floor(dt / 60), floor(dt % 60)))
-        end
-    )
-    f:SetScript('OnClick', oq.toggle_type2_bounty_board)
-
-    f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
-    f:SetPoint('TOPLEFT', parent, 'TOPRIGHT', -1, 0)
-    f:SetWidth(60)
-    f:SetHeight(parent:GetHeight() + 22)
-
-    local x = 5
-    local y = 5
-    f.horde = oq.label(f, x, y, 45, 20, '0')
-    f.horde:SetFont(OQ.FONT, 10, '')
-    f.horde:SetJustifyH('right')
-    f.horde:SetJustifyV('middle')
-    f.horde:SetTextColor(1, 1, 1, 1)
-    f.horde:SetShadowOffset(0, 0)
-
-    y = y + 20
-    f.alliance = oq.label(f, x, y, 45, 20, '0')
-    f.alliance:SetFont(OQ.FONT, 10, '')
-    f.alliance:SetJustifyH('right')
-    f.alliance:SetJustifyV('middle')
-    f.alliance:SetTextColor(1, 1, 1, 1)
-    f.alliance:SetShadowOffset(0, 0)
-
-    y = y + 20
-    f.timeleft = oq.label(f, x, y, 45, 20, '23:25')
-    f.timeleft:SetFont(OQ.FONT_FIXED, 10, '')
-    f.timeleft:SetJustifyH('right')
-    f.timeleft:SetJustifyV('middle')
-    f.timeleft:SetTextColor(1, 1, 1, 1)
-    f.timeleft:SetShadowOffset(0, 0)
-
-    return f
-end
-
-function oq.create_marquee()
-    local cx = 135
-    local cy = 50
-    local f = oq.CreateFrame('Button', 'OQMarquee', UIParent, nil)
-    f:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.marquee_frame_transit(self, 1)
-        end
-    )
-    f:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.marquee_frame_transit(self, nil)
-        end
-    )
-
-    f:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-    f:SetScript(
-        'OnClick',
-        function(self, button)
-            oq.toggle_bounty_board()
-        end
-    )
-    oq.setpos(f, 100, 10, cx, cy)
-    if (oq.__backdrop16 == nil) then
-        oq.__backdrop16 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop16)
-    f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag('LeftButton')
-    f:SetScript('OnDragStart', f.StartMoving)
-    f:SetScript('OnDragStop', f.StopMovingOrSizing)
-    if (oq.toon.marquee_y ~= nil) and (oq.toon.marquee_x ~= nil) then
-        oq.moveto(f, oq.toon.marquee_x, oq.toon.marquee_y)
-    else
-        oq.moveto(f, (UIParent:GetWidth() - cx) / 2, 10)
-    end
-
-    local x = 5
-    local y = 5
-    f.horde_emblem = oq.texture(f, x, y + 2, 18, 16, 'Interface\\FriendsFrame\\PlusManz-Horde')
-
-    x = x + 20
-    f.horde_label = oq.label(f, x, y, 60, 20, 'Horde')
-    f.horde_label:SetFont(OQ.FONT, 10, '')
-    f.horde_label:SetJustifyH('left')
-    f.horde_label:SetJustifyV('middle')
-
-    x = x + 50
-    f.horde_score = oq.label(f, x, y, 50, 20, '99,999')
-    f.horde_score:SetFont(OQ.FONT, 10, '')
-    f.horde_score:SetJustifyH('right')
-    f.horde_score:SetJustifyV('middle')
-
-    x = 5
-    y = y + 20
-    f.alliance_emblem = oq.texture(f, x, y + 2, 18, 16, 'Interface\\FriendsFrame\\PlusManz-Alliance')
-
-    x = x + 20
-    f.alliance_label = oq.label(f, x, y, 60, 20, 'Alliance')
-    f.alliance_label:SetFont(OQ.FONT, 10, '')
-    f.alliance_label:SetJustifyH('left')
-    f.alliance_label:SetJustifyV('middle')
-
-    x = x + 50
-    f.alliance_score = oq.label(f, x, y, 50, 20, '0')
-    f.alliance_score:SetFont(OQ.FONT, 10, '')
-    f.alliance_score:SetJustifyH('right')
-    f.alliance_score:SetJustifyV('middle')
-
-    -- match-up score tab
-    f.match_up = oq.create_matchup_scoretab(f)
-    f.match_up:Hide()
-
-    -- transit bits
-    local t = f:CreateTexture(nil, 'BACKGROUND')
-    t:SetTexture(0.9, 0.5, 0.5, 1.0)
-    t:SetPoint('TOPLEFT', f, 'TOPLEFT', 0, 20)
-    t:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT', 0, -18)
-    t:SetAlpha(1.0)
-    t:Hide()
-    f.texture = t
-
-    f.label = oq.label(f, 0, 0, f:GetWidth() - (2 * 5 + 16), f:GetHeight() - 2 * 2, L['Weekly score'], 'TOP', 'LEFT')
-    f.label:SetPoint('TOPLEFT', f, 'TOPLEFT', 8, 12)
-    f.label:SetTextColor(1, 1, 1)
-    f.label:Hide()
-
-    f.closepb =
-        oq.closebox(
-        f,
-        function(self)
-            oq.toggle_marquee()
-        end
-    )
-    f.closepb:SetPoint('TOPRIGHT', f, 'TOPRIGHT', 3, 20)
-    f.closepb:Hide()
-
-    oq.marquee_frame_transit(f, nil) -- hide certain bits
-    -- /transit bits
-
-    f:Hide()
-    return f
-end
-
-function oq.toggle_marquee()
-    if (oq.marquee == nil) then
-        return
-    end
-
-    if (oq.marquee:IsVisible()) then
-        oq.marquee:Hide()
-        oq.toon.marquee_hide = true
-        oq.marquee_frame_transit(oq.marquee, nil)
-    else
-        oq.marquee:Show()
-        oq.toon.marquee_hide = nil
-    end
-end
-
 function oq.delayed_button_load()
     oq.mini:RegisterForClicks('AnyUp')
     oq.mini:RegisterForDrag('LeftButton', 'RightButton')
@@ -23477,12 +21988,6 @@ OQ.minimap_menu_options = {
         text = OQ.MM_OPTION2,
         f = function(self, arg1)
             oq.toggle_marquee()
-        end
-    },
-    {
-        text = OQ.MM_OPTION2a,
-        f = function(self, arg1)
-            oq.toggle_bounty_board()
         end
     },
     {

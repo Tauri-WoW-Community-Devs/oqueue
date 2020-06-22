@@ -50,8 +50,6 @@ OQ.TT_TEARS = 'Traenen'
 OQ.TT_PVPPOWER = 'pvp Macht'
 OQ.TT_MMR = 'rbg Wertung'
 OQ.AUTO_INSPECT = 'Auto inspect (Strg + linke Maus)'
-OQ.ANNOUNCE_CONTRACTS = 'Sage Verträge an'
-OQ.SETUP_SHOUTCONTRACTS = 'Sage Verträge an'
 OQ.SETUP_TIMERWIDTH = 'Timer breite'
 
 OQ.JOIN_QUEUE = 'Warteschlange beitreten'
@@ -375,7 +373,6 @@ OQ.BG_ROLES['SHAMAN'] = SHAMAN
 OQ.BG_ROLES['WARLOCK'] = WARLOCK
 OQ.BG_ROLES['WARRIOR'] = WARRIOR
 
-L['No Bounties Available'] = 'Keine Kopfgelder vorhanden'
 L['Notes:'] = 'notizen:'
 L['Target: '] = 'Ziel'
 L['Rewards'] = 'Belohnung'

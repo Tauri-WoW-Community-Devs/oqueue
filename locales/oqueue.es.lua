@@ -296,19 +296,8 @@ OQ.TT_RAIDS = 'lider: bandas'
 OQ.TT_CHALLENGES = 'lider: desafios'
 OQ.ERR_NODURATION = 'Duración desconocida de la instancia. Imposible calcular los cambios en las monedas'
 OQ.DRUNK = '..hic!'
-OQ.MM_OPTION2a = 'conmutar recompensas' -- Literalmente "conmutar tabl?n de recompensas"
-OQ.ANNOUNCE_CONTRACTS = 'Anunciar contratos'
-OQ.SETUP_SHOUTCONTRACTS = 'Anunciar contratos'
-OQ.CONTRACT_ARRIVED = '¡Acaba de llegar el contrato #%s! Objetivo:%s  Recompensa:|h%s'
-OQ.CONTRACT_CLAIMED01 = '%s %s reclama el contrato #%s y gana %s'
-OQ.CONTRACT_CLAIMED02 = '%s reclama el contrato #%s y gana %s'
-OQ.TARGET_MARK = '¡Has establecido como objetivo un objetivo con recompensa! (contrato#%s)'
-OQ.BOUNTY_TARGET = '¡Has matado un objetivo con recompensa! (contrato#%s)'
-OQ.DEATHMATCH_SCORE = '¡Punto!'
 OQ.ALREADY_FRIENDED = 'ya eres amigo de battle-net con %s'
 OQ.TT_FRIEND_REQUEST = 'añadir amigo'
-OQ.DEATHMATCH_BEGINS =
-    '¡El Encuentro a Muerte de JcJ del mundo ha comenzado!  ¡Ve al espinazo en Pandaria y defiende a tus vendedores JcJ!'
 OQ.WONTHEMATCH = 'ha ganado el encuentro!'
 
 OQ.TIMEVARIANCE_DLG = {

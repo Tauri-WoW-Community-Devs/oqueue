@@ -800,33 +800,6 @@ function oq.get_raid_boss_progression(name)
     return 'AAA'
 end
 
-function oq.scan_for_unit(name)
-    if (name == nil) then
-        return nil
-    end
-    if (name == L['Icecrown Gunship Battle']) then
-        if (oq.player_faction == 'A') then
-            name = L["Orgrim's Hammer"]
-        else
-            name = L['The Skybreaker']
-        end
-    end
-    if (UnitName 'target' == name) then
-        return 'target'
-    elseif (UnitName 'focus' == name) then
-        return 'focus'
-    elseif (UnitName 'pettarget' == name) then
-        return 'pettarget'
-    else
-        for i = 1, GetNumGroupMembers() do
-            local unit = ('raid%dtarget'):format(i)
-            if (UnitName(unit) == name) then
-                return unit
-            end
-        end
-    end
-end
-
 function oq.is_raid_boss(raid_id, name)
     if (raid_id == 0) or (OQ.raid_bosses[raid_id] == nil) then
         return nil
@@ -892,7 +865,7 @@ function oq.get_current_raid_status(sub_type)
     local nkilled, maxBosses = oq.get_raid_bosses_killed(name)
     local boss_id = nkilled + 1
     local hp = 100
-    --  local unit = oq.scan_for_unit(OQ.raid_bosses[rid][boss_id]) ;
+
     local unit = oq.scan_for_boss(rid)
     if (unit) then
         hp = floor(100 * UnitHealth(unit) / UnitHealthMax(unit))
