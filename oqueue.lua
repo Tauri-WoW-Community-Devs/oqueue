@@ -70,8 +70,6 @@ local _inc_channel = nil
 local _received = nil
 local _reason = nil
 local _ok2relay = 1
-local _ok2decline = true
-local _ok2accept = true
 local _inside_bg = nil
 local _bg_shortname = nil
 local _bg_zone = nil
@@ -79,17 +77,11 @@ local _winner = nil
 local _msg = nil
 local _msg_type = nil
 local _msg_id = nil
-local _oq_note = nil
-local _oq_msg = nil
 local _core_msg = nil
 local _to_name = nil
 local _to_realm = nil
 local _from = nil
 local _lucky_charms = nil
-local _last_report = nil
-local _last_tops = nil
-local _last_bg = nil
-local _last_crc = nil
 local _map_open = nil
 local _ui_open = nil
 local _oqgeneral_id = nil
@@ -104,20 +96,14 @@ local player_away = nil
 local _f = nil
 local _toon = nil
 local _arg = nil
-local _opts = nil
 local _vars = nil
 local _names = nil
-local _tags = nil
-local _realms = nil
 local _items = nil
-local _vlist = nil
 local oq_ascii = nil
 local oq_mime64 = nil
-local lead_ticker = 0
 OQ.TOP_LEVEL = 90
 OQ.MAX_LOG_LINES = 43
 OQ.MAX_SNITCH_LINES = 250
-OQ.MAX_MESH_REQ_TM = 60 * 60 -- 1 hour
 OQ.BUNDLE_EARLIEST_SEND = 3.0 -- seconds
 OQ.BUNDLE_EXPIRATION = 4.0 -- seconds
 OQ.MAX_BNET_MSG_SZ = 4078 -- max size as per blizz limitation
@@ -128,7 +114,6 @@ OQ.BNET_CAPB4THECAP = 98 -- blizz increased the cap from 100 to 112 (also fixed 
 OQ.MODEL_CHECK_TM = 3 -- check every 3 seconds
 OQ.RELAY_OVERLOAD = 28 -- if sent msgs/sec exceeds 28, p8 msgs will stop sending
 OQ.MAX_MSGS_PER_CYCLE = 6 -- cycles 4 times per second sending msgs
-OQ.MAX_SENDFRIENDREQ_MSGSZ = 127
 OQ.MAX_PENDING_NOTE = 70
 
 local _  -- throw away (was getting taint warning; what happened blizz?)
@@ -3502,9 +3487,6 @@ function oq.entering_bg()
     _inside_bg = true
     _lucky_charms = nil
     _winner = nil
-    _last_report = nil
-    _last_bg = nil
-    _last_crc = nil
     _bg_zone = nil
     _bg_shortname = nil
     OQ_data.nrage = 0
@@ -15863,7 +15845,6 @@ function oq.on_disband(raid_tok, token, local_override)
     end
     if (_source == 'bnfinvite') then
         _ok2relay = nil
-        _ok2decline = true
         return
     end
     oq._error_ignore_tm = GetTime() + 5
@@ -16520,7 +16501,6 @@ function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
         oq.set_name(g_id, p_slot, p.name, p.realm, p.class)
         oq.set_group_lead(g_id, name, realm, player_class, oq.player_realid)
         -- push info
-        lead_ticker = 0
         oq.timer_oneshot(3, oq.force_stats)
         if (g_id == 1) then
             oq.ui_raidleader()
@@ -16531,7 +16511,6 @@ function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
             oq.XRealmWhisper(r.name, r.realm, '#tok:' .. req_token .. ',#lead')
         end
         -- push info
-        lead_ticker = 0
         oq.timer_oneshot(1, oq.force_stats)
     end
 end
@@ -17059,7 +17038,6 @@ function oq.on_premade(
     end
     if (_source == 'bnfinvite') then
         _ok2relay = nil
-        _ok2decline = true
         _reason = 'bad src(bnfinvite)'
         return
     end
@@ -17458,9 +17436,7 @@ function oq.set_premade_pending(raid_token, is_pending, hide_sounds)
 end
 
 function oq.on_invite_req_response(raid_token, req_token, answer, reason, followup_allowed)
-    _ok2accept = nil
     if (not oq.is_my_token(req_token)) then
-        _ok2decline = true -- may have multi-subnet account implications if not recieved by the right person
         return
     end
     local r = oq.premades[raid_token]
@@ -20393,7 +20369,6 @@ end
 
 function oq.force_stats()
     last_stats = nil
-    lead_ticker = 1 -- so the stats pop first
     if (my_group == 0) then
         return
     end
@@ -21142,7 +21117,6 @@ function oq.process_msg(sender, msg)
         return
     end
     _msg_type = token:sub(1, 1)
-    _oq_msg = true
 
     if (_msg_type == 'A') then
         atok = _vars[6] -- announce token
@@ -21337,7 +21311,6 @@ function oq.post_process()
     _reason = ''
     oq.__reason = nil
     oq._relay2oqgeneral = nil
-    tbl.clear(_opts)
     tbl.clear(_vars)
     tbl.clear(_arg)
 end
@@ -21915,7 +21888,6 @@ function oq.on_party_members_changed()
 
     local groupMembers = GetNumGroupMembers()
     if (oq.iam_raid_leader()) then
-        lead_ticker = 1 -- force the sending of stats on the next tick
         if (my_group > 0) then
             oq.raid.group[my_group]._stats = nil
             oq.raid.group[my_group]._names = nil
@@ -22497,13 +22469,9 @@ function oq.init_locals()
     _f = _f or tbl.new()
     _toon = _toon or tbl.new()
     _arg = _arg or tbl.new()
-    _opts = _opts or tbl.new()
     _vars = _vars or tbl.new()
     _names = _names or tbl.new()
-    _tags = _tags or tbl.new()
-    _realms = _realms or tbl.new()
     _items = _items or tbl.new()
-    _vlist = _vlist or tbl.new()
 
     oq.channels = oq.channels or tbl.new()
     oq.premades = oq.premades or tbl.new()

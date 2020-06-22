@@ -19,7 +19,6 @@ locales\oqueue.fr.lua
 locales\oqueue.it.lua
 locales\oqueue.ru.lua
 
-region\realms.us.lua
 region\realms.eu.lua
 
 Libs\LibStub\LibStub.lua
