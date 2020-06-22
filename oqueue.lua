@@ -7,17 +7,15 @@ local tbl = OQ.table
 -------------------------------------------------------------------------------
 local OQ_MAJOR = 2
 local OQ_MINOR = 0
-local OQ_REVISION = 1
-local OQ_BUILD = 201
+local OQ_REVISION = 2
+local OQ_BUILD = 202
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
 local OQ_VER_STR = OQUEUE_VERSION
 local OQ_VER = '1D' -- just removing the dot
 local OQSK_VER = '10'
 local OQSK_HEADER = 'OQSK'
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
-local OQ_ONEDAY = 24 * 60 * 60
 local OQ_REALISTIC_MAX_GAMELEN = 8 * 60 * 60 -- classic AV no longer exists
-local OQ_MAX_RELAY_REALMS = 7
 local OQ_NOEMAIL = '.'
 local OQ_HEADER = 'OQ'
 local OQ_MSGHEADER = OQ_HEADER .. ','
@@ -36,15 +34,11 @@ local OQ_MAX_ATOKEN_LIFESPAN = 120 -- 120 seconds before token removed from ATOK
 local OQ_MIN_ATOKEN_RELAY_TM = 30 -- do not relay atokens more then once every 30 seconds
 local OQ_MAX_HONOR_WARNING = 3600
 local OQ_MAX_HONOR = 4000
-local OQ_MAX_SUBMIT_ATTEMPTS = 20
 local OQ_MAX_WAITLIST = 30
-local OQ_MIN_CONNECTION = 20
 local OQ_INVITEALL_CD = 5 -- seconds
 local OQ_PENDINGNOTE_UPDATE_CD = 5
 local OQ_CREATEPREMADE_CD = 5 -- seconds
-local OQ_BTAG_SUBMIT_INTERVAL = 4 * 24 * 60 * 60
 local MAX_OQGENERAL_TALKERS = 9999
-local last_stat_tm = 0
 local my_group = 0
 local my_slot = 0
 local next_invite_tm = 0
@@ -53,7 +47,6 @@ local skip_stats = 0
 local last_stats = ''
 local player_name = nil
 local player_class = nil
-local player_guid = nil
 local player_realm = nil
 local player_realm_id = 0
 local player_level = 1
@@ -7504,10 +7497,6 @@ function oq.battleground_leave(ndx)
     --  leaving queue now requires a hardware event
     --  pop up a box for the user to hit ok or esc (any input)
     --
-end
-
-function oq.battleground_leave_now(ndx)
-    last_stat_tm = 0 -- force the status send
 end
 
 function oq.create_alt_listitem(parent, x, y, cx, cy, name)
@@ -21455,7 +21444,6 @@ function oq.on_init(now)
     oq.BossID = LibStub('LibBossIDs-1.0').BossIDs
 
     player_name = UnitName('player')
-    player_guid = UnitGUID('player')
     player_realm = oq.GetRealmName()
     player_realm_id = oq.GetRealmID(player_realm)
     oq.player_realid = strlower(player_name .. '-' .. player_realm)

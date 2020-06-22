@@ -408,7 +408,6 @@ StaticPopupDialogs['OQ_QueuePoppedLeader'] = {
     end,
     OnCancel = function(self, data, data2)
         oq.raid_announce('leave_queue,' .. data)
-        oq.battleground_leave_now(data)
         self:Hide()
         oq.ui:Show() -- force it, in case the user hit esc
     end,
