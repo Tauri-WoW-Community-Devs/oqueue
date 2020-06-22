@@ -148,7 +148,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Premade'
 OQ.TAB_FINDPREMADE = 'Trova Premade'
 OQ.TAB_CREATEPREMADE = 'Crea Premade'
-OQ.TAB_THESCORE = 'Il punteggio'
 OQ.TAB_SETUP = 'Impostazioni'
 OQ.TAB_BANLIST = 'Lista ban'
 OQ.TAB_WAITLIST = "Lista d'attesa"
@@ -289,7 +288,6 @@ OQ.AVG_ILEVEL = 'avg ilevel: %d'
 OQ.ENCHANTED = 'Incantato:'
 OQ.ENABLE_FOG = 'nebbia di guerra'
 OQ.AUTO_INSPECT = 'Auto ispeziona (ctrl left-click)'
-OQ.TIMELEFT = 'Tempo rimasto:'
 OQ.HORDE = 'Orda'
 OQ.ALLIANCE = 'Alleanza'
 OQ.SETUP_TIMERWIDTH = 'Timer width'
@@ -306,17 +304,10 @@ OQ.MM_OPTION7 = "sistema l'utente principale"
 OQ.MM_OPTION8 = 'dove sono?'
 OQ.LABEL_QUESTING = 'fare missioni'
 OQ.LABEL_QUESTERS = 'missioni di gruppo'
-OQ.ACTIVE_LASTPERIOD = '# attivo ultimi 7 giorni'
-OQ.SCORE_NLEADERS = '# capi'
-OQ.SCORE_NGAMES = '# giochi'
-OQ.SCORE_NBOSSES = '# boss'
 OQ.TT_PVERECORD = 'record (boss - morti)'
 OQ.TT_5MANS = 'capo: 5 uomini'
 OQ.TT_RAIDS = 'capo: incursioni'
 OQ.TT_CHALLENGES = 'capo: corse nelle sfide'
-OQ.TT_LEADER_DKP = 'capo: punti drago uccisi'
-OQ.TT_DKP = 'punti drago uccisi'
-OQ.SCORE_DKP = '# punti drago uccisi'
 OQ.ERR_NODURATION = "Durata dell'istanza sconosciuta.  Impossibile calcolare le variazioni di valuta"
 OQ.DRUNK = '..hic!'
 OQ.MM_OPTION2a = 'verifica tabella premi'
@@ -374,7 +365,6 @@ OQ.BG_NAMES = {
     ['Miniere di Cupargento'] = {type_id = OQ.SSM},
     ['Tempio di Kotmogu'] = {type_id = OQ.TOK},
     ['Scavi di Ventotetro'] = {type_id = OQ.DWG},
-    ['Punti Drago Uccisi'] = {type_id = OQ.DKP},
     [''] = {type_id = OQ.NONE}
 }
 

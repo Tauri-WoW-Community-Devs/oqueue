@@ -140,7 +140,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Premade'
 OQ.TAB_FINDPREMADE = 'Premade finden'
 OQ.TAB_CREATEPREMADE = 'Premade erstellen'
-OQ.TAB_THESCORE = 'Punktestand'
 OQ.TAB_SETUP = 'Settings'
 OQ.TAB_BANLIST = 'Bannlist'
 OQ.TAB_WAITLIST = 'Warteschlange'

@@ -294,32 +294,11 @@
            </Button>
 
            <Button name="$parentTab4" inherits="CharacterFrameTabButtonTemplate" id="4" text= "The Score" >
-               <Anchors>
-                   <Anchor point="LEFT" relativeTo="$parentTab3" relativePoint="RIGHT">
-                       <Offset>
-                           <AbsDimension x="-16" y="0"/>
-                       </Offset>
-                   </Anchor>
-               </Anchors>
-               <Scripts>
-                   <OnClick>
-                       PanelTemplates_SetTab(OQMainFrame, 4);
-                       OQ_hide_menu_popup();
-                       OQTabPage1:Hide();
-                       OQTabPage2:Hide();
-                       OQTabPage3:Hide();
-                       OQTabPage4:Show();
-                       OQTabPage5:Hide();
-                       OQTabPage6:Hide();
-                       OQTabPage7:Hide();
-                       PlaySound("igCharacterInfoTab");
-                   </OnClick>
-               </Scripts>
            </Button>
 
            <Button name="$parentTab5" inherits="CharacterFrameTabButtonTemplate" id="5" text="Settings">
                <Anchors>
-                   <Anchor point="LEFT" relativeTo="$parentTab4" relativePoint="RIGHT">
+                   <Anchor point="LEFT" relativeTo="$parentTab3" relativePoint="RIGHT">
                        <Offset>
                            <AbsDimension x="-16" y="0"/>
                        </Offset>

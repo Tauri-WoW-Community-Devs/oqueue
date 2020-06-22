@@ -137,7 +137,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Premade'
 OQ.TAB_FINDPREMADE = 'Encontrar Premade'
 OQ.TAB_CREATEPREMADE = 'Criar Premade'
-OQ.TAB_THESCORE = 'Placar'
 OQ.TAB_SETUP = 'Configurações'
 OQ.TAB_BANLIST = 'Lista de Banidos'
 OQ.TAB_WAITLIST = 'Lista de Espera'

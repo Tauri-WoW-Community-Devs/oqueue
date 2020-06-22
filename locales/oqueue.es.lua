@@ -138,7 +138,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Premade'
 OQ.TAB_FINDPREMADE = 'Buscar Premade'
 OQ.TAB_CREATEPREMADE = 'Crear Premade'
-OQ.TAB_THESCORE = 'Puntuación'
 OQ.TAB_SETUP = 'Configuración'
 OQ.TAB_BANLIST = 'Bloqueados'
 OQ.TAB_WAITLIST = 'Lista de Espera'
@@ -280,7 +279,6 @@ OQ.AVG_ILEVEL = 'nivel de objeto medio: %d'
 OQ.ENCHANTED = 'Encantado:'
 OQ.ENABLE_FOG = 'niebla de guerra'
 OQ.AUTO_INSPECT = 'Auto inspeccionar\n(control clic izquierdo)'
-OQ.TIMELEFT = 'Tiempo restante:'
 OQ.HORDE = 'Horda'
 OQ.ALLIANCE = 'Alianza'
 OQ.SETUP_TIMERWIDTH = 'Ancho de los temporizadores'
@@ -297,17 +295,10 @@ OQ.MM_OPTION7 = 'reparar IU'
 OQ.MM_OPTION8 = '¿donde estoy?'
 OQ.LABEL_QUESTING = 'misión'
 OQ.LABEL_QUESTERS = 'grupos de misión'
-OQ.ACTIVE_LASTPERIOD = '# activos en los ultimos 7 dias'
-OQ.SCORE_NLEADERS = '# lideres'
-OQ.SCORE_NGAMES = '# partidas'
-OQ.SCORE_NBOSSES = '# jefes'
 OQ.TT_PVERECORD = 'record (jefes - wipes)'
 OQ.TT_5MANS = 'lider: mazmorras de 5 jug.'
 OQ.TT_RAIDS = 'lider: bandas'
 OQ.TT_CHALLENGES = 'lider: desafios'
-OQ.TT_LEADER_DKP = 'lider: dragon kill pts'
-OQ.TT_DKP = 'dragon kill pts'
-OQ.SCORE_DKP = '# dragon kill pts'
 OQ.ERR_NODURATION = 'Duración desconocida de la instancia. Imposible calcular los cambios en las monedas'
 OQ.DRUNK = '..hic!'
 OQ.MM_OPTION2a = 'conmutar recompensas' -- Literalmente "conmutar tabl?n de recompensas"
@@ -365,7 +356,6 @@ OQ.BG_NAMES = {
     ['Minas Lonjaplata'] = {type_id = OQ.SSM},
     ['Templo de Kotgomu'] = {type_id = OQ.TOK},
     ['Cañón del Céfiro'] = {type_id = OQ.DWG},
-    ['Dragon Kill Points'] = {type_id = OQ.DKP},
     [''] = {type_id = OQ.NONE}
 }
 

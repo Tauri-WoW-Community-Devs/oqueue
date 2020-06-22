@@ -311,15 +311,6 @@ function oq.tooltip_set2(f, m, totheside, is_lead)
         oq.is_dungeon_premade(m.premade_type) or (m.premade_type == OQ.TYPE_RAID) or (m.premade_type == OQ.TYPE_QUESTS) or
             (m.premade_type == OQ.TYPE_ROLEPLAY)
      then
-        tooltip.left[6]:SetText(OQ.TT_DKP)
-        if (m.premade_type == OQ.TYPE_CHALLENGE) then
-            tooltip.right[6]:SetText(comma_value(oq.decode_mime64_digits(m.raids and m.raids:sub(-3, -1)))) -- member dkp is the last 3 digits
-        elseif (m.premade_type == OQ.TYPE_SCENARIO) then
-            tooltip.right[6]:SetText(comma_value(oq.decode_mime64_digits(m.raids and m.raids:sub(-3, -1)))) -- member dkp is the last 3 digits
-        else
-            tooltip.right[6]:SetText(comma_value(oq.decode_mime64_digits(m.raids and m.raids:sub(20, 22))))
-        end
-
         if (m.spec_type == OQ.TANK) then
             oq.tt_perc(tooltip, 8, 'melee hit', m.melee_hit)
             oq.tt_int(tooltip, 9, 'armor', m.armor)
@@ -890,54 +881,21 @@ function oq.pm_tooltip_set(f, raid_token)
 
         pm_tooltip.left[10]:SetText(OQ.TT_RECORD)
         nWins, nLosses = oq.get_winloss_record(raid.leader_xp)
-        local tag, y, _, _, _, r1 = oq.get_dragon_rank(raid.type, nWins or 0)
-        rank = r1
-        if (tag) then
-            if (y == 0) then
-                pm_tooltip.right[10]:SetText('|T' .. tag .. ':32:32|t ' .. nWins .. ' - ' .. nLosses)
-            else
-                pm_tooltip.right[10]:SetText('|T' .. tag .. ':20:20|t ' .. nWins .. ' - ' .. nLosses)
-            end
-        else
-            pm_tooltip.right[10]:SetText(nWins .. ' - ' .. nLosses)
-        end
+        pm_tooltip.right[10]:SetText(nWins .. ' - ' .. nLosses)
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetWidth(pm_tooltip:GetWidth() + 20)
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(oq.get_rank_achieves(raid.leader_xp:sub(10, -1)))
     elseif (raid.type == OQ.TYPE_SCENARIO) then
         local nWins = oq.decode_mime64_digits(raid.leader_xp:sub(1, 3))
         local nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
-        local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(6, 8))
-        local tag, y = oq.get_dragon_rank(raid.type, dkp)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
-        pm_tooltip.left[8]:SetText(OQ.TT_DKP)
-        if (tag) then
-            if (y == 0) then
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':32:32|t ' .. tostring(dkp))
-            else
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':20:20|t ' .. tostring(dkp))
-            end
-        else
-            pm_tooltip.right[8]:SetText(tostring(dkp))
-        end
+
     elseif (raid.type == OQ.TYPE_CHALLENGE) then
         nWins, nLosses = oq.get_challenge_winloss_record(raid.leader_xp)
-        local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(12, 14))
-        local tag, y = oq.get_dragon_rank(raid.type, dkp or 0)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
-        pm_tooltip.left[8]:SetText(OQ.TT_DKP)
-        if (tag) then
-            if (y == 0) then
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':32:32|t ' .. tostring(dkp))
-            else
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':20:20|t ' .. tostring(dkp))
-            end
-        else
-            pm_tooltip.right[8]:SetText(tostring(dkp))
-        end
 
         local medals = raid.leader_xp
         pm_tooltip.left[11]:SetText('medals')
@@ -971,22 +929,9 @@ function oq.pm_tooltip_set(f, raid_token)
         end
 
         nWins, nLosses = oq.get_pve_winloss_record(raid.leader_xp)
-        local dkp = oq.decode_mime64_digits(raid.leader_xp:sub(17, 19))
-        local tag, y = oq.get_dragon_rank(raid.type, dkp or 0)
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
-
-        pm_tooltip.left[8]:SetText(OQ.TT_DKP)
-        if (tag) then
-            if (y == 0) then
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':26:26|t ' .. tostring(dkp))
-            else
-                pm_tooltip.right[8]:SetText('|T' .. tag .. ':20:20|t ' .. tostring(dkp))
-            end
-        else
-            pm_tooltip.right[8]:SetText(tostring(dkp))
-        end
 
         local dots = ''
         local raids = raid.leader_xp

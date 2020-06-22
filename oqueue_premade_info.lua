@@ -282,8 +282,7 @@ function oq.get_raid_progression()
     local record =
         oq.encode_mime64_3digit(nbosses) ..
         '' ..
-            oq.encode_mime64_2digit(nwipes) ..
-                '' .. oq.encode_mime64_3digit(OQ_data.leader_dkp) .. '' .. oq.encode_mime64_3digit(OQ_data._dkp)
+            oq.encode_mime64_2digit(nwipes)
 
     -- put it all together
     -- AA BB CC DDDDD bbbWWdddmmm
@@ -404,8 +403,7 @@ function oq.get_challenge_experience(as_lead)
         '' ..
             oq.encode_mime64_3digit(nbosses) ..
                 '' ..
-                    oq.encode_mime64_2digit(nwipes) ..
-                        '' .. oq.encode_mime64_3digit(OQ_data.leader_dkp) .. '' .. oq.encode_mime64_3digit(OQ_data._dkp)
+                    oq.encode_mime64_2digit(nwipes)
 end
 
 function oq.get_scenario_experience(as_lead)
@@ -414,8 +412,7 @@ function oq.get_scenario_experience(as_lead)
     local nbosses, nwipes = oq.get_nboss_kills()
     return oq.encode_mime64_3digit(nbosses) ..
         '' ..
-            oq.encode_mime64_2digit(nwipes) ..
-                '' .. oq.encode_mime64_3digit(OQ_data.leader_dkp) .. '' .. oq.encode_mime64_3digit(OQ_data._dkp)
+            oq.encode_mime64_2digit(nwipes)
 end
 
 --  list of achieve ids
@@ -963,44 +960,6 @@ function oq.render_raid_status(pdata)
     return s, R, b, B, i
 end
 
-function oq.get_dragon_rank(type, nwins, leader_xp)
-    if (nwins == nil) and (leader_xp ~= nil) then
-        if (type == OQ.TYPE_RBG) or (type == OQ.TYPE_BG) then
-            nwins, _ = oq.get_winloss_record(leader_xp)
-        elseif (type == OQ.TYPE_RAID) or (type == OQ.TYPE_DUNGEON) then
-            _, _, nwins = oq.get_pve_winloss_record(leader_xp)
-        elseif (type == OQ.TYPE_CHALLENGE) then
-            _, _, nwins = oq.get_challenge_winloss_record(leader_xp)
-        elseif (type == OQ.TYPE_SCENARIO) then
-            _, _, nwins = oq.get_scenario_winloss_record(leader_xp)
-        else
-            nwins = 0
-        end
-    elseif (nwins == nil) then
-        nwins = 0
-    end
-
-    local t = 'pve'
-    if (type == OQ.TYPE_RBG) or (type == OQ.TYPE_ARENA) then
-        t = 'rated'
-    elseif (type == OQ.TYPE_BG) then
-        t = 'pvp'
-    end
-
-    local title = ''
-    local rank = 0
-    if (t) and (OQ.rank_breaks[t]) then
-        for i = 4, 1, -1 do
-            if (OQ.rank_breaks[t][i]) and (nwins >= OQ.rank_breaks[t][i].line) then
-                rank = OQ.rank_breaks[t][i].rank
-                title = OQ.rank_breaks[t][i].r
-                return OQ.dragon_rank[rank].tag, OQ.dragon_rank[rank].y, OQ.dragon_rank[rank].cx, OQ.dragon_rank[rank].cy, title, rank
-            end
-        end
-    end
-    return nil, 0, 0, 0, '', 0
-end
-
 function oq.get_winloss_record(leader_xp)
     if (leader_xp == nil) then
         return 0, 0
@@ -1014,31 +973,28 @@ function oq.get_challenge_winloss_record(leader_xp)
     if (leader_xp == nil) then
         return 0, 0, 0
     end
-    -- AA BB CC bbbWWddd
+    -- AA BB CC bbbWWdd
     local nwins = oq.decode_mime64_digits(leader_xp:sub(7, 9))
     local nlosses = oq.decode_mime64_digits(leader_xp:sub(10, 11))
-    local dkp = oq.decode_mime64_digits(leader_xp:sub(12, 14))
-    return nwins, nlosses, dkp
+    return nwins, nlosses
 end
 
 function oq.get_scenario_winloss_record(leader_xp)
     if (leader_xp == nil) then
         return 0, 0, 0
     end
-    -- bbbWWddd
+    -- bbbWWdd
     local nwins = oq.decode_mime64_digits(leader_xp:sub(1, 3))
     local nlosses = oq.decode_mime64_digits(leader_xp:sub(4, 5))
-    local dkp = oq.decode_mime64_digits(leader_xp:sub(6, 8))
-    return nwins, nlosses, dkp
+    return nwins, nlosses
 end
 
 function oq.get_pve_winloss_record(leader_xp)
     if (leader_xp == nil) then
         return 0, 0, 0
     end
-    -- AA BB CC DDDDD bbbWWddd
+    -- AA BB CC DDDDD bbbWWdd
     local nwins = oq.decode_mime64_digits(leader_xp:sub(12, 14))
     local nlosses = oq.decode_mime64_digits(leader_xp:sub(15, 16))
-    local dkp = oq.decode_mime64_digits(leader_xp:sub(17, 19))
-    return nwins, nlosses, dkp
+    return nwins, nlosses
 end

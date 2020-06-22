@@ -150,7 +150,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Groupe'
 OQ.TAB_FINDPREMADE = 'Chercher groupe'
 OQ.TAB_CREATEPREMADE = 'Créer groupe'
-OQ.TAB_THESCORE = 'Score'
 OQ.TAB_SETUP = 'Configuration'
 OQ.TAB_BANLIST = 'Liste des bannis'
 OQ.TAB_WAITLIST = "File d'attente"
@@ -293,7 +292,6 @@ OQ.AVG_ILEVEL = 'avg ilevel: %d'
 OQ.ENCHANTED = 'Enchanté:'
 OQ.ENABLE_FOG = 'fog of war'
 OQ.AUTO_INSPECT = 'Inspection automatique (ctrl clic-gauche)'
-OQ.TIMELEFT = 'Temps restant:'
 OQ.HORDE = 'Horde'
 OQ.ALLIANCE = 'Alliance'
 OQ.SETUP_TIMERWIDTH = 'Ecart minuteur'
@@ -309,17 +307,10 @@ OQ.MM_OPTION7 = 'Fixer UI'
 OQ.MM_OPTION8 = 'Ou suis-je ?'
 OQ.LABEL_QUESTING = 'Quête'
 OQ.LABEL_QUESTERS = 'Quête de groupe'
-OQ.ACTIVE_LASTPERIOD = '# Actif les 7 derniers jours'
-OQ.SCORE_NLEADERS = '# chefs'
-OQ.SCORE_NGAMES = '# jeux'
-OQ.SCORE_NBOSSES = '# boss'
 OQ.TT_PVERECORD = 'Statistiques(Boss - Morts)'
 OQ.TT_5MANS = 'chef : groupe'
 OQ.TT_RAIDS = 'chef : raid'
 OQ.TT_CHALLENGES = 'chef : défi'
-OQ.TT_LEADER_DKP = 'leader: dragon kill pts'
-OQ.TT_DKP = 'dragon kill pts'
-OQ.SCORE_DKP = '# dragon kill pts'
 OQ.ERR_NODURATION = 'Unknown instance duration.  Unable to calculate currency changes'
 OQ.DRUNK = '..hic!'
 OQ.MM_OPTION2a = 'toggle bounty board'
@@ -400,7 +391,6 @@ OQ.BG_NAMES = {
     ['Silvershard Mines'] = {type_id = OQ.SSM},
     ['Temple of Kotmogu'] = {type_id = OQ.TOK},
     ['Deepwind Gorge'] = {type_id = OQ.DWG},
-    ['Dragon Kill Points'] = {type_id = OQ.DKP},
     [''] = {type_id = OQ.NONE}
 }
 

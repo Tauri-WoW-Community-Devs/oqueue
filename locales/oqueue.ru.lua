@@ -144,7 +144,6 @@ OQ.MSG_NOTLFG =
 OQ.TAB_PREMADE = 'Премейд'
 OQ.TAB_FINDPREMADE = 'Поиск'
 OQ.TAB_CREATEPREMADE = 'Создать'
-OQ.TAB_THESCORE = 'Счет'
 OQ.TAB_SETUP = 'Настройки'
 OQ.TAB_BANLIST = 'Черный список'
 OQ.TAB_WAITLIST = 'Ожидание'
@@ -290,7 +289,6 @@ OQ.AVG_ILEVEL = 'Средний ИЛ: %d'
 OQ.ENCHANTED = 'Зачаровано:'
 OQ.ENABLE_FOG = 'Туман войны'
 OQ.AUTO_INSPECT = 'Авто-осмотр персонажа (Ctrl+ЛКМ)'
-OQ.TIMELEFT = 'Прошло времени:'
 OQ.HORDE = 'Орда'
 OQ.ALLIANCE = 'Альянс'
 OQ.SETUP_TIMERWIDTH = 'Ширина таймера'
@@ -305,17 +303,10 @@ OQ.MM_OPTION5 = 'Очистить таймеры'
 OQ.MM_OPTION6 = 'Показать время связей'
 OQ.MM_OPTION7 = 'Фиксация интерфейс'
 OQ.MM_OPTION8 = 'Где я?'
-OQ.ACTIVE_LASTPERIOD = '# активность за 7 дней'
-OQ.SCORE_NLEADERS = '# лидеры'
-OQ.SCORE_NGAMES = '# игры'
-OQ.SCORE_NBOSSES = '# боссы'
 OQ.TT_PVERECORD = 'Победы - Поражения'
 OQ.TT_5MANS = 'лидер: подземелья'
 OQ.TT_RAIDS = 'лидер: рейды'
 OQ.TT_CHALLENGES = 'лидер: испытания'
-OQ.TT_LEADER_DKP = 'лидер: очки DKP'
-OQ.TT_DKP = 'Очки DKP'
-OQ.SCORE_DKP = '# Очки DKP'
 OQ.ERR_NODURATION = 'Неизвестна продолжительность инстанса. Валютные изменения не рассчитаны.'
 OQ.DRUNK = '..ик!'
 OQ.MM_OPTION2a = 'Вкл/Выкл доску контрактов'
@@ -397,7 +388,6 @@ OQ.BG_NAMES = {
     ['Сверкающие Копи'] = {type_id = OQ.SSM},
     ['Храм Котмогу'] = {type_id = OQ.TOK},
     ['Каньон Суровых Ветров'] = {type_id = OQ.DWG},
-    ['Очки DKP'] = {type_id = OQ.DKP},
     [''] = {type_id = OQ.NONE}
 }
 

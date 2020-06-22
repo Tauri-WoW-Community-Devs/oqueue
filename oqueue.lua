@@ -237,7 +237,6 @@ function oq.hook_options()
     oq.options['check'] = oq.ping_the_world
     oq.options['clear'] = oq.cmdline_clear
     oq.options['cp'] = oq.toggle_class_portraits
-    oq.options['datestamp'] = oq.toggle_datestamp
     oq.options['debug'] = oq.debug_toggle
     oq.options['delist'] = oq.clear_pending
     oq.options['disband'] = oq.raid_disband
@@ -388,18 +387,6 @@ function oq.rtrim(s)
         n = n - 1
     end
     return s:sub(1, n)
-end
-
-function oq.toggle_datestamp()
-    if (OQ_data._show_datestamp) and (OQ_data._show_datestamp == 1) then
-        OQ_data._show_datestamp = 0
-        oq.tab4.now:Hide()
-        print('date stamp: OFF')
-    else
-        OQ_data._show_datestamp = 1
-        oq.tab4.now:Show()
-        print('date stamp: ON')
-    end
 end
 
 function oq.id_target()
@@ -1508,8 +1495,6 @@ function oq.show_data(opt)
         oq.show_count()
     elseif (opt == 'cache') then
         oq.show_premade_cache()
-    elseif (opt == 'date') then
-        oq.toggle_datestamp()
     elseif (opt:find('frames') == 1) then
         oq.frame_report(opt)
     elseif (opt == 'globals') then
@@ -1538,8 +1523,6 @@ function oq.show_data(opt)
     elseif (opt:find('systables') == 1) then
         tbl.fill_match(_arg, opt, ' ') -- args: tables cnt dump substring
         oq.dump_tables(_arg[2], _arg[3])
-    elseif (opt == 'time') then
-        oq.toggle_datestamp()
     elseif (opt == 'thebook') then
         oq.show_the_book()
     elseif (opt:find('timers') == 1) then
@@ -3215,10 +3198,6 @@ function oq.mark_currency()
     -- mark hks
     oq.toon.player_wallet['hks'] = tonumber(GetStatistic(588) or 0) or 0
 
-    -- mark dkps
-    oq.toon.player_wallet['leader_dkp'] = OQ_data.leader_dkp or 0
-    oq.toon.player_wallet['dkp'] = OQ_data._dkp or 0
-
     -- mark mmr
     oq.toon.player_wallet['mmr'] = oq.get_mmr() or 0
 
@@ -3347,17 +3326,6 @@ function oq.check_currency()
             -- report gained hks
             local rate = floor((delta / duration) * 60 * 60) -- bg_length is seconds * 60*60 --> delta/hr
             oq.log(true, OQ.GAINED .. ' ' .. delta .. ' HKs  (' .. rate .. ' ' .. OQ.PERHOUR .. ')')
-        end
-    end
-
-    -- check for gains in dkp
-    -- no need to report leadership as it would be the same if you were the lead as a member
-    if (oq.toon.player_wallet['dkp']) then
-        delta = (OQ_data._dkp or 0) - oq.toon.player_wallet['dkp']
-        if (delta > 0) then
-            -- report gained dkps
-            local rate = floor((delta / duration) * 60 * 60) -- bg_length is seconds * 60*60 --> delta/hr
-            oq.log(true, OQ.GAINED .. ' ' .. delta .. ' ' .. OQ.TT_DKP .. ' (' .. rate .. ' ' .. OQ.PERHOUR .. ')')
         end
     end
 
@@ -4739,24 +4707,6 @@ function oq.calc_game_report()
     tbl.delete(scores, true)
 end
 
-function oq.salt()
-    return oq.encode_mime64_3digit(OQ_data.leader['bg'].nWins) ..
-        oq.encode_mime64_3digit(OQ_data.leader['bg'].nLosses) ..
-            oq.encode_mime64_3digit(OQ_data.leader['bg'].nGames) ..
-                oq.encode_mime64_3digit(OQ_data.leader['rbg'].nWins) ..
-                    oq.encode_mime64_3digit(OQ_data.leader['rbg'].nLosses) ..
-                        oq.encode_mime64_3digit(OQ_data.leader['rbg'].nGames) ..
-                            oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nBosses) ..
-                                oq.encode_mime64_3digit(OQ_data.leader['pve.5man'].nWipes) ..
-                                    oq.encode_mime64_3digit(OQ_data.leader['pve.raid'].nBosses) ..
-                                        oq.encode_mime64_3digit(OQ_data.leader['pve.raid'].nWipes) ..
-                                            oq.encode_mime64_3digit(OQ_data.leader['pve.challenge'].nBosses) ..
-                                                oq.encode_mime64_3digit(OQ_data.leader['pve.challenge'].nWipes) ..
-                                                    oq.encode_mime64_3digit(OQ_data.leader_dkp or 0) ..
-                                                        oq.encode_mime64_3digit(OQ_data._dkp or 0) .. -- dragon kill points
-                                                            oq.encode_mime64_4digit(OQ_data._dtp or 0) -- dragon timed points (length of time to kill); tbd
-end
-
 function oq.enemy_is_same_faction()
     if (IsRatedBattleground() ~= true) then
         return nil
@@ -4800,47 +4750,6 @@ function oq.enemy_is_same_faction()
     end
     -- unable to determine
     return nil
-end
-
-function oq.report_score(winner, scores)
-    if (OQ_data.stats.bg_start == 0) or (OQ_data.stats.bg_end == 0) then
-        -- game time not properly recorded, do not report
-        return
-    end
-
-    local str = ''
-    if (scores == nil) then
-        return
-    end
-    local i, v
-    for i, v in tbl.orderedPairs(scores) do
-        str = str .. '|' .. i .. ',' .. v.fact .. ',' .. v.dmg .. ',' .. v.heal
-    end
-    str = str .. '|'
-    _last_crc = oq.CRC32(str)
-
-    oq.get_zone_info()
-
-    local bg = oq.encode_mime64_1digit(OQ.BG_SHORT_NAME[_bg_shortname])
-    local crc = oq.encode_mime64_6digit(_last_crc)
-    local end_tm = oq.encode_mime64_6digit(OQ_data.stats.bg_end)
-    local start_tm = oq.encode_mime64_6digit(OQ_data.stats.bg_start)
-    local is_rated = '0'
-    if (IsRatedBattleground()) then
-        is_rated = '1'
-    end
-    if (_bg_zone and OQ.BG_NAMES[_bg_zone]) then
-        _last_report =
-            bg ..
-            '' ..
-                winner ..
-                    '' ..
-                        crc ..
-                            '' ..
-                                end_tm ..
-                                    '' .. start_tm .. '' .. oq.encode_mime64_1digit(oq.nMembers()) .. '' .. is_rated
-        _last_bg = OQ.BG_NAMES[_bg_zone].type_id
-    end
 end
 
 function oq.report_rage()
@@ -11722,28 +11631,9 @@ function oq.tooltip_me()
     tooltip.right[8]:SetText(oq.tooltip_game_record2(oq.toon.stats['bg'].nWins, oq.toon.stats['bg'].nLosses, nil))
 
     tooltip.left[9]:SetText('-  ' .. OQ.TT_ASLEAD)
-    local tag, y, cx, cy, bg_title = oq.get_dragon_rank(OQ.TYPE_BG, OQ_data.leader['bg'].nWins)
-    if (tag) then
-        if (y == 0) then
-            tooltip.right[9]:SetText(
-                '|T' ..
-                    tag ..
-                        ':32:32|t ' ..
-                            oq.tooltip_game_record2(OQ_data.leader['bg'].nWins, OQ_data.leader['bg'].nLosses, true)
-            )
-        else
-            tooltip.right[9]:SetText(
-                '|T' ..
-                    tag ..
-                        ':20:20|t ' ..
-                            oq.tooltip_game_record2(OQ_data.leader['bg'].nWins, OQ_data.leader['bg'].nLosses, true)
-            )
-        end
-    else
-        tooltip.right[9]:SetText(
-            oq.tooltip_game_record2(OQ_data.leader['bg'].nWins, OQ_data.leader['bg'].nLosses, true)
-        )
-    end
+    tooltip.right[9]:SetText(
+        oq.tooltip_game_record2(OQ_data.leader['bg'].nWins, OQ_data.leader['bg'].nLosses, true)
+    )
 
     tooltip.left[10]:SetText(OQ.LABEL_RBGS)
     tooltip.right[10]:SetText('')
@@ -11753,30 +11643,9 @@ function oq.tooltip_me()
     tooltip.right[11]:SetText(oq.tooltip_game_record2(oq.toon.stats['rbg'].nWins, oq.toon.stats['rbg'].nLosses, nil))
 
     tooltip.left[12]:SetText('-  ' .. OQ.TT_ASLEAD)
-    local tag, y, cx, cy, rbg_title = oq.get_dragon_rank(OQ.TYPE_RBG, OQ_data.leader['rbg'].nWins)
-    local rbg_title
-    tag, y, cx, cy, rbg_title = oq.get_dragon_rank(OQ.TYPE_RBG, OQ_data.leader['rbg'].nWins)
-    if (tag) then
-        if (y == 0) then
-            tooltip.right[12]:SetText(
-                '|T' ..
-                    tag ..
-                        ':32:32|t ' ..
-                            oq.tooltip_game_record2(OQ_data.leader['rbg'].nWins, OQ_data.leader['rbg'].nLosses, true)
-            )
-        else
-            tooltip.right[12]:SetText(
-                '|T' ..
-                    tag ..
-                        ':20:20|t ' ..
-                            oq.tooltip_game_record2(OQ_data.leader['rbg'].nWins, OQ_data.leader['rbg'].nLosses, true)
-            )
-        end
-    else
-        tooltip.right[12]:SetText(
-            oq.tooltip_game_record2(OQ_data.leader['rbg'].nWins, OQ_data.leader['rbg'].nLosses, true)
-        )
-    end
+    tooltip.right[12]:SetText(
+        oq.tooltip_game_record2(OQ_data.leader['rbg'].nWins, OQ_data.leader['rbg'].nLosses, true)
+    )
 
     tooltip.left[13]:SetText(OQ.TT_MMR)
     local s =
@@ -11807,22 +11676,6 @@ function oq.tooltip_me()
         tostring(OQ_data.leader['pve.challenge'].nBosses or 0) ..
             ' - ' .. tostring(OQ_data.leader['pve.challenge'].nWipes or 0)
     )
-
-    tooltip.left[17]:SetText(OQ.TT_LEADER_DKP)
-    local title
-    tag, y, cx, cy, title = oq.get_dragon_rank(OQ.TYPE_DUNGEON, OQ_data.leader_dkp)
-    if (tag) then
-        if (y == 0) then
-            tooltip.right[17]:SetText('|T' .. tag .. ':32:32|t ' .. tostring(OQ_data.leader_dkp or 0))
-        else
-            tooltip.right[17]:SetText('|T' .. tag .. ':20:20|t ' .. tostring(OQ_data.leader_dkp or 0))
-        end
-    else
-        tooltip.right[17]:SetText(tostring(OQ_data.leader_dkp or 0))
-    end
-
-    tooltip.left[18]:SetText(OQ.TT_DKP)
-    tooltip.right[18]:SetText(tostring(OQ_data._dkp or 0))
 
     tooltip.left[tooltip.nRows - 0]:SetText(oq.get_rank_achieves(oq.get_pvp_experience()))
     tooltip.right[tooltip.nRows - 0]:SetText('')
@@ -15394,421 +15247,6 @@ function oq.required_update_shade()
     oq.shaded_dialog(oq.create_required_updatebox(oq.create_ui_shade(), oq._major, oq._minor, oq._rev), true)
 end
 
-function oq.create_score_tab_label(x, y, cx, cy, txt)
-    local f = tbl.new()
-    local parent = OQTabPage4
-    f.label = oq.label(parent, x, y, cx, cy, txt)
-    f.label:SetJustifyH('left')
-    f.score = oq.label(parent, x + cx + 5, y, 25, cy, '50')
-    f.score:SetJustifyH('left')
-
-    f.bar = oq.simple_texture(parent, x + cx, y, 170, cy, 'Interface\\WorldStateFrame\\WorldState-CaptureBar')
-    f.bar:SetTexCoord(0, 0.67578125, 0, 0.40625)
-    f.bar:SetBlendMode('BLEND')
-    f.bar:SetDrawLayer('ARTWORK')
-
-    cy = 9
-    y = y + 7
-
-    -- alliance blue
-    f.bar_left =
-        oq.simple_texture(parent, x + cx + 24, y, (170 * 0.20), cy, 'Interface\\WorldStateFrame\\WorldState-CaptureBar')
-    f.bar_left:SetTexCoord(0.8203125, 1.0, 0, 0.140625)
-    f.bar_left:SetDrawLayer('BORDER')
-
-    -- horde red
-    f.bar_right =
-        oq.simple_texture(
-        parent,
-        x + cx + 170 - 52,
-        y,
-        (170 * 0.10),
-        cy,
-        'Interface\\WorldStateFrame\\WorldState-CaptureBar'
-    )
-    f.bar_right:SetTexCoord(0.8203125, 1.0, 0.171875, 0.3125)
-    f.bar_right:SetDrawLayer('BORDER')
-
-    -- indicator for middle
-    f.indicator =
-        oq.simple_texture(
-        parent,
-        x + cx + (170 / 2) - 5,
-        y - 1,
-        6,
-        cy + 9,
-        'Interface\\WorldStateFrame\\WorldState-CaptureBar'
-    )
-    f.indicator:SetTexCoord(0.77734375, 0.796875, 0, 0.28125)
-    f.indicator:SetDrawLayer('OVERLAY')
-    f.indicator:SetBlendMode('BLEND')
-
-    f.min_x = x + cx + 25
-    f.max_x = x + cx + 170 - 24
-    f.bar_y = y + 1
-    f.bar_cy = cy
-
-    return f
-end
-
-function oq.set_bg_percent(f, v)
-    if (f == nil) then
-        return
-    end
-    local width = (f.max_x - f.min_x)
-    local cx = width / 2
-    oq.setpos(f.bar_left, f.min_x, f.bar_y, cx, f.bar_cy)
-    oq.setpos(f.bar_right, f.max_x - cx, f.bar_y, cx, f.bar_cy)
-
-    cx = width * ((100 - v) / 100)
-    oq.moveto(f.indicator, f.min_x + cx, f.bar_y - 4)
-end
-
-function oq.get_gametime()
-    local t = oq.scores.timeleft or 0
-    if (t < 0) then
-        t = 0
-    elseif (t ~= 0) then
-        t = oq.scores.end_round_tm - oq.utc_time() + oq.scores.time_lag
-        if (t < 0) then
-            t = 0
-        end
-    end
-
-    local hrs = floor(t / (60 * 60))
-    local min = floor(t / 60) % 60
-    local sec = t % 60
-    local tm_str = string.format('%d:%02d:%02d', hrs, min, sec)
-    if (hrs == 0) then
-        tm_str = string.format('%02d:%02d', min, sec)
-    end
-    return tm_str
-end
-
-function oq.update_gametime()
-    local tm_str = oq.get_gametime()
-    if (oq.tab4._timeleft:IsVisible()) then
-        oq.tab4._timeleft:SetText(tm_str)
-    end
-end
-
-function oq.update_marquee_gametime()
-    local tm_str = oq.get_gametime()
-    if (oq.marquee.timeleft:IsVisible()) then
-        oq.marquee.timeleft:SetText(tm_str)
-    end
-end
-
-function oq.create_tab_score()
-    local x, y, cx, cy, spacer
-    local parent = OQTabPage4
-
-    oq.tab4 = parent
-
-    parent:SetScript(
-        'OnShow',
-        function()
-            oq.update_gametime()
-            oq.timer('scoreboard_ticker', 0.5, oq.update_gametime, true)
-        end
-    )
-    parent:SetScript(
-        'OnHide',
-        function()
-            oq.timer('scoreboard_ticker', 0.5, nil)
-        end
-    )
-
-    ------------------------------------------------------------------------
-    -- utc date stamp
-    ------------------------------------------------------------------------
-    x = 40
-    y = 20
-    x = parent:GetWidth() - 208
-    y = parent:GetHeight() - 30
-    oq.tab4.now = oq.label(parent, x, y, 200, 25, '')
-    oq.tab4.now:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4.now:SetJustifyH('LEFT')
-    oq.tab4.now:SetJustifyV('middle')
-    oq.tab4.now:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-    oq.tab4.now:Hide()
-
-    ------------------------------------------------------------------------
-    -- horde
-    ------------------------------------------------------------------------
-    x = 390
-    y = 0
-    oq.tab4._horde_emblem = oq.simple_texture(parent, x, y + 40, 80, 80, 'Interface\\FriendsFrame\\PlusManz-Horde')
-
-    oq.tab4._horde_nCrowns = oq.label(parent, x - 5, y + 40 + 80 + 10, 75, 25, '0 C')
-    oq.tab4._horde_nCrowns:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._horde_nCrowns:SetJustifyH('RIGHT')
-    oq.tab4._horde_nCrowns:SetJustifyV('MIDDLE')
-    oq.tab4._horde_nCrowns:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    y = y + 20
-    x = x + 100
-    oq.tab4._horde_label = oq.label(parent, x, y, 100, 100, OQ.HORDE)
-    oq.tab4._horde_label:SetFont(OQ.FONT, 22, '')
-    oq.tab4._horde_label:SetJustifyH('left')
-    oq.tab4._horde_label:SetJustifyV('middle')
-    --  oq.tab4._horde_score:SetTextColor(255/255, 209/255, 0/255, 1);
-
-    oq.tab4._horde_nGolden = oq.label(parent, x + 225 + 6, y + 5, 60, 100, '19 DD')
-    oq.tab4._horde_nGolden:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._horde_nGolden:SetJustifyH('right')
-    oq.tab4._horde_nGolden:SetJustifyV('middle')
-    oq.tab4._horde_nGolden:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._horde_nSilver = oq.label(parent, x + 225, y + 30, 60, 100, '8 SS')
-    oq.tab4._horde_nSilver:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._horde_nSilver:SetJustifyH('right')
-    oq.tab4._horde_nSilver:SetJustifyV('middle')
-    oq.tab4._horde_nSilver:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._horde_nGenerals = oq.label(parent, x + 225, y + 50, 60, 100, '8 GG')
-    oq.tab4._horde_nGenerals:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._horde_nGenerals:SetJustifyH('right')
-    oq.tab4._horde_nGenerals:SetJustifyV('middle')
-    oq.tab4._horde_nGenerals:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._horde_nKnights = oq.label(parent, x + 225, y + 70, 60, 100, '8 KK')
-    oq.tab4._horde_nKnights:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._horde_nKnights:SetJustifyH('right')
-    oq.tab4._horde_nKnights:SetJustifyV('middle')
-    oq.tab4._horde_nKnights:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._horde_nactive_l = oq.label(parent, x, y + 30, 125, 100, OQ.ACTIVE_LASTPERIOD)
-    oq.tab4._horde_nactive_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._horde_nactive_l:SetJustifyH('left')
-    oq.tab4._horde_nactive_l:SetJustifyV('middle')
-    oq.tab4._horde_nactive_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._horde_leaders_l = oq.label(parent, x, y + 50, 100, 100, OQ.SCORE_NLEADERS)
-    oq.tab4._horde_leaders_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._horde_leaders_l:SetJustifyH('left')
-    oq.tab4._horde_leaders_l:SetJustifyV('middle')
-    oq.tab4._horde_leaders_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._horde_ngames_l = oq.label(parent, x, y + 70, 100, 100, OQ.SCORE_NGAMES)
-    oq.tab4._horde_ngames_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._horde_ngames_l:SetJustifyH('left')
-    oq.tab4._horde_ngames_l:SetJustifyV('middle')
-    oq.tab4._horde_ngames_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._horde_nBosses_l = oq.label(parent, x, y + 90, 100, 100, OQ.SCORE_NBOSSES)
-    oq.tab4._horde_nBosses_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._horde_nBosses_l:SetJustifyH('left')
-    oq.tab4._horde_nBosses_l:SetJustifyV('middle')
-    oq.tab4._horde_nBosses_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._horde_dkp_l = oq.label(parent, x, y + 110, 140, 100, OQ.SCORE_DKP)
-    oq.tab4._horde_dkp_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._horde_dkp_l:SetJustifyH('left')
-    oq.tab4._horde_dkp_l:SetJustifyV('middle')
-    oq.tab4._horde_dkp_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    x = x + 115
-    oq.tab4._horde_score = oq.label(parent, x, y, 100, 100, '99,999')
-    oq.tab4._horde_score:SetFont(OQ.FONT, 22, '')
-    oq.tab4._horde_score:SetJustifyH('right')
-    oq.tab4._horde_score:SetJustifyV('middle')
-    oq.tab4._horde_score:SetTextColor(0.8, 0.8, 0.8, 1)
-
-    oq.tab4._horde_nactive = oq.label(parent, x, y + 30, 100, 100, '-')
-    oq.tab4._horde_nactive:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._horde_nactive:SetJustifyH('right')
-    oq.tab4._horde_nactive:SetJustifyV('middle')
-    oq.tab4._horde_nactive:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._horde_leaders = oq.label(parent, x, y + 50, 100, 100, '-')
-    oq.tab4._horde_leaders:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._horde_leaders:SetJustifyH('right')
-    oq.tab4._horde_leaders:SetJustifyV('middle')
-    oq.tab4._horde_leaders:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._horde_ngames = oq.label(parent, x, y + 70, 100, 100, '-')
-    oq.tab4._horde_ngames:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._horde_ngames:SetJustifyH('right')
-    oq.tab4._horde_ngames:SetJustifyV('middle')
-    oq.tab4._horde_ngames:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._horde_nBosses = oq.label(parent, x, y + 90, 100, 100, '-')
-    oq.tab4._horde_nBosses:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._horde_nBosses:SetJustifyH('right')
-    oq.tab4._horde_nBosses:SetJustifyV('middle')
-    oq.tab4._horde_nBosses:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._horde_dkp = oq.label(parent, x, y + 110, 100, 100, '-')
-    oq.tab4._horde_dkp:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._horde_dkp:SetJustifyH('right')
-    oq.tab4._horde_dkp:SetJustifyV('middle')
-    oq.tab4._horde_dkp:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    ------------------------------------------------------------------------
-    -- alliance
-    ------------------------------------------------------------------------
-    x = 390
-    y = y + 165
-    oq.tab4._alliance_emblem =
-        oq.simple_texture(parent, x, y + 20, 80, 80, 'Interface\\FriendsFrame\\PlusManz-Alliance')
-
-    oq.tab4._alliance_nCrowns = oq.label(parent, x - 5, y + 20 + 80 + 10, 75, 25, '0 C')
-    oq.tab4._alliance_nCrowns:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._alliance_nCrowns:SetJustifyH('RIGHT')
-    oq.tab4._alliance_nCrowns:SetJustifyV('MIDDLE')
-    oq.tab4._alliance_nCrowns:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    x = x + 100
-    oq.tab4._alliance_label = oq.label(parent, x, y, 100, 100, OQ.ALLIANCE)
-    oq.tab4._alliance_label:SetFont(OQ.FONT, 22, '')
-    oq.tab4._alliance_label:SetJustifyH('left')
-    oq.tab4._alliance_label:SetJustifyV('middle')
-
-    oq.tab4._alliance_nGolden = oq.label(parent, x + 225 + 6, y + 5, 60, 100, '19 DD')
-    oq.tab4._alliance_nGolden:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._alliance_nGolden:SetJustifyH('right')
-    oq.tab4._alliance_nGolden:SetJustifyV('middle')
-    oq.tab4._alliance_nGolden:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._alliance_nSilver = oq.label(parent, x + 225, y + 30, 60, 100, '8 SS')
-    oq.tab4._alliance_nSilver:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._alliance_nSilver:SetJustifyH('right')
-    oq.tab4._alliance_nSilver:SetJustifyV('middle')
-    oq.tab4._alliance_nSilver:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._alliance_nGenerals = oq.label(parent, x + 225, y + 50, 60, 100, '8 GG')
-    oq.tab4._alliance_nGenerals:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._alliance_nGenerals:SetJustifyH('right')
-    oq.tab4._alliance_nGenerals:SetJustifyV('middle')
-    oq.tab4._alliance_nGenerals:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._alliance_nKnights = oq.label(parent, x + 225, y + 70, 60, 100, '8 KK')
-    oq.tab4._alliance_nKnights:SetFont(OQ.FONT_FIXED, 10, '')
-    oq.tab4._alliance_nKnights:SetJustifyH('right')
-    oq.tab4._alliance_nKnights:SetJustifyV('middle')
-    oq.tab4._alliance_nKnights:SetTextColor(178 / 255, 178 / 255, 178 / 255, 1)
-
-    oq.tab4._alliance_nactive_l = oq.label(parent, x, y + 30, 125, 100, OQ.ACTIVE_LASTPERIOD)
-    oq.tab4._alliance_nactive_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._alliance_nactive_l:SetJustifyH('left')
-    oq.tab4._alliance_nactive_l:SetJustifyV('middle')
-    oq.tab4._alliance_nactive_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._alliance_leaders_l = oq.label(parent, x, y + 50, 100, 100, OQ.SCORE_NLEADERS)
-    oq.tab4._alliance_leaders_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._alliance_leaders_l:SetJustifyH('left')
-    oq.tab4._alliance_leaders_l:SetJustifyV('middle')
-    oq.tab4._alliance_leaders_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._alliance_ngames_l = oq.label(parent, x, y + 70, 100, 100, OQ.SCORE_NGAMES)
-    oq.tab4._alliance_ngames_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._alliance_ngames_l:SetJustifyH('left')
-    oq.tab4._alliance_ngames_l:SetJustifyV('middle')
-    oq.tab4._alliance_ngames_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._alliance_nBosses_l = oq.label(parent, x, y + 90, 100, 100, OQ.SCORE_NBOSSES)
-    oq.tab4._alliance_nBosses_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._alliance_nBosses_l:SetJustifyH('left')
-    oq.tab4._alliance_nBosses_l:SetJustifyV('middle')
-    oq.tab4._alliance_nBosses_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    oq.tab4._alliance_dkp_l = oq.label(parent, x, y + 110, 140, 100, OQ.SCORE_DKP)
-    oq.tab4._alliance_dkp_l:SetFont(OQ.FONT, 12, '')
-    oq.tab4._alliance_dkp_l:SetJustifyH('left')
-    oq.tab4._alliance_dkp_l:SetJustifyV('middle')
-    oq.tab4._alliance_dkp_l:SetTextColor(206 / 255, 168 / 255, 1 / 255, 1)
-
-    x = x + 115
-    oq.tab4._alliance_score = oq.label(parent, x, y, 100, 100, '0')
-    oq.tab4._alliance_score:SetFont(OQ.FONT, 22, '')
-    oq.tab4._alliance_score:SetJustifyH('right')
-    oq.tab4._alliance_score:SetJustifyV('middle')
-    oq.tab4._alliance_score:SetTextColor(0.8, 0.8, 0.8, 1)
-
-    oq.tab4._alliance_nactive = oq.label(parent, x, y + 30, 100, 100, '-')
-    oq.tab4._alliance_nactive:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._alliance_nactive:SetJustifyH('right')
-    oq.tab4._alliance_nactive:SetJustifyV('middle')
-    oq.tab4._alliance_nactive:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._alliance_leaders = oq.label(parent, x, y + 50, 100, 100, '-')
-    oq.tab4._alliance_leaders:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._alliance_leaders:SetJustifyH('right')
-    oq.tab4._alliance_leaders:SetJustifyV('middle')
-    oq.tab4._alliance_leaders:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._alliance_ngames = oq.label(parent, x, y + 70, 100, 100, '-')
-    oq.tab4._alliance_ngames:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._alliance_ngames:SetJustifyH('right')
-    oq.tab4._alliance_ngames:SetJustifyV('middle')
-    oq.tab4._alliance_ngames:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._alliance_nBosses = oq.label(parent, x, y + 90, 100, 100, '-')
-    oq.tab4._alliance_nBosses:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._alliance_nBosses:SetJustifyH('right')
-    oq.tab4._alliance_nBosses:SetJustifyV('middle')
-    oq.tab4._alliance_nBosses:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    oq.tab4._alliance_dkp = oq.label(parent, x, y + 110, 100, 100, '-')
-    oq.tab4._alliance_dkp:SetFont(OQ.FONT_FIXED, 12, '')
-    oq.tab4._alliance_dkp:SetJustifyH('right')
-    oq.tab4._alliance_dkp:SetJustifyV('middle')
-    oq.tab4._alliance_dkp:SetTextColor(0.7, 0.7, 0.7, 1)
-
-    ------------------------------------------------------------------------
-    -- time left
-    ------------------------------------------------------------------------
-    x = 390 + 100
-    y = y + 155
-    oq.tab4._timeleft_label = oq.label(parent, x, y, 100, 100, OQ.TIMELEFT)
-    oq.tab4._timeleft_label:SetFont(OQ.FONT, 14, '')
-    oq.tab4._timeleft_label:SetJustifyH('left')
-    oq.tab4._timeleft_label:SetJustifyV('middle')
-
-    x = x + 115
-    oq.tab4._timeleft = oq.label(parent, x, y, 100, 100, '168:17')
-    --  oq.tab4._timeleft:SetFont(OQ.FONT, 14, "");
-    oq.tab4._timeleft:SetFont(OQ.FONT_FIXED, 14, '')
-    oq.tab4._timeleft:SetJustifyH('right')
-    oq.tab4._timeleft:SetJustifyV('middle')
-    oq.tab4._timeleft:SetTextColor(0.8, 0.8, 0.8, 1)
-
-    x = 40
-    y = 50
-    cx = 155
-    cy = 24
-    spacer = 2
-    oq.tab4._bg = tbl.new()
-    oq.tab4._bg['DKP'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.DKP))
-    y = y + cy + spacer
-    oq.tab4._bg['AB'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.AB))
-    y = y + cy + spacer
-    oq.tab4._bg['AV'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.AV))
-    y = y + cy + spacer
-    oq.tab4._bg['BFG'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.BFG))
-    y = y + cy + spacer
-    oq.tab4._bg['EotS'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.EOTS))
-    y = y + cy + spacer
-    oq.tab4._bg['IoC'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.IOC))
-    y = y + cy + spacer
-    oq.tab4._bg['SotA'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.SOTA))
-    y = y + cy + spacer
-    oq.tab4._bg['TP'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.TP))
-    y = y + cy + spacer
-    oq.tab4._bg['WSG'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.WSG))
-    y = y + cy + spacer
-    oq.tab4._bg['SSM'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.SSM))
-    y = y + cy + spacer
-    oq.tab4._bg['ToK'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.TOK))
-    y = y + cy + spacer
-    oq.tab4._bg['DWG'] = oq.create_score_tab_label(x, y, cx, cy, oq.bg_name(OQ.DWG))
-
-    parent._resize = function(self)
-        oq.theme_resize(self)
-    end
-end
-
 function oq.create_tab_setup()
     local x, y, cx, cy, x2
     local parent = OQTabPage5
@@ -16160,7 +15598,6 @@ function oq.update_alltab_text()
     OQMainFrameTab1:SetText(OQ.TAB_PREMADE)
     OQMainFrameTab2:SetText(OQ.TAB_FINDPREMADE)
     OQMainFrameTab3:SetText(OQ.TAB_CREATEPREMADE)
-    OQMainFrameTab4:SetText(OQ.TAB_THESCORE)
     OQMainFrameTab5:SetText(OQ.TAB_SETUP)
     OQMainFrameTab6:SetText(OQ.TAB_BANLIST)
 
@@ -16228,11 +15665,6 @@ function oq.create_main_ui()
     oq.create_tab3()
 
     ------------------------------------------------------------------------
-    --  tab 4: scores
-    ------------------------------------------------------------------------
-    oq.create_tab_score()
-
-    ------------------------------------------------------------------------
     --  tab 5: setup
     ------------------------------------------------------------------------
     oq.create_tab_setup()
@@ -16249,7 +15681,6 @@ function oq.create_main_ui()
 
     oq.theme_set(oq.tab2)
     oq.theme_set(oq.tab3)
-    oq.theme_set(oq.tab4)
     oq.theme_set(oq.tab5)
     oq.theme_set(oq.tab6)
     oq.theme_set(oq.tab7)
@@ -17968,21 +17399,7 @@ function oq.on_premade_stats(raid_token, nMem, is_source, tm, status, nWait, typ
             else
                 line.req_but:Enable()
             end
-            oq.set_dragon(line, type_)
         end
-    end
-end
-
-function oq.set_dragon(line, type)
-    local leader_xp = oq.premades[line.raid_token].leader_xp
-    if (leader_xp == nil) then
-        return
-    end
-
-    local tag, y, cx, cy, title = oq.get_dragon_rank(type, nil, leader_xp)
-    line.dragon:SetTexture(tag)
-    if (tag) then
-        oq.setpos(line.dragon, 212, y, cx, cy)
     end
 end
 
@@ -19505,52 +18922,6 @@ function oq.set_role(g_id, slot, role)
     end
 end
 
-function oq.scores_init_bgs()
-    oq.scores.bg = oq.scores.bg or tbl.new()
-    oq.scores.bg['DKP'] = 50
-    oq.scores.bg['AB'] = 50
-    oq.scores.bg['AV'] = 50
-    oq.scores.bg['BFG'] = 50
-    oq.scores.bg['EotS'] = 50
-    oq.scores.bg['IoC'] = 50
-    oq.scores.bg['SotA'] = 50
-    oq.scores.bg['TP'] = 50
-    oq.scores.bg['WSG'] = 50
-    oq.scores.bg['SSM'] = 50
-    oq.scores.bg['ToK'] = 50
-    oq.scores.bg['DWG'] = 50
-end
-
-function oq.scores_init()
-    -- no acct level data, initialize
-    oq.scores = tbl.new()
-    oq.scores.ngames = 0
-    oq.scores.horde = 0
-    oq.scores.alliance = 0
-    oq.scores_init_bgs()
-    oq.scores.timeleft = 1 * 60 * 60
-    oq.scores.end_round_tm = oq.utc_time() + oq.scores.timeleft
-    oq.scores.start_round_tm = oq.scores.end_round_tm - (7 * 24 * 60 * 60)
-    oq.scores.time_lag = 0
-    if (oq.tab4) then
-        oq.update_scores()
-    end
-end
-
-function oq.scores_copy(src, dest)
-    local i, v
-    for i, v in pairs(src) do
-        if (type(v) == 'table') then
-            if (dest[i] == nil) then
-                dest[i] = tbl.new()
-            end
-            oq.scores_copy(v, dest[i])
-        else
-            dest[i] = v
-        end
-    end
-end
-
 -- returns: alliance ngames, nleaders, nactive,
 --          horde ngames, nleaders, nactive
 function oq.decode_score_xdata(xdata)
@@ -19562,96 +18933,6 @@ function oq.decode_score_xdata(xdata)
     ), oq.decode_mime64_digits(xdata:sub(10, 12)), oq.decode_mime64_digits(xdata:sub(13, 15)), oq.decode_mime64_digits(
         xdata:sub(16, 18)
     )
-end
-
-function oq.on_scores(enc_data, sk_time, curr_oq_version, xdata, officers, xrealm_arena, sig)
-    local _f = tbl.new()
-    tbl.fill_match(_f, enc_data, '.')
-    sk_time = tonumber(sk_time or 0, 16)
-    OQ_data._xrealm_arena = tonumber(xrealm_arena or 0) or 0
-    local now = oq.utc_time()
-    if (sig ~= 'skaa004') then
-        oq.debug_report(
-            OQ.LILSKULL_ICON ..
-                ' bad sig(' ..
-                    tostring(sig) ..
-                        ') (' ..
-                            tostring(_source) ..
-                                '.' ..
-                                    tostring(oq._sender) ..
-                                        ') TTL(' .. tostring(_hop) .. ') ' .. tostring(abs(now - sk_time))
-        )
-        _ok2relay = nil -- do not relay
-        tbl.delete(_f)
-        return
-    end
-
-    local dt = abs(now - sk_time)
-    oq.check_drift(dt)
-    if (dt > 180) then
-        _ok2relay = nil -- do not relay
-        tbl.delete(_f)
-        return
-    end
-
-    -- update score info
-    oq.scores = oq.scores or tbl.new()
-    oq.scores.bg = oq.scores.bg or tbl.new()
-    oq.scores.bg['AB'] = tonumber(_f[1], 16)
-    oq.scores.bg['AV'] = tonumber(_f[2], 16)
-    oq.scores.bg['BFG'] = tonumber(_f[3], 16)
-    oq.scores.bg['EotS'] = tonumber(_f[4], 16)
-    oq.scores.bg['IoC'] = tonumber(_f[5], 16)
-    oq.scores.bg['SotA'] = tonumber(_f[6], 16)
-    oq.scores.bg['TP'] = tonumber(_f[7], 16)
-    oq.scores.bg['WSG'] = tonumber(_f[8], 16)
-    oq.scores.bg['SSM'] = tonumber(_f[9], 16)
-    oq.scores.bg['ToK'] = tonumber(_f[10], 16)
-    oq.scores.horde = tonumber(_f[11], 16)
-    oq.scores.alliance = tonumber(_f[12], 16)
-    oq.scores.ngames = tonumber(_f[13], 16)
-    oq.scores.timeleft = tonumber(_f[14], 16)
-    oq.scores.end_round_tm = tonumber(_f[15], 16)
-    oq.scores.bg['DWG'] = tonumber(_f[16], 16)
-    oq.scores.bg['DKP'] = tonumber(_f[17], 16)
-
-    if (xdata) and (xdata:find('#to') == nil) then
-        oq.scores.a_ngames,
-            oq.scores.a_nleaders,
-            oq.scores.a_nactive,
-            oq.scores.h_ngames,
-            oq.scores.h_nleaders,
-            oq.scores.h_nactive = oq.decode_score_xdata(xdata)
-    end
-
-    local local_tmleft = oq.scores.end_round_tm - now
-    oq.scores.time_lag = (oq.scores.timeleft - local_tmleft)
-    oq.scores.start_round_tm = oq.scores.end_round_tm - (7 * 24 * 60 * 60)
-
-    oq.scores.officers['H'].nGolden = oq.decode_mime64_digits(officers:sub(1, 2))
-    oq.scores.officers['H'].nSilver = oq.decode_mime64_digits(officers:sub(3, 4))
-    oq.scores.officers['H'].nGenerals = oq.decode_mime64_digits(officers:sub(5, 6))
-    oq.scores.officers['H'].nKnights = oq.decode_mime64_digits(officers:sub(7, 8))
-    oq.scores.officers['A'].nGolden = oq.decode_mime64_digits(officers:sub(9, 10))
-    oq.scores.officers['A'].nSilver = oq.decode_mime64_digits(officers:sub(11, 12))
-    oq.scores.officers['A'].nGenerals = oq.decode_mime64_digits(officers:sub(13, 14))
-    oq.scores.officers['A'].nKnights = oq.decode_mime64_digits(officers:sub(15, 16))
-
-    oq.scores.h_crowns = oq.decode_mime64_digits(officers:sub(17, 19))
-    oq.scores.a_crowns = oq.decode_mime64_digits(officers:sub(20, 22))
-
-    oq.scores.h_bosses = oq.decode_mime64_digits(_f[18]:sub(1, 3))
-    oq.scores.a_bosses = oq.decode_mime64_digits(_f[18]:sub(4, 6))
-
-    oq.scores.h_dkp = oq.decode_mime64_digits(_f[19]:sub(1, 3))
-    oq.scores.a_dkp = oq.decode_mime64_digits(_f[19]:sub(4, 6))
-
-    oq.update_scores()
-
-    -- check current version against sk version
-    oq.verify_version(OQ_VER, curr_oq_version)
-    oq.SendOQChannelMessage(_msg)
-    tbl.delete(_f)
 end
 
 function oq.verify_version(proto_version, oq_version)
@@ -19782,67 +19063,6 @@ function oq.get_crowns(n, sz_)
         return string.format('- |T%s:' .. sz .. ':' .. sz .. '|t', crown)
     else
         return string.format('%4d |T%s:' .. sz .. ':' .. sz .. '|t', n, crown)
-    end
-end
-
-function oq.update_scores()
-    if (oq.scores.start_round_tm == nil) or (oq.scores.end_round_tm == nil) then
-        if (oq.scores.timeleft == nil) then
-            oq.scores.timeleft = 1 * 60 * 60
-        end
-        oq.scores.end_round_tm = oq.utc_time() + oq.scores.timeleft
-        oq.scores.start_round_tm = oq.scores.end_round_tm - (7 * 24 * 60 * 60)
-    end
-
-    -- update UI elements
-    local now = oq.utc_time()
-    if (OQ_data._show_datestamp) then
-        oq.tab4.now:SetText(date('!%H:%M %d-%b UTC', now) .. ' (' .. strupper(OQ.REGION) .. ')')
-    end
-
-    oq.tab4._horde_score:SetText(comma_value(oq.scores.horde))
-    oq.tab4._horde_nactive:SetText(comma_value(oq.scores.h_nactive))
-    oq.tab4._horde_leaders:SetText(comma_value(oq.scores.h_nleaders or 0))
-    oq.tab4._horde_ngames:SetText(comma_value(oq.scores.h_ngames))
-    oq.tab4._horde_nBosses:SetText(comma_value(oq.scores.h_bosses))
-    oq.tab4._horde_dkp:SetText(comma_value(oq.scores.h_dkp))
-    oq.tab4._horde_nGolden:SetText(oq.get_officer(oq.scores.officers['H'].nGolden, 4))
-    oq.tab4._horde_nSilver:SetText(oq.get_officer(oq.scores.officers['H'].nSilver, 3))
-    oq.tab4._horde_nGenerals:SetText(oq.get_officer(oq.scores.officers['H'].nGenerals, 2))
-    oq.tab4._horde_nKnights:SetText(oq.get_officer(oq.scores.officers['H'].nKnights, 1))
-    oq.tab4._horde_nCrowns:SetText(comma_value(oq.get_crowns(oq.scores.h_crowns)))
-    if (oq.scores.h_crowns) and (oq.scores.h_crowns > 0) then
-        oq.tab4._horde_nCrowns:SetAlpha(1.0)
-    else
-        oq.tab4._horde_nCrowns:SetAlpha(0.5)
-    end
-
-    oq.tab4._alliance_score:SetText(comma_value(oq.scores.alliance))
-    oq.tab4._alliance_nactive:SetText(comma_value(oq.scores.a_nactive))
-    oq.tab4._alliance_leaders:SetText(comma_value(oq.scores.a_nleaders or 0))
-    oq.tab4._alliance_ngames:SetText(comma_value(oq.scores.a_ngames))
-    oq.tab4._alliance_nBosses:SetText(comma_value(oq.scores.a_bosses))
-    oq.tab4._alliance_dkp:SetText(comma_value(oq.scores.a_dkp))
-    oq.tab4._alliance_nGolden:SetText(oq.get_officer(oq.scores.officers['A'].nGolden, 4))
-    oq.tab4._alliance_nSilver:SetText(oq.get_officer(oq.scores.officers['A'].nSilver, 3))
-    oq.tab4._alliance_nGenerals:SetText(oq.get_officer(oq.scores.officers['A'].nGenerals, 2))
-    oq.tab4._alliance_nKnights:SetText(oq.get_officer(oq.scores.officers['A'].nKnights, 1))
-
-    oq.tab4._alliance_nCrowns:SetText(comma_value(oq.get_crowns(oq.scores.a_crowns)))
-    if (oq.scores.a_crowns) and (oq.scores.a_crowns > 0) then
-        oq.tab4._alliance_nCrowns:SetAlpha(1.0)
-    else
-        oq.tab4._alliance_nCrowns:SetAlpha(0.5)
-    end
-
-    if (oq.marquee) then
-        oq.marquee.horde_score:SetText(comma_value(oq.scores.horde))
-        oq.marquee.alliance_score:SetText(comma_value(oq.scores.alliance))
-    end
-
-    local i, v
-    for i, v in pairs(oq.scores.bg) do
-        oq.set_bg_percent(oq.tab4._bg[i], v)
     end
 end
 
@@ -21300,7 +20520,6 @@ function oq.procs_init()
     oq.proc['remove'] = oq.on_remove
     oq.proc['removed_from_waitlist'] = oq.on_removed_from_waitlist
     oq.proc['ri'] = oq.on_req_invite -- was "req_invite"
-    oq.proc['scores'] = oq.on_scores
     oq.proc['selfie'] = oq.on_selfie
     oq.proc['stats'] = oq.on_stats
     oq.proc['bb'] = oq.on_thebook -- was "thebook"
@@ -23007,7 +22226,6 @@ function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize,
         -- now record for keeper
         -- note: some instances can change their difficulty after the start.
         --       keep difficulty with boss kill info
-        OQ_data._dkp = (OQ_data._dkp or 0) + pts -- member dkp
         oq._instance_pts = (oq._instance_pts or 0) + pts
         oq._2nd_to_last_boss_kill = oq._last_boss_kill -- 2nd to last boss
         oq._last_boss_kill = encounterID -- Changed from id to encounterID?
@@ -23037,7 +22255,6 @@ function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize,
         end
         leader_stats.nBosses = leader_stats.nBosses + 1
         leader_stats.pts = leader_stats.pts + pts
-        OQ_data.leader_dkp = (OQ_data.leader_dkp or 0) + pts
         --print('+ leader pts: ', pts)
 
         local submit_token = 'S' .. oq.token_gen()
@@ -23317,15 +22534,6 @@ function oq.init_locals()
     oq._hyperlinks['oqueue'] = oq.onHyperlink_oqueue
 
     oq.register_events()
-
-    oq.scores_init()
-    oq.scores.officers =
-        oq.scores.officers or
-        {
-            ['H'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0},
-            ['A'] = {nKnights = 0, nGenerals = 0, nSilver = 0, nGolden = 0}
-        }
-
     oq.populate_npc_table()
 end
 
@@ -23756,8 +22964,6 @@ function oq.on_logout()
         alone = oq._entered_alone
     }
 
-    OQ_data.scores = tbl.copy(oq.scores, OQ_data.scores, true)
-    OQ_data.reports = nil -- old data; making sure it's cleaned out
     OQ_data.setup = nil -- old data; making sure it's cleaned out
     OQ_data.bn_friends = nil -- clean it out so we re-check upon login
 end
@@ -23765,10 +22971,6 @@ end
 function oq.attempt_group_recovery()
     local now = oq.utc_time()
     local i, j
-    if (OQ_data) and (OQ_data.scores) then
-        tbl.copy(OQ_data.scores, oq.scores)
-        oq.update_scores()
-    end
     OQ_data._premade_type = OQ.TYPE_NONE
 
     if (oq.toon) then
@@ -23875,9 +23077,6 @@ function oq.attempt_group_recovery()
         oq._instance_header = oq.toon._idata.hdr
         oq._instance_tm = oq.toon._idata.tm
         oq._entered_alone = oq.toon._idata.alone
-    end
-    if (OQ_data._show_datestamp) and (OQ_data._show_datestamp == 1) then
-        oq.tab4.now:Show()
     end
 
     OQ_data.auto_join_oqgeneral = 1
@@ -24032,7 +23231,6 @@ function oq.onShow(self)
     OQTabPage1:Hide() -- my premade
     OQTabPage2:Hide() -- find premade
     OQTabPage3:Hide() -- create premade
-    OQTabPage4:Hide() -- score
     OQTabPage5:Hide() -- setup
     OQTabPage6:Hide() -- waitlist
     OQTabPage7:Hide() -- banlist
@@ -24065,29 +23263,6 @@ function oq.onShow(self)
     else
         OQMainFrameTab7:SetText(OQ.TAB_WAITLIST)
     end
-end
-
-function oq.show_score_tab()
-    if (oq.get_battle_tag() == nil) then
-        return
-    end
-
-    if (oq.ui:IsVisible()) then
-        oq.ui_toggle()
-        return
-    end
-
-    oq.ui_toggle() -- will make visible
-
-    PanelTemplates_SetTab(OQMainFrame, 4)
-    OQTabPage1:Hide()
-    OQTabPage2:Hide()
-    OQTabPage3:Hide()
-    OQTabPage4:Show()
-    OQTabPage5:Hide()
-    OQTabPage6:Hide()
-    OQTabPage7:Hide()
-    PlaySound('igCharacterInfoTab')
 end
 
 function oq.create_matchup_scoretab(parent)
@@ -24174,11 +23349,7 @@ function oq.create_marquee()
     f:SetScript(
         'OnClick',
         function(self, button)
-            if (button == 'LeftButton') then
-                oq.show_score_tab()
-            elseif (button == 'RightButton') then
-                oq.toggle_bounty_board()
-            end
+            oq.toggle_bounty_board()
         end
     )
     oq.setpos(f, 100, 10, cx, cy)
