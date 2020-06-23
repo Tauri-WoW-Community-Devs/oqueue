@@ -35,14 +35,4 @@ oqueue_timers.lua
 oqueue_tooltips.lua
 oqueue_ui_tools.lua
 
--- battleground timers
-battlegrounds\fog_of_war.lua
-battlegrounds\alterac_valley.lua
-battlegrounds\arathi_basin.lua
-battlegrounds\battle_for_gilneas.lua
-battlegrounds\eye_of_the_storm.lua
-battlegrounds\isle_of_conquest.lua
-battlegrounds\twin_peaks.lua
-battlegrounds\warsong_gulch.lua
-
 oqueue.xml

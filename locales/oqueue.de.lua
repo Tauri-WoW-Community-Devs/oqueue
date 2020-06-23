@@ -50,7 +50,6 @@ OQ.TT_TEARS = 'Traenen'
 OQ.TT_PVPPOWER = 'pvp Macht'
 OQ.TT_MMR = 'rbg Wertung'
 OQ.AUTO_INSPECT = 'Auto inspect (Strg + linke Maus)'
-OQ.SETUP_TIMERWIDTH = 'Timer breite'
 
 OQ.JOIN_QUEUE = 'Warteschlange beitreten'
 OQ.LEAVE_QUEUE = 'Warteschlange verlassen'
@@ -106,9 +105,6 @@ OQ.SETUP_AUTOROLE = 'Setze Rolle automatisch'
 OQ.SETUP_CLASSPORTRAIT = 'Klassenportraits verwenden'
 OQ.SETUP_GARBAGE = 'Garbage collection (30 sec intervals)'
 OQ.SETUP_SHOUTADS = 'Verkünde Premades' -- "Premades ansagen" ;
-
-OQ.SETUP_AUTOACCEPT_MESH_REQ = 'Auto accept b-tag mesh requests' --dunno
-OQ.SETUP_OK2SUBMIT_BTAG = 'B-Tag alle 4 Tage senden'
 OQ.SETUP_ADD = 'Hinzufuegen'
 OQ.SETUP_MYCREW = 'Mein Team'
 OQ.SETUP_CLEAR = 'Loeschen'

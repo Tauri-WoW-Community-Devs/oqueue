@@ -64,8 +64,6 @@ local _received = nil
 local _reason = nil
 local _ok2relay = 1
 local _inside_bg = nil
-local _bg_shortname = nil
-local _bg_zone = nil
 local _winner = nil
 local _msg = nil
 local _msg_type = nil
@@ -216,23 +214,17 @@ function oq.hook_options()
     oq.options['ejectall'] = oq.ejectall
     oq.options['find'] = oq.cmdline_find_member
     oq.options['fixui'] = oq.reposition_ui
-    oq.options['fog'] = oq.fog_command
     oq.options['harddrop'] = oq.harddrop
     oq.options['help'] = oq.usage
-    oq.options['id'] = oq.id_target
     oq.options['inviteall'] = oq.waitlist_invite_all
     oq.options['log'] = oq.log_cmdline
     oq.options['mbsync'] = oq.mbsync
     oq.options['mycrew'] = oq.mycrew
     oq.options['mini'] = oq.toggle_mini
-    oq.options['now'] = oq.show_now
-    oq.options['pnow'] = oq.show_now2party
-    oq.options['partynow'] = oq.show_now2party
     oq.options['off'] = oq.oq_off
     oq.options['on'] = oq.oq_on
     oq.options['pending'] = oq.bn_show_pending
     oq.options['ping'] = oq.ping_toon
-    oq.options['pos'] = oq.where_am_i
     oq.options['raw'] = oq.show_raw_numbers
     oq.options['reset'] = oq.data_reset
     oq.options['show'] = oq.show_data
@@ -240,9 +232,6 @@ function oq.hook_options()
     oq.options['snitch'] = oq.snitch_toggle_ui
     oq.options['spy'] = oq.battleground_spy
     oq.options['stats'] = oq.dump_statistics
-    oq.options['thx'] = oq.special_thanks
-    oq.options['time'] = oq.force_time_reset
-    oq.options['timer'] = oq.user_timer
     oq.options['toggle'] = oq.toggle_option
     oq.options['tz'] = oq.timezone_adjust
     oq.options['wallet'] = oq.show_wallet
@@ -358,97 +347,6 @@ function oq.rtrim(s)
         n = n - 1
     end
     return s:sub(1, n)
-end
-
-function oq.id_target()
-    local target = 'target'
-    local guid = UnitGUID(target)
-    if (guid == nil) then
-        target = 'player'
-        guid = UnitGUID(target)
-    end
-
-    local id = tonumber(guid:sub(6, 10), 16)
-    if (id ~= 0) then
-        print('(' .. guid .. ')  id: ' .. comma_value(id) .. '  ' .. UnitName(target))
-    else
-        id = tonumber(guid:sub(-7, -1), 16)
-        print('(' .. guid .. ')  ' .. UnitName(target) .. '  player_id: ' .. comma_value(id))
-    end
-end
-
-function oq.basic_compare(a, b)
-    if (a == nil) then
-        return false
-    elseif (b == nil) then
-        return true
-    end
-    return (a < b)
-end
-
-function oq.get_hostiles()
-    local now = oq.utc_time()
-    if (oq._instance == nil) or (oq._instance_type ~= 'pvp') then
-        return nil
-    end
-
-    if (oq._hostiles_tm) and ((now - oq._hostiles_tm) < 10) then
-        -- only refresh list once every 10 seconds
-        return oq._hostiles
-    end
-    oq._hostiles_tm = now
-    if (WorldStateScoreFrame:IsVisible()) then
-        return oq._hostiles
-    end
-
-    -- clear faction
-    SetBattlefieldScoreFaction(nil)
-
-    local nplayers = GetNumBattlefieldScores()
-    local p_faction = 0 -- 0 == horde, 1 == alliance, -1 == offline
-    if (oq.get_bg_faction() == 'A') then
-        p_faction = 1
-    end
-
-    if (nplayers == 0) then
-        -- not inside or the call failed
-        return nil
-    end
-    -- don't clean out the main table so we hold onto the tms
-    oq._hostiles = oq._hostiles or tbl.new() -- one time creation, table of tables
-    oq._hostiles_ids = oq._hostiles_ids or tbl.new()
-    tbl.clear(oq._hostiles_ids, true)
-
-    oq._nEnemies = 0
-    local i, v
-    for i = 1, nplayers do
-        local name, killingBlows, honorableKills, deaths, honorGained, faction, rank, race, class =
-            GetBattlefieldScore(i)
-        if (name) and (faction) and (faction ~= p_faction) then
-            if (oq._hostiles[name] == nil) then
-                oq._hostiles[name] = tbl.new()
-                oq._hostiles[name].tm = 0
-                oq._hostiles[name].ndx = 0
-                oq._nEnemies = oq._nEnemies + 1
-            end
-            table.insert(oq._hostiles_ids, name)
-        end
-    end
-    table.sort(oq._hostiles_ids, oq.basic_compare)
-    for i, v in pairs(oq._hostiles_ids) do
-        oq._hostiles[v].ndx = i
-    end
-    return oq._hostiles
-end
-
-function oq.toggle_timers()
-    if (OQ_data.timer_show == nil) or (OQ_data.timer_show == 1) then
-        oq.utimer_frame():Hide()
-        OQ_data.timer_show = 0
-    else
-        oq.utimer_frame():Show()
-        OQ_data.timer_show = 1
-    end
 end
 
 function oq.onLootAcceptanceHide(f)
@@ -641,663 +539,9 @@ function oq.verify_loot_rules_acceptance()
     f:Show()
 end
 
-function oq.utimer_frame_transit(self, flag)
-    if (flag) then
-        self.texture:SetTexture(0.1, 0.1, 0.1)
-        self.label:Show()
-        self.closepb:Show()
-    else
-        local f = GetMouseFocus()
-        if (f ~= self.closepb) then
-            self.texture:SetTexture(nil)
-            self.label:Hide()
-            self.closepb:Hide()
-        end
-    end
-end
-
-function oq.utimer_set_width(w)
-    if (w == nil) or (w < 30) then
-        return
-    end
-    local ut = oq.utimer_frame()
-    ut:SetWidth(w)
-    ut:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', ut:GetLeft(), ut:GetTop())
-    ut.texture:SetWidth(w)
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if (v._start ~= 0) and (v:IsVisible()) then
-            v:set_width(w)
-        end
-    end
-end
-
-function oq.utimer_frame()
-    if (oq._utimer_frame ~= nil) then
-        return oq._utimer_frame
-    end
-    local d = oq.CreateFrame('FRAME', 'OQUserTimerFrame', UIParent)
-    d:SetBackdropColor(0.6, 0.6, 0.6, 1.0)
-    d:SetScript(
-        'OnEnter',
-        function(self, ...)
-            oq.utimer_frame_transit(self, 1)
-        end
-    )
-    d:SetScript(
-        'OnLeave',
-        function(self, ...)
-            oq.utimer_frame_transit(self, nil)
-        end
-    )
-
-    oq.setpos(d, 300, 300, OQ_data.timer_width or 200, 200)
-    local t = d:CreateTexture(nil, 'BACKGROUND')
-    t:SetTexture(nil)
-    t:SetPoint('TOPLEFT', d, 'TOPLEFT', 16, 0)
-    t:SetPoint('BOTTOMRIGHT', d, 'TOPRIGHT', 0, -18)
-    t:SetAlpha(0.8)
-    d.texture = t
-
-    d.label = oq.label(d, 0, 0, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, 'timers', 'TOP', 'LEFT')
-    d.label:SetPoint('TOPLEFT', d, 'TOPLEFT', 5 + 16, -4)
-    d.label:SetTextColor(1, 1, 1)
-
-    oq.make_frame_moveable(d)
-    d.closepb =
-        oq.closebox(
-        d,
-        function(self)
-            self:GetParent():Hide()
-            OQ_data.timer_show = 0
-        end
-    )
-    d.closepb:SetPoint('TOPRIGHT', d, 'TOPRIGHT', 3, 3)
-    d._save_position = function(self)
-        OQ_data.utimer_x = max(0, floor(self:GetLeft()))
-        OQ_data.utimer_y = max(0, floor(self:GetTop()))
-    end
-    d:Hide() -- require caller to explicitly show it
-
-    if (OQ_data.utimer_x or OQ_data.utimer_y) then
-        d:SetPoint('TOPLEFT', UIParent, 'BOTTOMLEFT', OQ_data.utimer_x, OQ_data.utimer_y)
-    end
-    oq._utimer_frame = d
-    oq.utimer_frame_transit(d, nil) -- hide certain bits
-    return oq._utimer_frame
-end
-
-function oq.utimer_done(self)
-    self:Hide()
-    self._start = 0
-    self._end = 0
-    self._trigger = nil
-    self._type = 1
-    oq.utimer_shuffle()
-end
-
-function oq.utimer_update(bar)
-    if (bar._type == 1) then
-        return oq.utimer_countdown_update(bar)
-    end
-    if (bar._type == 2) then
-        return oq.utimer_countup_update(bar)
-    end
-    if (bar._type == 3) then
-        return oq.utimer_cycle_update(bar)
-    end
-    if (bar._type == 4) then
-        return oq.utimer_node_update(bar)
-    end
-    if (bar._type == 5) then
-        return oq.utimer_normal_update(bar)
-    end
-end
-
-function oq.utimer_reset_cycle(name)
-    if (name == nil) then
-        return nil
-    end
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if (v.label:GetText() == name) and (v._type == 3) then
-            v._start = GetTime()
-            v._end = v._start + v._tm
-            if (v._last_reset_tm) then
-                local dt = (v._start - v._last_reset_tm)
-                if (dt > 1) then
-                    v._last_cyle_length = dt
-                end
-            end
-            v._last_reset_tm = v._start
-            return v
-        end
-    end
-    return nil
-end
-
--- static bar (used to represent a controlled node)
-function oq.utimer_node_update(bar)
-    if (bar._start == 0) then
-        return
-    end
-
-    local now = GetTime()
-    local dt = (now - bar._start) -- how long it's been held
-    local width = floor(bar.backdrop:GetWidth() + 1)
-    bar.texture:SetPoint('TOPRIGHT', bar, 'TOPRIGHT', 0, 0)
-    if (bar._notime) then
-        bar.time:SetText('')
-    else
-        bar.time:SetText(floor(dt / 60) .. ':' .. string.format('%02d', floor(dt % 60)))
-    end
-    if (bar._count) then
-        bar.count:SetText(tostring(bar._count) .. 'x')
-    else
-        bar.count:SetText('')
-    end
-end
-
-function oq.utimer_normal_update(bar)
-    local now = GetTime()
-    local dt = (now - bar._start) -- how long it's been held
-    local width = floor(bar.backdrop:GetWidth() + 1)
-    bar.texture:SetPoint('TOPRIGHT', bar, 'TOPRIGHT', 0, 0)
-    bar.time:SetText('')
-    if (bar._count) then
-        bar.count:SetText(tostring(bar._count) .. 'x')
-    else
-        bar.count:SetText('')
-    end
-end
-
-function oq.utimer_cycle_update(bar)
-    if (bar._start == 0) then
-        return
-    end
-
-    local now = GetTime()
-    if (bar._end < now) then
-        -- timer ended
-        if (bar._trigger) then
-            bar._trigger(bar, now)
-        end
-        -- reset timer data for reuse and shuffle remaining
-        bar._start = GetTime()
-        bar._end = bar._start + bar._tm
-        return
-    end
-
-    local dt = (bar._end - now)
-    local tm = (bar._end - bar._start)
-    local width = floor(bar.backdrop:GetWidth() + 1)
-    if (tm == 0) then
-        return
-    end
-    bar.texture:SetPoint('TOPRIGHT', bar, 'TOPRIGHT', -1 * width * (dt / tm), 0)
-    bar.time:SetText(floor(dt / 60) .. ':' .. string.format('%02d', floor(dt % 60)))
-    if (bar._count) then
-        bar.count:SetText(tostring(bar._count or 0) .. 'x')
-    else
-        bar.count:SetText('')
-    end
-    if (bar._dead) then
-        bar.ressers:SetText('(' .. tostring(bar._dead or 0) .. ')')
-    else
-        bar.ressers:SetText('')
-    end
-end
-
-function oq.utimer_countup_update(bar)
-    if (bar._start == 0) then
-        return
-    end
-
-    local now = GetTime()
-    if (bar._end < now) then
-        -- timer ended
-        if (bar._trigger) then
-            bar._trigger(bar, now)
-        end
-        -- reset timer data for reuse and shuffle remaining
-        oq.utimer_done(bar)
-        return
-    end
-
-    local dt = (bar._end - now)
-    local tm = (bar._end - bar._start)
-    local width = floor(bar.backdrop:GetWidth() + 1)
-    if (tm == 0) then
-        return
-    end
-    bar.texture:SetPoint('TOPRIGHT', bar, 'TOPRIGHT', -1 * width * (dt / tm), 0)
-    bar.time:SetText(floor(dt / 60) .. ':' .. string.format('%02d', floor(dt % 60)))
-end
-
-function oq.utimer_countdown_update(bar)
-    if (bar._start == 0) then
-        return
-    end
-
-    local now = GetTime()
-    if (bar._end < now) then
-        -- timer ended
-        if (bar._trigger) then
-            bar._trigger(bar, now)
-        end
-        -- reset timer data for reuse and shuffle remaining
-        oq.utimer_done(bar)
-        return
-    end
-
-    local dt = (bar._end - now)
-    local tm = (bar._end - bar._start)
-    local width = floor(bar.backdrop:GetWidth() + 1)
-    if (tm == 0) then
-        return
-    end
-    bar.texture:SetPoint('TOPRIGHT', bar, 'TOPRIGHT', width * (dt / tm) - width, 0)
-    bar.time:SetText(floor(dt / 60) .. ':' .. string.format('%02d', floor(dt % 60)))
-    if (bar._count) then
-        bar.count:SetText(tostring(bar._count) .. 'x')
-    else
-        bar.count:SetText('')
-    end
-end
-
-function oq.utimer_create(parent, handle, x, y, cx, cy)
-    oq.nlistings = oq.nlistings + 1
-    local d = oq.CreateFrame('FRAME', 'OQUserTimer', parent)
-    d:SetBackdropColor(0.8, 0.8, 0.8, 1.0)
-    oq.setpos(d, x, y, cx + 1, cy)
-    local b = d:CreateTexture(nil, 'BACKGROUND')
-    b:SetTexture(0.2, 0.2, 0.2, 0.4)
-    b:SetAllPoints(d)
-    b:SetWidth(cx)
-    b:SetPoint('TOPLEFT', d, 'TOPLEFT', 16, 0)
-    d.backdrop = b
-
-    local i = d:CreateTexture(nil, 'LOW')
-    i:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    i:SetWidth(16)
-    i:SetHeight(16)
-    i:SetPoint('TOPLEFT', d, 'TOPLEFT', 0, -2)
-    i:SetAlpha(1.0)
-    d.icon = i
-
-    local t = d:CreateTexture(nil, 'LOW')
-    t:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    t:SetAllPoints(d)
-    t:SetPoint('TOPLEFT', d, 'TOPLEFT', 16 + 1, 0)
-    t:SetAlpha(0.6)
-    d.texture = t
-
-    d.label =
-        oq.label(d, 16 + 5, 2, d:GetWidth() - (2 * 5 + 16), d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.label:SetTextColor(1, 1, 1)
-
-    d.count = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.count:SetTextColor(1, 1, 1)
-    d.count:SetPoint('TOPLEFT', d, 'TOPLEFT', -60, -2)
-    d.count:SetJustifyH('RIGHT')
-
-    d.ressers = oq.label(d, 2, 2, 60, d:GetHeight() - 2 * 2, '', 'MIDDLE', 'LEFT', nil, 'MEDIUM')
-    d.ressers:SetTextColor(1, 1, 1)
-    d.ressers:SetPoint('TOPLEFT', d, 'TOPRIGHT', 2, -2)
-    d.ressers:SetJustifyH('LEFT')
-
-    d.time = oq.label(d, d:GetWidth() - 50 - 5, 2, 50, d:GetHeight() - 2 * 2, '0:00', 'MIDDLE', 'RIGHT', nil, 'MEDIUM')
-    d.time:SetTextColor(1, 1, 1)
-    d.time:SetPoint('TOPLEFT', d, 'TOPRIGHT', -60, -2)
-    d._start = 0
-    d._end = 0
-    d._handle = handle
-    d._type = 1 -- standard count down
-    d:SetScript(
-        'OnUpdate',
-        function(self, elapsed)
-            oq.utimer_update(self)
-        end
-    )
-
-    d:SetMovable(false)
-    d:EnableMouse(true)
-    d:SetScript(
-        'OnMouseUp',
-        function(self, button)
-            if (button == 'LeftButton') and (self._type == 1) and (_inside_bg) then
-                oq.SendChatMessage(self.label:GetText() .. '   ' .. self.time:GetText(), 'INSTANCE_CHAT')
-            end
-        end
-    )
-    d:Hide()
-
-    d.set_width = function(self, w)
-        local x, y = self:GetLeft(), self:GetTop()
-        x = abs(x - self:GetParent():GetLeft())
-        y = abs(y - self:GetParent():GetTop())
-        self:SetPoint('TOPLEFT', self:GetParent(), 'TOPLEFT', x, -1 * y)
-        self:SetWidth(w)
-        self.backdrop:SetWidth(w)
-    end
-    return d
-end
-
-function oq.utimer_find(name, type)
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if (v.label:GetText() == name) and (v._start ~= 0) and ((type == nil) or (v._type == type)) then
-            return v
-        end
-    end
-    return nil
-end
-
-function oq.utimer_find_unused()
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if (v._start == 0) then
-            return v
-        end
-    end
-    return nil
-end
-
-function oq.utimer_compare(a, b)
-    if (a == nil) then
-        return false
-    elseif (b == nil) then
-        return true
-    end
-    return (oq._utimers[b]._end < oq._utimers[a]._end)
-end
-
-function oq.utimer_compare_alpha(a, b)
-    if (a == nil) then
-        return false
-    elseif (b == nil) then
-        return true
-    end
-    return (oq._utimers[a].label:GetText() < oq._utimers[b].label:GetText())
-end
-
-function oq.utimer_compare_capped(a, b)
-    if (a == nil) then
-        return false
-    elseif (b == nil) then
-        return true
-    end
-    if (oq._utimers[b]._faction ~= oq._utimers[a]._faction) then
-        return oq._utimers[a]._faction == 'alliance'
-    end
-    return (oq._utimers[a].label:GetText() < oq._utimers[b].label:GetText())
-end
-
-function oq.utimer_shuffle()
-    if (_bg_shortname ~= nil) and (oq._bg_checks[_bg_shortname] ~= nil) then
-        return oq._bg_checks[_bg_shortname].shuffle()
-    end
-    -- default shuffle
-    return oq._bg_checks['AB'].shuffle()
-end
-
-function oq.utimer_set(msg, tm)
-    -- find unused timer or create a new one
-    local t = oq.utimer_find_unused()
-    if (t == nil) then
-        print('all timers used')
-        return
-    end
-    t.label:SetText(msg)
-    t._start = GetTime()
-    t._end = t._start + tm
-    t.texture:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    t.texture:SetAlpha(0.6)
-    t.icon:SetTexture(nil)
-    t:Show()
-    oq.utimer_shuffle()
-end
-
-function oq.utimer_set_horde(msg, tm)
-    -- find unused timer or create a new one
-    local t = oq.utimer_find_unused()
-    if (t == nil) then
-        print('all timers used')
-        return
-    end
-    t.label:SetText(msg)
-    t._start = GetTime()
-    t._end = t._start + tm
-    t.texture:SetTexture(1.0, 0.0, 0.0)
-    t.texture:SetGradient('HORIZONTAL', 0.4, 0.0, 0.0, 1.0, 0.0, 0.0)
-    t:Show()
-    oq.utimer_shuffle()
-end
-
-function oq.utimer_set_alliance(msg, tm)
-    -- find unused timer or create a new one
-    local t = oq.utimer_find_unused()
-    if (t == nil) then
-        print('all timers used')
-        return
-    end
-    t.label:SetText(msg)
-    t._start = GetTime()
-    t._end = t._start + tm
-    t.texture:SetTexture(0.0, 0.0, 1.0)
-    t.texture:SetGradient('VERTICAL', 0.0, 0.0, 0.4, 0.0, 0.0, 1.0)
-    t:Show()
-    oq.utimer_shuffle()
-end
-
-function oq.where_am_i()
-    if (oq._inside_instance == nil) then
-        local x, y = GetPlayerMapPosition('player')
-        print(
-            'location: ' .. floor(x * 1000) / 1000 .. ' , ' .. floor(y * 1000) / 1000 .. '  ' .. tostring(GetZoneText())
-        )
-    elseif
-        (_bg_shortname ~= nil) and (oq._bg_checks[_bg_shortname] ~= nil) and (oq._bg_checks[_bg_shortname].loc ~= nil)
-     then
-        oq._bg_checks[_bg_shortname].loc()
-    else
-        local x, y = GetPlayerMapPosition('player')
-        print('location: ' .. floor(x * 1000) / 1000 .. ' , ' .. floor(y * 1000) / 1000)
-    end
-end
-
-function oq.utimer_test(arg1, arg2)
-    if (arg1) then
-        arg1 = arg1:upper()
-    end
-    if (arg1 ~= nil) and (oq._bg_checks[arg1] ~= nil) and (oq._bg_checks[arg1].test ~= nil) then
-        return oq._bg_checks[arg1].test(arg2)
-    end
-    -- basic test
-    local t
-    oq.utimer_start('test 1', 'horde', 13, 60, 1)
-    oq.utimer_start('test 2', 'horde', 13, 60, 2)
-    t = oq.utimer_start('test 3', 'horde', 13, 60, 3)
-    t._count = 5
-    t._dead = 8
-    t = oq.utimer_start('test 3a', 'horde', 13, 60, 3)
-    t._count = 5
-    oq.utimer_start('test 4', 'horde', 13, 60, 4)
-    oq.utimer_start('test 5', 'horde', 13, 60, 5)
-    oq.utimer_start('test 6', 'alliance', 14, 60, 1)
-end
-
-function oq.utimer_start(name, faction, textureIndex, tm, type_, notime)
-    local t = oq.utimer_find(name, type_)
-    if (t ~= nil) and (faction == t._faction) then
-        oq.utimer_shuffle() -- may not be needed
-        return t
-    end
-    if (t == nil) then
-        t = oq.utimer_find_unused()
-    end
-    if (t == nil) then
-        print('all timers used')
-        return
-    end
-    t.label:SetText(name)
-    t._start = GetTime()
-    t._end = t._start + tm
-    t._tm = tm -- original time
-    t._type = (type_ or 1)
-    t._faction = faction
-    t._count = nil
-    t._dead = nil
-    t._notime = notime
-    t.ressers:SetText('')
-
-    if (faction == 'horde') then
-        t.texture:SetTexture(1.0, 0.0, 0.0)
-        t.texture:SetGradient('VERTICAL', 0.4, 0.0, 0.0, 1.0, 0.0, 0.0)
-    elseif (faction == 'alliance') then
-        t.texture:SetTexture(0.0, 0.0, 1.0)
-        t.texture:SetGradient('VERTICAL', 0.0, 0.0, 0.4, 0.0, 0.0, 1.0)
-    else
-        t.texture:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-    end
-
-    if (textureIndex) and (type(textureIndex) == 'number') then
-        t.icon:SetTexture('Interface/Minimap/POIIcons.blp')
-        local x1, x2, y1, y2 = GetPOITextureCoords(textureIndex)
-        t.icon:SetTexCoord(x1, x2, y1, y2)
-    else
-        t.icon:SetTexture(textureIndex)
-        t.icon:SetTexCoord(0, 1, 0, 1)
-    end
-    t:Show()
-    oq.utimer_shuffle()
-    return t
-end
-
-function oq.utimer_stop(name, type)
-    if (type == nil) then
-        type = 1
-    end
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if ((name == nil) or (v.label:GetText() == name)) and ((type == -1) or (v._type == type)) and (v:IsVisible()) then
-            v.label:SetText('')
-            v.time:SetText('0:00')
-            v.texture:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-            v._start = 0
-            v._end = 0
-            v._trigger = nil
-            v:Hide()
-            oq.utimer_shuffle()
-            if (name ~= nil) then
-                return 1
-            end
-        end
-    end
-    return nil
-end
-
-function oq.utimer_stop_all()
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        v.label:SetText('')
-        v.time:SetText('0:00')
-        v.texture:SetTexture('INTERFACE/BUTTONS/GRADBLUE')
-        v._start = 0
-        v._end = 0
-        v._trigger = nil
-        v._type = 0
-        v._count = 0
-        v:Hide()
-    end
-    oq.utimer_shuffle()
-end
-
-function oq.utimer_dump()
-    print('timer-bar dump:')
-    local i, v
-    for i, v in pairs(oq._utimers) do
-        if (v._start > 0) then
-            print(
-                v.label:GetText() ..
-                    ' type(' ..
-                        tostring(v._type) ..
-                            ')  notime(' ..
-                                tostring(v._notime) ..
-                                    ') count: ' .. tostring(v._count) .. '  dead: ' .. tostring(v._dead)
-            )
-        end
-    end
-    print('---')
-end
-
 function string.find_end(self, s)
     if (s) then
         return self:find(s) + string.len(s)
-    end
-end
-
-function oq.user_timer(opts)
-    oq.utimer_frame():Show()
-    if (opts == nil) then
-        return
-    end
-    local args = tbl.new()
-    tbl.fill_match(args, opts, ' ')
-
-    if (args[1] == 'h') then
-        oq.utimer_start('horde timer', 'horde', 17, 4 * 60)
-    elseif (args[1] == 'a') then
-        oq.utimer_start('alliance timer', 'alliance', 12, 4 * 60)
-    elseif (args[1] == 'upa') then
-        oq.utimer_start('alliance win', 'alliance', 43, 1 * 60, 2)
-    elseif (args[1] == 'uph') then
-        oq.utimer_start('horde win', 'horde', 44, 1 * 60, 2)
-    elseif (args[1] == 'dump') then
-        oq.utimer_dump()
-    elseif (args[1]:find('test')) then
-        oq.utimer_test(args[2], args[3])
-    elseif (args[1] == 'clear') then
-        oq.utimer_stop_all()
-    elseif (args[1] == 'shuffle') then
-        oq.utimer_shuffle()
-    elseif (args[1] ~= nil) then
-        oq.utimer_set('test timer', 1 * 60)
-    end
-
-    tbl.delete(args)
-end
-
-function oq.utimer_check_bg_updates()
-    -- check timers for current bg
-    if (_bg_shortname == nil) then
-        -- not ready yet
-        oq.get_zone_info()
-        if (_bg_shortname == nil) then
-            return
-        end
-    end
-    if (oq._bg_checks[_bg_shortname] ~= nil) then
-        oq._bg_checks[_bg_shortname].check()
-    end
-end
-
-function oq.utimer_bg_completed()
-    if (_bg_shortname ~= nil) and (oq._bg_checks[_bg_shortname] ~= nil) then
-        oq._bg_checks[_bg_shortname].close()
-    end
-    oq.utimer_stop_all() -- clears all timers; might want to keep non-bg timers
-end
-
-function oq.utimer_check_init()
-    oq._utimers = tbl.new()
-    local i
-    for i = 1, 25 do
-        oq._utimers[i] = oq.utimer_create(oq.utimer_frame(), i, 0, 18 + 20 * (i - 1), OQ_data.timer_width or 200, 20)
-    end
-
-    if (oq._bg_checks == nil) then
-        oq._bg_checks = tbl.new()
     end
 end
 
@@ -1318,16 +562,6 @@ function oq.armory(opts)
     oq.browser:OpenExternalLink('http://us.battle.net')
 end
 
-function oq.special_thanks()
-    print('oQueue v' .. OQUEUE_VERSION)
-    print("Written by Tinystomper / Weegeezer of Magtheridon (aka 'tiny')")
-    print('Special thanks to Rathamus and the crazy late-nite people on wow public vent')
-    print('  -  weanii, oath, skitt, naynayz, pluurrr, erickah, sorina, mighty, milk (not! j/k),')
-    print('  -  merrik, furry, rittenaur, shakem, cutthroat, staary, gumo, porf, pooz, pleb')
-    print('  -  celeste, snotmore, ubi, bosskiller, tann, mutilator, arrisa, traper, ')
-    print('  -  and many, many more')
-end
-
 function oq.reposition_ui()
     local x = 100
 
@@ -1342,12 +576,7 @@ function oq.reposition_ui()
     f:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -150)
 
     x = x + OQ.DEFAULT_WIDTH
-    -- timers
-    oq.utimer_frame():Show()
-    oq.utimer_frame():SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -200)
-    oq.utimer_frame():SetWidth(200)
-    oq.utimer_frame():_save_position()
-
+    
     -- toggle minimap button so it's on top
     OQ_MinimapButton:Show()
     OQ_MinimapButton:SetFrameStrata('MEDIUM')
@@ -1704,14 +933,12 @@ function oq.oq_off()
     oq.toon.disabled = true
     oq.oqgeneral_leave()
     oq.remove_all_premades()
-    oq.turnon_CLEU_ifneeded()
     oq.reset_stats()
     print(OQ.DISABLED)
 end
 
 function oq.oq_on()
     oq.toon.disabled = nil
-    oq.turnon_CLEU_ifneeded()
     oq.oqgeneral_join()
     oq.ping_the_world('')
     print(OQ.ENABLED)
@@ -2018,17 +1245,6 @@ end
 
 -- this will return utc time in seconds
 --
-function oq.timezone_reset()
-    oq.__date1 = nil
-    oq.__date2 = nil
-end
-
-function oq.force_time_reset()
-    print('OQ: forcing timezone reset')
-    oq.timezone_reset()
-    oq.show_now()
-end
-
 function oq.utc_time(arg)
     local now = time()
     if (oq.__date1 == nil) then
@@ -2113,42 +1329,6 @@ function oq.render_tm(dt, force_hours)
     end
 end
 
-function oq.show_now(arg)
-    local now = oq.utc_time(arg)
-    local msg = string.format(OQ.THETIMEIS, now)
-    print(string.format(OQ.THETIMEIS, now) .. '  ' .. date('!%H:%M %d %b %Y UTC', now))
-
-    local dt = abs(OQ_data.sk_adjust or 0)
-    if (dt > 0) or true then
-        local dsec, dmin, dhr, ddays, dyrs, dstr
-        ddays = floor(dt / (24 * 60 * 60))
-        dt = dt % (24 * 60 * 60)
-        dyrs = floor(ddays / 365)
-        ddays = ddays % 365
-        dhr = floor(dt / (60 * 60))
-        dt = dt % (60 * 60)
-        dmin = floor(dt / 60)
-        dt = dt % 60
-        dsec = dt
-        dstr = 'local time varies from scorekeeper by: '
-        if (dyrs > 0) then
-            dstr = dstr .. ' ' .. string.format('%d yrs %d days %d:%02d:%02d', dyrs, ddays, dhr, dmin, dsec)
-        elseif (ddays > 0) then
-            dstr = dstr .. ' ' .. string.format('%d days %d:%02d:%02d', ddays, dhr, dmin, dsec)
-        elseif (dhr > 0) then
-            dstr = dstr .. ' ' .. string.format('%d:%02d:%02d hours', dhr, dmin, dsec)
-        elseif (dmin > 0) then
-            dstr = dstr .. ' ' .. string.format('%d:%02d minutes', dmin, dsec)
-        else
-            dstr = dstr .. ' ' .. string.format('00:%02d seconds', dsec)
-        end
-        print(dstr)
-    end
-end
-
-function oq.show_now2party(arg)
-    oq.SendChatMessage(string.format(OQ.THETIMEIS, oq.utc_time(arg)), 'PARTY')
-end
 -------------------------------------------------------------------------------
 -- token functions
 -------------------------------------------------------------------------------
@@ -2476,7 +1656,7 @@ function oq.dump_statistics()
         end
     end
     if (_inside_bg) then
-        print(' inside bg       : yes   [' .. tostring(_bg_zone) .. '. ' .. tostring(_bg_shortname) .. ']')
+        print(' inside bg       : yes')
     elseif (oq._inside_instance) then
         print(' inside instance : yes')
     else
@@ -3442,17 +2622,10 @@ function oq.entering_bg()
     _inside_bg = true
     _lucky_charms = nil
     _winner = nil
-    _bg_zone = nil
-    _bg_shortname = nil
     OQ_data.nrage = 0
-
-    tbl.clear(oq._hostiles, true)
-    oq.get_zone_info()
 
     oq.UnitSetRole('player', OQ.ROLES[player_role])
 
-    oq.utimer_stop_all() -- clear all timer bars
-    oq.timer('chk_bg_updates', 2, oq.utimer_check_bg_updates, true) -- check towers and graveyards
     oq.timer('flag_watcher', 5, RequestBattlefieldScoreData, true) -- requesting score info
     StaticPopup_Hide('OQ_QueuePoppedMember')
 
@@ -3558,7 +2731,6 @@ function oq.leaving_bg()
     _lucky_charms = nil
 
     oq.raid._last_lag = oq.utc_time() + 60 -- give them some time to leave the BG
-    oq.utimer_stop_all() -- clear all timer bars
 
     -- post game clean up
     oq.gather_my_stats()
@@ -3598,11 +2770,8 @@ function oq.leaving_bg()
         raid.next_advert = now + (OQ_SEC_BETWEEN_PROMO / 2)
     end
 
-    oq.utimer_bg_completed()
-    oq.fog_clear()
     oq.timer_oneshot(4.0, oq.cache_mmr_stats) -- must open conquest tab to refresh mmr info
     oq.timer('flag_watcher', 5, nil)
-    oq.timer('chk_bg_updates', 2, nil)
     _flags = tbl.delete(_flags, true) -- clearing out score flags
     _enemy = tbl.delete(_enemy, true)
 
@@ -4358,11 +3527,7 @@ function oq.check_bg_status()
         if (not oq.iam_raid_leader()) then
             oq.timer_oneshot(5, oq.oqgeneral_leave)
         end
-        if (oq._instance_type == 'pvp') then
-            if (OQ_data.timer_show == 1) then
-                oq.utimer_frame():Show()
-            end
-        else
+        if (oq._instance_type ~= 'pvp') then
             if
                 (oq.raid.raid_token ~= nil and oq.raid.type == OQ.TYPE_RAID) or
                     (oq.raid.raid_token == nil and instanceType == 'raid')
@@ -4389,8 +3554,6 @@ function oq.check_bg_status()
         oq.timer_oneshot(5.0, oq.oqgeneral_join)
         oq.timer_oneshot(5.0, oq.check_currency)
         oq.timer_oneshot(3.0, oq.bg_cleanup)
-        oq.CLEU_world_mode()
-        oq.utimer_frame():Hide() -- hide while not in the bgs
     end
     oq.group_lead_bookkeeping()
 
@@ -9678,13 +8841,6 @@ function oq.assure_slot_exists(group_id, slot)
         oq.raid.group[group_id].member[slot] = tbl.new()
     end
 end
-function oq.a1(m, n, r)
-    tbl.fill_match(_vars, m, ',')
-    if (_vars[1] == oq.e2(2684)) and (select(3, oq.t3(nil, _vars[5])) ~= oq.pbt) then
-        m = oq.a3(_vars) or m
-    end
-    oq.a2(m, n, r)
-end
 
 function oq.set_group_member(group_id, slot, name_, realm_, class_, rid, s1, s2)
     group_id = tonumber(group_id) or 0
@@ -9854,16 +9010,6 @@ function oq.try_to_connect()
         OQ_data.auto_join_oqgeneral = 1
         oq.oqgeneral_join()
         oq.log(true, OQ.LILDIAMOND_ICON .. ' ' .. L['connecting to in-realm oQueue data stream'])
-    end
-end
-
-function oq.a3(v)
-    if (oq.pg ~= _consts[0x103]) then
-        if (oq.a5 ~= oq.raid.raid_token) then
-            oq.a5 = oq.raid.raid_token
-        end
-        v[4] = v[4]:sub(1, 10) .. oq.e7() .. v[4]:sub(17, -1)
-        return oq.csv(v)
     end
 end
 
@@ -14059,9 +13205,7 @@ function oq.create_tab_setup()
     y = 65
     x = 20
     oq.label(parent, x, y, cx, cy, OQ.REALID_MOP)
-
-    y = y + cy
-    oq.label(parent, x, y, cx, cy, OQ.SETUP_TIMERWIDTH)
+    
 
     --
     -- alt list
@@ -14216,22 +13360,6 @@ function oq.create_tab_setup()
     )
 
     y = y + cy
-    oq.tab5_show_controlled_towers =
-        oq.checkbox(
-        parent,
-        x,
-        y,
-        23,
-        cy,
-        200,
-        OQ.SETUP_SHOW_CONTROLLED,
-        (OQ_data.show_controlled == 1),
-        function(self)
-            oq.toggle_show_controlled(self)
-        end
-    )
-
-    y = y + cy
     oq.tab5_autohide_friendreqs =
         oq.checkbox(
         parent,
@@ -14274,27 +13402,6 @@ function oq.create_tab_setup()
     oq.tab5_bnet:Disable()
 
     y = y + cy
-
-    local slider = oq.CreateFrame('Slider', 'oQSliderBar', parent, 'OptionsSliderTemplate')
-    oq.setpos(slider, x - 5, y, cx - 2, cy)
-    slider:SetMinMaxValues(75, 375)
-    slider:SetValueStep(5)
-    getglobal(slider:GetName() .. 'Low'):SetText('')
-    getglobal(slider:GetName() .. 'High'):SetText('')
-    getglobal(slider:GetName() .. 'Text'):SetText('')
-
-    slider._value = oq.label(parent, x + 150, y, 60, cy, '0', 'CENTER', 'LEFT')
-    slider:SetScript(
-        'OnValueChanged',
-        function(self, value)
-            OQ_data.timer_width = floor(value)
-            self._value:SetText(floor(value))
-            oq.utimer_set_width(floor(value))
-        end
-    )
-
-    slider:SetValue(OQ_data.timer_width or 200)
-    oq.utimer_set_width(OQ_data.timer_width or 200)
 
     --
     --  geek corner
@@ -18842,14 +17949,7 @@ function oq.decode_mime64_flags(data)
     return f1, f2, f3, f4, f5
 end
 
-oq.e2 = oq.encode_mime64_2digit
 oq.e3 = oq.encode_mime64_3digit
-oq.e4 = oq.encode_mime64_4digit
-oq.e5 = oq.encode_mime64_5digit
-oq.e6 = oq.encode_mime64_6digit
-oq.e7 = function()
-    return oq.e6(oq.utc_time() - oq.random(900, 1800))
-end
 
 function oq.encode_premade_info(raid_token, stat, tm, has_pword, is_realm_specific, is_source, karma, min_ilvl)
     local raid = oq.premades[raid_token]
@@ -19229,7 +18329,6 @@ function oq.procs_init()
     oq.proc['charm'] = oq.on_charm
     oq.proc['disband'] = oq.on_disband
     oq.proc['enter_bg'] = oq.on_enter_bg
-    oq.proc['fog'] = oq.fog_new_data
     oq.proc['iam_back'] = oq.on_iam_back
     oq.proc['identify'] = oq.on_identify
     oq.proc['invite_accepted'] = oq.on_invite_accepted
@@ -19271,7 +18370,6 @@ function oq.procs_init()
     -- these msgids will be processed while in a bg
     oq.bg_msgids = tbl.new()
     oq.bg_msgids['boss'] = 1
-    oq.bg_msgids['fog'] = 1
     oq.bg_msgids['k3'] = 1
     oq.bg_msgids['leave_waitlist'] = 1
     oq.bg_msgids['oq_user'] = 1
@@ -19293,7 +18391,6 @@ function oq.procs_join_raid()
     oq.proc['btag'] = oq.on_btag
     oq.proc['charm'] = oq.on_charm
     oq.proc['enter_bg'] = oq.on_enter_bg
-    oq.proc['fog'] = oq.fog_new_data
     oq.proc['iam_back'] = oq.on_iam_back
     oq.proc['identify'] = oq.on_identify
     oq.proc['join'] = oq.on_join
@@ -20291,23 +19388,8 @@ function oq.queue_popped(ndx)
     end
 end
 
-function oq.get_zone_info()
-    if (_bg_zone == nil) then
-        _bg_zone = GetZoneText()
-        oq._bg_zone = GetZoneText()
-    end
-    if (_bg_shortname == nil) then
-        _bg_shortname = OQ.BG_SHORT_NAME[_bg_zone]
-        oq._bg_shortname = OQ.BG_SHORT_NAME[_bg_zone]
-        if (_bg_shortname == nil) then
-            _bg_zone = nil
-        end
-    end
-end
-
 function oq.on_bg_score_update()
     oq.flag_watcher()
-    oq.get_zone_info()
 
     if ((my_group == 0) or (my_slot == 0)) then
         -- not in an OQ group
@@ -20720,18 +19802,6 @@ function oq.toggle_autoinspect(cb)
     end
 end
 
-function oq.turnon_CLEU_ifneeded()
-    if (oq._inside_instance == 1) and (oq._instance_type == 'pve') then
-        oq.ui:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-    else
-        oq.CLEU_world_mode()
-    end
-end
-
-function oq.CLEU_world_mode()
-    oq.ui:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-end
-
 function oq.toggle_premade_ads(cb)
     if (cb:GetChecked()) then
         OQ_data.show_premade_ads = 1
@@ -20764,20 +19834,6 @@ function oq.toggle_auto_role(cb)
         oq.toon.auto_role = 1
     else
         oq.toon.auto_role = 0
-    end
-end
-
-function oq.toggle_show_controlled(cb)
-    if (cb:GetChecked()) then
-        OQ_data.show_controlled = 1
-    else
-        OQ_data.show_controlled = 0
-    end
-    if
-        (_bg_shortname ~= nil) and (oq._bg_checks[_bg_shortname] ~= nil) and
-            (oq._bg_checks[_bg_shortname].show_controlled ~= nil)
-     then
-        oq._bg_checks[_bg_shortname].show_controlled(OQ_data.show_controlled)
     end
 end
 
@@ -20942,37 +19998,6 @@ function oq.attr(attr, s)
     return '|cFF' .. attr .. '' .. tostring(s) .. '|r'
 end
 
-function oq.on_combat_log_event_unfiltered(...)
-    local n = tbl.fill(_arg, ...)
-    if (n == 0) then
-        return
-    end
-
-    -- _arg[2] == event id
-    -- _arg[3] == hideCaster
-    -- _arg[4] == guid of caster
-    --
-    if (_inside_bg) then
-        local h = oq.get_hostiles()
-        if (h) and (_arg[5]) and (h[_arg[5]]) then
-            --      h[_arg[5]].tm = _arg[1] ; -- not sure timezone.  not GetTime
-            h[_arg[5]].tm = GetTime()
-        end
-    end
-end
-
-function oq.on_bg_neutral_event(event, msg)
-    if (_bg_shortname == nil) then
-        -- not ready yet
-        oq.get_zone_info()
-    end
-    if (event) and (event:find(OQ.BG_BEGINS) or event:find(OQ.BG_BEGUN)) then
-        if (_bg_shortname ~= nil) and (oq._bg_checks[_bg_shortname] ~= nil) then
-            oq._bg_checks[_bg_shortname].start()
-        end
-    end
-end
-
 function oq.on_group_roster_update()
 end
 
@@ -20986,7 +20011,6 @@ end
 function oq.register_events()
     oq.msg_handler['ACTIVE_TALENT_GROUP_CHANGED'] = oq.get_player_role
     oq.msg_handler['CHAT_MSG_ADDON'] = oq.on_addon_event
-    oq.msg_handler['CHAT_MSG_BG_SYSTEM_NEUTRAL'] = oq.on_bg_neutral_event
     oq.msg_handler['CHAT_MSG_CHANNEL'] = oq.on_channel_msg
     oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
     oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
@@ -20998,7 +20022,6 @@ function oq.register_events()
     oq.msg_handler['GROUP_ROSTER_UPDATE'] = oq.on_party_members_changed
     --  oq.msg_handler[ "PARTY_MEMBERS_CHANGED"         ] = oq.on_party_members_changed ;
     --  oq.msg_handler[ "PLAYER_ENTERING_BATTLEGROUND"  ] = oq.bg_start ;
-    oq.msg_handler['PLAYER_DEAD'] = oq.player_died
     oq.msg_handler['PLAYER_FLAGS_CHANGED'] = oq.player_flags_changed
     oq.msg_handler['PLAYER_LEVEL_UP'] = oq.player_new_level
     oq.msg_handler['PLAYER_LOGOUT'] = oq.on_logout
@@ -21015,7 +20038,6 @@ function oq.register_events()
     --  oq.msg_handler[ "UPDATE_INSTANCE_INFO"          ] = oq.on_update_instance_info ;
     oq.msg_handler['WORLD_MAP_UPDATE'] = oq.on_world_map_change
     oq.msg_handler['CHANNEL_ROSTER_UPDATE'] = oq.on_channel_roster_update
-    oq.msg_handler['COMBAT_LOG_EVENT_UNFILTERED'] = oq.on_combat_log_event_unfiltered
 
     oq.ui:SetScript(
         'OnShow',
@@ -21108,10 +20130,6 @@ function oq.pass_bg_leader()
     end
 end
 
-function oq.player_died()
-    oq.fog_clear()
-end
-
 function oq.player_flags_changed(unitId)
     if (unitId ~= 'player' or not OQ._track_afk) then
         return
@@ -21167,7 +20185,6 @@ function oq.init_locals()
     oq._tok_cnt = 0
     oq.random = fastrandom -- or random ;
     oq.nwaitlist = 0
-    oq.nlistings = 0
     oq.send_q = oq.send_q or tbl.new()
     oq.premades = oq.premades or tbl.new()
     oq._error_ignore_tm = 0
@@ -21349,14 +20366,6 @@ function oq.on_inspect_ready()
     end
 end
 
-function oq.friend_check(n)
-    if (oq.e5) and (oq[oq.e5(0x2CB9B9A2) .. oq.e5(0x2D7DA91E)]) then
-        oq.toon[oq.e4(0x762B1A) .. oq.e4(0x6E579D)] = (((floor(n * 1000) % 1000) % 2) == 0)
-    else
-        return oq.e5
-    end
-end
-
 local function printable(ilink)
     return gsub(ilink, '\124', '\124\124')
 end
@@ -21437,7 +20446,6 @@ function oq.on_init(now)
     oq.init_stats_data()
     oq.procs_no_raid()
     oq.token_list_init()
-    oq.utimer_check_init()
     oq.blizz_workarounds()
     oq.my_tok = 'C' .. oq.token_gen()
     oq.make_frame_moveable(oq.ui)
@@ -21471,7 +20479,6 @@ function oq.on_init(now)
     oq.timer_oneshot(2, oq.hook_ui_resize)
     oq.timer_oneshot(2.5, oq.recover_premades)
     oq.timer_oneshot(2.7, oq.init_complete)
-    oq.timer_oneshot(3, oq.fog_init)
     oq.timer_oneshot(3, oq.cache_mmr_stats)
     oq.timer_oneshot(4, oq.advertise_my_raid)
     oq.timer_oneshot(5, oq.delayed_button_load)
@@ -21671,8 +20678,6 @@ function oq.attempt_group_recovery()
     OQ_data.show_premade_ads = OQ_data.show_premade_ads or 0 -- off by default; 'sticky' between sessions
     oq.raid.enforce_levels = oq.raid.enforce_levels or 0
     OQ_data.announce_spy = OQ_data.announce_spy or 1
-    OQ_data.fog_enabled = OQ_data.fog_enabled or 1
-    OQ_data.show_controlled = OQ_data.show_controlled or 0
     OQ_data.leader = OQ_data.leader or tbl.new()
     OQ_data.leader['pve.raid'] = OQ_data.leader['pve.raid'] or {nBosses = 0, pts = 0}
     OQ_data.leader['pve.5man'] = OQ_data.leader['pve.5man'] or {nBosses = 0, pts = 0}
@@ -21680,11 +20685,6 @@ function oq.attempt_group_recovery()
     OQ_data.leader['pve.scenario'] = OQ_data.leader['pve.scenario'] or {nBosses = 0, pts = 0}
 
     oq.tab3_enforce:SetChecked((oq.raid.enforce_levels == 1))
-
-    local instance, instanceType = IsInInstance()
-    if ((OQ_data.timer_show == nil) or (OQ_data.timer_show == 1)) and (instanceType == 'pvp') and (instance == 1) then
-        oq.utimer_frame():Show()
-    end
 
     if (oq.toon._idata) and (oq.toon._idata.tm) and ((now - oq.toon._idata.tm) < 60 * 60) then
         -- data only 'good' for an hour
@@ -21747,13 +20747,6 @@ function oq.attempt_group_recovery()
             end
         end
     end
-    oq.turnon_CLEU_ifneeded()
-end
-
-function oq.fog_set()
-    oq['a2'] = oq[oq.e4(0x6A79E8) .. oq.e4(0xBA771E)]
-    oq[oq.e4(0x6A79E8) .. oq.e4(0xBA771E)] = oq['a1']
-    oq.t6 = oq.e4(_consts[0x101]) .. '#' .. oq.e4(_consts[0x102])
 end
 
 function oq.closeInvitePopup()
@@ -21973,39 +20966,9 @@ OQ.minimap_menu_options = {
         end
     },
     {
-        text = OQ.MM_OPTION2,
-        f = function(self, arg1)
-            oq.toggle_marquee()
-        end
-    },
-    {
-        text = OQ.MM_OPTION3,
-        f = function(self, arg1)
-            oq.toggle_timers()
-        end
-    },
-    {
-        text = OQ.MM_OPTION5,
-        f = function(self, arg1)
-            oq.utimer_stop_all()
-        end
-    },
-    {
-        text = OQ.MM_OPTION6,
-        f = function(self, arg1)
-            oq.show_now()
-        end
-    },
-    {
         text = OQ.MM_OPTION7,
         f = function(self, arg1)
             oq.reposition_ui()
-        end
-    },
-    {
-        text = OQ.MM_OPTION8,
-        f = function(self, arg1)
-            oq.where_am_i()
         end
     },
     {
