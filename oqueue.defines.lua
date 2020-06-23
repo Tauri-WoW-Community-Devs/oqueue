@@ -135,17 +135,17 @@ OQ.VOIP_VENTRILO = 'V'
 OQ.VOIP_WOWVOIP = 'W'
 
 OQ.VOIP_ICON = {
-    [OQ.VOIP_VENTRILO] = 'Interface\\Addons\\oqueue\\art\\voip_ventrilo.tga',
-    [OQ.VOIP_SKYPE] = 'Interface\\Addons\\oqueue\\art\\voip_skype.tga',
-    [OQ.VOIP_TEAMSPEAK] = 'Interface\\Addons\\oqueue\\art\\voip_teamspeak.tga',
-    [OQ.VOIP_DOLBYAXON] = 'Interface\\Addons\\oqueue\\art\\voip_axon.tga',
-    [OQ.VOIP_DISCORD] = 'Interface\\Addons\\oqueue\\art\\voip_discord.tga',
-    [OQ.VOIP_RAIDCALL] = 'Interface\\Addons\\oqueue\\art\\voip_raidcall.tga',
-    [OQ.VOIP_RAZOR] = 'Interface\\Addons\\oqueue\\art\\voip_razor.tga',
-    [OQ.VOIP_MUMBLE] = 'Interface\\Addons\\oqueue\\art\\voip_mumble.tga',
+    [OQ.VOIP_VENTRILO] = 'Interface\\Addons\\oqueue\\art\\voip\\ventrilo.tga',
+    [OQ.VOIP_SKYPE] = 'Interface\\Addons\\oqueue\\art\\voip\\skype.tga',
+    [OQ.VOIP_TEAMSPEAK] = 'Interface\\Addons\\oqueue\\art\\voip\\teamspeak.tga',
+    [OQ.VOIP_DOLBYAXON] = 'Interface\\Addons\\oqueue\\art\\voip\\axon.tga',
+    [OQ.VOIP_DISCORD] = 'Interface\\Addons\\oqueue\\art\\voip\\discord.tga',
+    [OQ.VOIP_RAIDCALL] = 'Interface\\Addons\\oqueue\\art\\voip\\raidcall.tga',
+    [OQ.VOIP_RAZOR] = 'Interface\\Addons\\oqueue\\art\\voip\\razor.tga',
+    [OQ.VOIP_MUMBLE] = 'Interface\\Addons\\oqueue\\art\\voip\\mumble.tga',
     [OQ.VOIP_UNSPECIFIED] = nil,
-    [OQ.VOIP_NOVOICE] = 'Interface\\Addons\\oqueue\\art\\voip_novoice.tga',
-    [OQ.VOIP_WOWVOIP] = 'Interface\\Addons\\oqueue\\art\\voip_wowvoip.tga'
+    [OQ.VOIP_NOVOICE] = 'Interface\\Addons\\oqueue\\art\\voip\\novoice.tga',
+    [OQ.VOIP_WOWVOIP] = 'Interface\\Addons\\oqueue\\art\\voip\\wowvoip.tga'
 }
 
 OQ.LANG_UNSPECIFIED = 'A'
@@ -170,24 +170,24 @@ OQ.LANG_KOREAN = 'S'
 
 OQ.LANG_ICON = {
     [OQ.LANG_UNSPECIFIED] = nil,
-    [OQ.LANG_US_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang_us.tga',
-    [OQ.LANG_UK_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang_uk.tga',
-    [OQ.LANG_OC_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang_oc.tga',
-    [OQ.LANG_RUSSIAN] = 'Interface\\Addons\\oqueue\\art\\lang_ru.tga',
-    [OQ.LANG_GERMAN] = 'Interface\\Addons\\oqueue\\art\\lang_de.tga',
-    [OQ.LANG_ES_SPANISH] = 'Interface\\Addons\\oqueue\\art\\lang_es.tga',
-    [OQ.LANG_MX_SPANISH] = 'Interface\\Addons\\oqueue\\art\\lang_mx.tga',
-    [OQ.LANG_BR_PORTUGUESE] = 'Interface\\Addons\\oqueue\\art\\lang_br.tga',
-    [OQ.LANG_PT_PORTUGUESE] = 'Interface\\Addons\\oqueue\\art\\lang_pt.tga',
-    [OQ.LANG_FRENCH] = 'Interface\\Addons\\oqueue\\art\\lang_fr.tga',
-    [OQ.LANG_ITALIAN] = 'Interface\\Addons\\oqueue\\art\\lang_it.tga',
-    [OQ.LANG_TURKISH] = 'Interface\\Addons\\oqueue\\art\\lang_tr.tga',
-    [OQ.LANG_EURO] = 'Interface\\Addons\\oqueue\\art\\lang_euro.tga',
-    [OQ.LANG_GREEK] = 'Interface\\Addons\\oqueue\\art\\lang_greek.tga',
-    [OQ.LANG_DUTCH] = 'Interface\\Addons\\oqueue\\art\\lang_nl.tga',
-    [OQ.LANG_SWEDISH] = 'Interface\\Addons\\oqueue\\art\\lang_swedish.tga',
-    [OQ.LANG_ARABIC] = 'Interface\\Addons\\oqueue\\art\\lang_arabic.tga',
-    [OQ.LANG_KOREAN] = 'Interface\\Addons\\oqueue\\art\\lang_kr.tga'
+    [OQ.LANG_US_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang\\us.tga',
+    [OQ.LANG_UK_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang\\uk.tga',
+    [OQ.LANG_OC_ENGLISH] = 'Interface\\Addons\\oqueue\\art\\lang\\oc.tga',
+    [OQ.LANG_RUSSIAN] = 'Interface\\Addons\\oqueue\\art\\lang\\ru.tga',
+    [OQ.LANG_GERMAN] = 'Interface\\Addons\\oqueue\\art\\lang\\de.tga',
+    [OQ.LANG_ES_SPANISH] = 'Interface\\Addons\\oqueue\\art\\lang\\es.tga',
+    [OQ.LANG_MX_SPANISH] = 'Interface\\Addons\\oqueue\\art\\lang\\mx.tga',
+    [OQ.LANG_BR_PORTUGUESE] = 'Interface\\Addons\\oqueue\\art\\lang\\br.tga',
+    [OQ.LANG_PT_PORTUGUESE] = 'Interface\\Addons\\oqueue\\art\\lang\\pt.tga',
+    [OQ.LANG_FRENCH] = 'Interface\\Addons\\oqueue\\art\\lang\\fr.tga',
+    [OQ.LANG_ITALIAN] = 'Interface\\Addons\\oqueue\\art\\lang\\it.tga',
+    [OQ.LANG_TURKISH] = 'Interface\\Addons\\oqueue\\art\\lang\\tr.tga',
+    [OQ.LANG_EURO] = 'Interface\\Addons\\oqueue\\art\\lang\\euro.tga',
+    [OQ.LANG_GREEK] = 'Interface\\Addons\\oqueue\\art\\lang\\greek.tga',
+    [OQ.LANG_DUTCH] = 'Interface\\Addons\\oqueue\\art\\lang\\nl.tga',
+    [OQ.LANG_SWEDISH] = 'Interface\\Addons\\oqueue\\art\\lang\\swedish.tga',
+    [OQ.LANG_ARABIC] = 'Interface\\Addons\\oqueue\\art\\lang\\arabic.tga',
+    [OQ.LANG_KOREAN] = 'Interface\\Addons\\oqueue\\art\\lang\\kr.tga'
 }
 
 OQ.PREMADE_TYPES = {
@@ -645,13 +645,13 @@ OQ.difficulty_abbr = {
 }
 
 OQ.DIFFICULTY_ICON = {
-    [0] = 'Interface\\Addons\\oqueue\\art\\diff_unk.tga',
-    [3] = 'Interface\\Addons\\oqueue\\art\\diff_10n.tga',
-    [4] = 'Interface\\Addons\\oqueue\\art\\diff_25n.tga',
-    [5] = 'Interface\\Addons\\oqueue\\art\\diff_10h.tga',
-    [6] = 'Interface\\Addons\\oqueue\\art\\diff_25h.tga',
-    [7] = 'Interface\\Addons\\oqueue\\art\\diff_lfr.tga',
-    [14] = 'Interface\\Addons\\oqueue\\art\\diff_flex.tga'
+    [0] = 'Interface\\Addons\\oqueue\\art\\difficulty\\unk.tga',
+    [3] = 'Interface\\Addons\\oqueue\\art\\difficulty\\10N.tga',
+    [4] = 'Interface\\Addons\\oqueue\\art\\difficulty\\25N.tga',
+    [5] = 'Interface\\Addons\\oqueue\\art\\difficulty\\10H.tga',
+    [6] = 'Interface\\Addons\\oqueue\\art\\difficulty\\25H.tga',
+    [7] = 'Interface\\Addons\\oqueue\\art\\difficulty\\LFR.tga',
+    [14] = 'Interface\\Addons\\oqueue\\art\\difficulty\\Flex.tga'
 }
 
 OQ.difficulty_color = {

@@ -11847,7 +11847,7 @@ function oq.add_voip_subselection(m, arg, text, func)
     if (OQ.VOIP_ICON[arg]) then
         t = t .. OQ.VOIP_ICON[arg]
     else
-        t = t .. 'Interface\\Addons\\oqueue\\art\\voip_unk.tga'
+        t = t .. 'Interface\\Addons\\oqueue\\art\\voip\\unk.tga'
     end
     t = t .. ':20:20:0:0|t  ' .. text
     oq.menu_add(t, arg, t, nil, func)
@@ -11886,7 +11886,7 @@ function oq.add_voip_suboption(m, arg, text, func)
         t = t .. OQ.VOIP_ICON[arg]
         cnt = oq.get_voip_count(arg)
     else
-        t = t .. 'Interface\\Addons\\oqueue\\art\\voip_unk.tga'
+        t = t .. 'Interface\\Addons\\oqueue\\art\\voip\\unk.tga'
     end
     if (oq.is_voip_excluded(arg)) then
         t = t .. ':20:20:0:0|t  |cFF606060' .. text .. '|r' .. cnt
@@ -11959,7 +11959,7 @@ function oq.add_lang_subselection(m, arg, text, func)
     if (OQ.LANG_ICON[arg]) then
         t = t .. OQ.LANG_ICON[arg]
     else
-        t = t .. 'Interface\\Addons\\oqueue\\art\\lang_unk.tga'
+        t = t .. 'Interface\\Addons\\oqueue\\art\\lang\\unk.tga'
     end
     t = t .. ':16:20:0:0|t  ' .. text
     oq.menu_add(t, arg, t, nil, func)
@@ -12017,7 +12017,7 @@ function oq.add_lang_suboption(m, arg, text, func)
         t = t .. OQ.LANG_ICON[arg]
         cnt = oq.get_lang_count(arg)
     else
-        t = t .. 'Interface\\Addons\\oqueue\\art\\lang_unk.tga'
+        t = t .. 'Interface\\Addons\\oqueue\\art\\lang\\unk.tga'
     end
     if (oq.is_lang_excluded(arg)) then
         t = t .. ':16:20:0:0|t  |cFF606060' .. text .. '|r' .. cnt
