@@ -12,8 +12,6 @@ local OQ_BUILD = 202
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
 local OQ_VER_STR = OQUEUE_VERSION
 local OQ_VER = '1D' -- just removing the dot
-local OQSK_VER = '10'
-local OQSK_HEADER = 'OQSK'
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
 local OQ_REALISTIC_MAX_GAMELEN = 8 * 60 * 60 -- classic AV no longer exists
 local OQ_NOEMAIL = '.'
@@ -1947,7 +1945,7 @@ function oq.iam_in_a_party()
 end
 
 function oq.is_oqueue_msg(msg)
-    if (msg:sub(1, #OQ_MSGHEADER) == OQ_MSGHEADER) or (msg:sub(1, #OQSK_HEADER) == OQSK_HEADER) then
+    if (msg:sub(1, #OQ_MSGHEADER) == OQ_MSGHEADER) then
         return true
     end
     return nil
@@ -21081,10 +21079,6 @@ function oq.IsMessageWellFormed(m)
         return nil
     end
     local str = OQ_MSGHEADER .. '' .. OQ_VER .. ','
-    if (m:sub(1, #str) == str) then
-        return true
-    end
-    str = OQSK_HEADER .. ',' .. OQSK_VER .. ','
     if (m:sub(1, #str) == str) then
         return true
     end

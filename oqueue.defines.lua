@@ -39,7 +39,6 @@ OQ.MOON_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0
 OQ.SQUARE_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:16:32:16:32|t'
 OQ.REDX_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:32:48:16:32|t'
 OQ.SKULL_ICON = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:16:16:0:0:64:64:48:64:16:32|t'
-OQ.LILSKULL_HDR = '|TInterface\\TARGETINGFRAME\\UI-RaidTargetingIcons.blp:14:14:0:0:64:64:48:64:16:32|t'
 OQ.PENDING_NOTE_UP = 'INTERFACE/BUTTONS/UI-GuildButton-OfficerNote-Up.png'
 OQ.PENDING_NOTE_DN = 'INTERFACE/BUTTONS/UI-GuildButton-PublicNote-Up.png'
 OQ.PENDING_NOTE_OFF = 'INTERFACE/BUTTONS/UI-GuildButton-OfficerNote-Disabled.png'
