@@ -8,10 +8,9 @@ local tbl = OQ.table
 local OQ_MAJOR = 2
 local OQ_MINOR = 0
 local OQ_REVISION = 2
-local OQ_BUILD = 202
+local OQ_BUILD_STR = tostring(OQ_MAJOR) .. tostring(OQ_MINOR) .. tostring(OQ_REVISION)
+local OQ_BUILD = tonumber(OQ_BUILD_STR)
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
-local OQ_VER_STR = OQUEUE_VERSION
-local OQ_VER = '1D' -- just removing the dot
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
 local OQ_REALISTIC_MAX_GAMELEN = 8 * 60 * 60 -- classic AV no longer exists
 local OQ_NOEMAIL = '.'
@@ -149,7 +148,7 @@ local OQ_versions = {
 }
 
 function oq.get_version_id()
-    return OQ_versions[OQ_VER_STR] or 0
+    return OQ_versions[OQUEUE_VERSION] or 0
 end
 
 function oq.get_version_str(id)
@@ -1884,7 +1883,7 @@ function oq.SendChannelMessage(chan_name, msg)
     if (not oq.IsMessageWellFormed(msg)) then
         local msg_tok = 'A' .. oq.token_gen()
         oq.token_push(msg_tok)
-        msg = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
+        msg = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
     end
     if (n ~= nil and oq.channels[n] ~= nil and oq._isAfk == nil and oq.channels[n].id and oq._banned == nil) then
         oq.SendChatMessage(msg, 'CHANNEL', nil, oq.channels[n].id)
@@ -4655,7 +4654,7 @@ function oq.BNSendQ_push(func_, pid_, msg_, name_, realm_)
         if (t.msg == nil) then
             t.msg =
                 'OQ,' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             '1,' .. -- OQ_TTL ..",".. (only one hop... to the specified target)
@@ -4905,7 +4904,7 @@ function oq.send_invite_accept(raid_token, group_id, slot, name, class, realm, r
     local enc_data = oq.encode_data('abc123', player_name, player_realm, oq.player_realid)
     local m =
         'OQ,' ..
-        OQ_VER ..
+        OQ_BUILD_STR ..
             ',' ..
                 msg_tok ..
                     ',' ..
@@ -5048,7 +5047,7 @@ function oq.mbsync_toons(to_name)
         if ((friend.toon_id ~= 0) and friend.isOnline and friend.oq_enabled) then
             local m =
                 'OQ,' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             OQ_TTL ..
@@ -5066,7 +5065,7 @@ function oq.mbsync_single(toonName, toonRealm)
     for i, v in pairs(oq.toon.my_toons) do
         local m =
             'OQ,' ..
-            OQ_VER ..
+            OQ_BUILD_STR ..
                 ',' ..
                     'W1,' ..
                         OQ_TTL ..
@@ -5337,7 +5336,7 @@ function oq.announce(msg, to_name, to_realm)
     if (to_name ~= nil) then
         local msg_tok = 'W' .. oq.token_gen()
         oq.token_push(msg_tok)
-        local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
+        local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
 
         oq.XRealmWhisper(to_name, to_realm, m)
 
@@ -5346,7 +5345,7 @@ function oq.announce(msg, to_name, to_realm)
     local msg_tok = 'A' .. oq.token_gen()
     oq.token_push(msg_tok)
 
-    local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
+    local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
 
     -- send to raid (which sends to local channel and real-id ppl in the raid)
     oq.announce_relay(m, true)
@@ -5391,7 +5390,7 @@ function oq.raid_announce(msg, msg_tok)
         oq.token_push(msg_tok)
     end
 
-    local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
+    local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
     oq.SendPartyMessage(m)
 end
 
@@ -5414,7 +5413,7 @@ function oq.party_announce(msg)
     local msg_tok = 'P' .. oq.token_gen()
     oq.token_push(msg_tok)
 
-    local m = 'OQ,' .. OQ_VER .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
+    local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',' .. msg
     -- send to party channel
     oq.SendPartyMessage(m)
 end
@@ -5424,7 +5423,7 @@ function oq.bg_announce(msg)
         return
     end
 
-    local m = 'OQ,' .. OQ_VER .. ',' .. 'W1,' .. OQ_TTL .. ',' .. msg
+    local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. 'W1,' .. OQ_TTL .. ',' .. msg
     -- this should send to both parties and instance groups and fail silently if either isn't valid
     SendAddonMessage(OQ_HEADER, m, 'PARTY')
     oq.pkt_sent:inc()
@@ -5533,7 +5532,7 @@ function oq.raid_ping()
     oq.token_push(msg_tok)
     local m =
         'OQ,' ..
-        OQ_VER .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',ping,' .. oq.my_tok .. ',' .. GetTime() * 1000
+        OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. oq.raid.raid_token .. ',ping,' .. oq.my_tok .. ',' .. GetTime() * 1000
     local i
     for i = 2, 8 do
         local grp = oq.raid.group[i]
@@ -6242,7 +6241,7 @@ function oq.send_removed_notice(token)
             r.name,
             r.realm,
             OQ_MSGHEADER ..
-                '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'removed_from_waitlist,' .. oq.raid.raid_token .. ',' .. token
+                '' .. OQ_BUILD_STR .. ',' .. 'W1,' .. '0,' .. 'removed_from_waitlist,' .. oq.raid.raid_token .. ',' .. token
         )
     end
 end
@@ -6332,7 +6331,7 @@ function oq.send_leave_waitlist(raid_token)
     else
         local msg =
             OQ_MSGHEADER ..
-            '' .. OQ_VER .. ',' .. 'W1,' .. '0,' .. 'leave_waitlist,' .. raid_token .. ',' .. req.req_token
+            '' .. OQ_BUILD_STR .. ',' .. 'W1,' .. '0,' .. 'leave_waitlist,' .. raid_token .. ',' .. req.req_token
         oq.XRealmWhisper(raid.leader, raid.leader_realm, msg)
     end
 
@@ -6453,7 +6452,7 @@ function oq.send_req_waitlist(raid_token, pword)
         local msg =
             OQ_MSGHEADER ..
             '' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             '0,' ..
@@ -6484,7 +6483,7 @@ function oq.send_req_waitlist(raid_token, pword)
         local msg =
             OQ_MSGHEADER ..
             '' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             '0,' ..
@@ -12887,7 +12886,7 @@ function oq.send_pending_note(self)
         local msg =
             OQ_MSGHEADER ..
             '' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             '0,' ..
@@ -13888,7 +13887,7 @@ function oq.on_proxy_invite(group_id, slot_, enc_data_, req_token_)
     local enc_data = oq.encode_data('abc123', player_name, player_realm, oq.player_realid)
     local msg =
         'OQ,' ..
-        OQ_VER ..
+        OQ_BUILD_STR ..
             ',' ..
                 'W1,' ..
                     '1,' ..
@@ -15354,7 +15353,7 @@ function oq.send_invite_response(name, realm, realid, raid_token, req_token, ans
         realm,
         OQ_MSGHEADER ..
             '' ..
-                OQ_VER ..
+                OQ_BUILD_STR ..
                     ',' ..
                         'W1,' ..
                             '0,' ..
@@ -16805,7 +16804,7 @@ function oq.verify_version(proto_version, oq_version)
     if (proto_version == nil) or (oq_version == nil) then
         return
     end
-    if (proto_version == OQ_VER) and (oq_version == OQUEUE_VERSION) then
+    if (proto_version == OQ_BUILD_STR) and (oq_version == OQUEUE_VERSION) then
         if (oq.version_marquee ~= nil) then
             oq.version_marquee:Hide()
         end
@@ -16830,7 +16829,7 @@ function oq.verify_version(proto_version, oq_version)
         end
         return
     end
-    oq._update_required = (proto_version ~= OQ_VER)
+    oq._update_required = (proto_version ~= OQ_BUILD_STR)
     -- update ui component to reflect new version
     if (oq._update_required) then
         oq._major = major
@@ -18625,7 +18624,7 @@ function oq.ping_oq_toon(toon_pid, toonName, realmName, ts, ack)
 
     local msg =
         'OQ,' ..
-        OQ_VER ..
+        OQ_BUILD_STR ..
             ',' ..
                 'W1,' ..
                     '1,' .. -- OQ_TTL ..",".. (only one hop... to the specified target)
@@ -18958,7 +18957,7 @@ function oq.process_msg(sender, msg)
     _msg = msg
     _core_msg, _to_name, _to_realm, _from = oq.crack_bn_msg(msg)
     --
-    -- format:  "OQ,".. OQ_VER ..",".. msg_tok ..",".. hop | raid-token ..",".. msg ;
+    -- format:  "OQ,".. OQ_BUILD_STR ..",".. msg_tok ..",".. hop | raid-token ..",".. msg ;
     --
     local oq_sig = _vars[1]
     local oq_ver = _vars[2]
@@ -18973,7 +18972,7 @@ function oq.process_msg(sender, msg)
         return
     end
 
-    if (oq_sig ~= OQ_HEADER) or (oq_ver ~= OQ_VER) or (oq.toon.disabled) then
+    if (oq_sig ~= OQ_HEADER) or (oq_ver ~= OQ_BUILD_STR) or (oq.toon.disabled) then
         -- not the same protocol, cannot proceed
         oq.check_version(_vars)
         return
@@ -21078,7 +21077,7 @@ function oq.IsMessageWellFormed(m)
     if (m == nil) then
         return nil
     end
-    local str = OQ_MSGHEADER .. '' .. OQ_VER .. ','
+    local str = OQ_MSGHEADER .. '' .. OQ_BUILD_STR .. ','
     if (m:sub(1, #str) == str) then
         return true
     end
@@ -21089,7 +21088,7 @@ function oq.EnsureMessageIsFormed(msg)
     if (not oq.IsMessageWellFormed(msg)) then
         local token = 'W' .. oq.token_gen()
         oq.token_push(token)
-        msg = 'OQ,' .. OQ_VER .. ',' .. token .. ',' .. OQ_TTL .. ',' .. msg
+        msg = 'OQ,' .. OQ_BUILD_STR .. ',' .. token .. ',' .. OQ_TTL .. ',' .. msg
     end
 
     return msg
