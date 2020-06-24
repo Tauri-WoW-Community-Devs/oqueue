@@ -2128,16 +2128,6 @@ function oq.get_spell_power()
     return pow
 end
 
-function oq.get_spell_crit()
-    -- taken from: http://www.wowwiki.com/API_GetSpellCritChance
-    local minCrit = GetSpellCritChance(2)
-    local i
-    for i = 1, 7 do
-        minCrit = max(minCrit, GetSpellCritChance(i))
-    end
-    return minCrit
-end
-
 function oq.get_hks()
     local hks = GetStatistic(588) or 0
     if (hks == '--') then
@@ -17444,12 +17434,12 @@ function oq.decode_their_stats(m, s)
             -- int
             -- spirit
             --
-            m.spell_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
-            m.spell_dmg = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
-            m.spell_crit = (oq.decode_mime64_digits(s:sub(21, 22)) or 0) / 100
-            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
-            m.spr = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
-	    m.spell_haste = (oq.decode_mime64_digits(s:sub(27, 28)) or 0)
+            m.spell_hit = (oq.decode_mime64_digits(s:sub(18, 19)) or 0) / 100
+            m.spell_dmg = (oq.decode_mime64_digits(s:sub(20, 21)) or 0)
+            m.spell_crit = (oq.decode_mime64_digits(s:sub(22, 23)) or 0) / 100
+            m.int = (oq.decode_mime64_digits(s:sub(24, 25)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(26, 27)) or 0)
+	        m.spell_haste = (oq.decode_mime64_digits(s:sub(28, 29)) or 0)
             m.raids = s:sub(31, -1)
         elseif (m.spec_type == OQ.HEALER) then
             --
