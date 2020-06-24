@@ -1,5 +1,5 @@
 ## Title: oQueue
-## Version: 2.0.2
+## Version: 2.0.3
 ## Interface: 50400
 ## Author: Tiny of the Zerg
 ## Notes: Tauri cross realm group finder

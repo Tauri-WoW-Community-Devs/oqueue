@@ -170,7 +170,7 @@ OQ.DLG_03 = 'Nom de votre groupe:'
 OQ.DLG_04 = 'Entrez svp votre Royaume-ID:'
 OQ.DLG_05 = 'Mot de passe:'
 OQ.DLG_06 = "Entrez svp l'ID ou le nom du nouveau chef de groupe :"
-OQ.DLG_07 = '\nNOUVELLE VERSION DISPONIBLE !!\n\noQueue  v%s  version  %d\n'
+OQ.DLG_07 = '\nNOUVELLE VERSION DISPONIBLE !!\n\noQueue  v%s\n'
 OQ.DLG_08 =
     "SVP quittez votre groupe avant de rejoindre la file d'attente ou \nDemandez à votre Chef de groupe de mettre le groupe en file d'attente"
 OQ.DLG_09 = 'Seul le Chef de raid peut créer un groupe OQ'

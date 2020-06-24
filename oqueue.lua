@@ -7,7 +7,7 @@ local tbl = OQ.table
 -------------------------------------------------------------------------------
 local OQ_MAJOR = 2
 local OQ_MINOR = 0
-local OQ_REVISION = 2
+local OQ_REVISION = 3
 local OQ_BUILD_STR = tostring(OQ_MAJOR) .. tostring(OQ_MINOR) .. tostring(OQ_REVISION)
 local OQ_BUILD = tonumber(OQ_BUILD_STR)
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
@@ -12937,90 +12937,6 @@ function oq.href(self, link, text, button)
     end
 end
 
-function oq.create_required_updatebox(parent, major, minor, rev)
-    if (parent._requiredupdate) then
-        return parent._requiredupdate
-    end
-    local pcx = parent:GetWidth()
-    local pcy = parent:GetHeight()
-    local cx = floor(pcx / 2)
-    local cy = floor(4 * pcy / 5)
-    local f = oq.panel(parent, 'RequiredUpdateBox', floor((pcx - cx) / 2), floor((pcy - cy) / 2), cx, cy)
-    if (oq.__backdrop07 == nil) then
-        oq.__backdrop07 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 1, right = 1, top = 1, bottom = 1}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop07)
-    f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
-    f:SetAlpha(1.0)
-
-    local x, y
-    x = 40
-    y = -35
-    local msg = oq.CreateFrame('SimpleHTML', 'OQRequiredUpdatePoster', f)
-    msg:SetPoint('TOPLEFT', x, y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 12)
-    msg:SetWidth(cx - 2 * x)
-    msg:SetHeight(cy - 2 * y)
-    msg:SetFont('Fonts\\FRIZQT__.TTF', 14)
-    msg:SetTextColor(136 / 256, 221 / 256, 221 / 256, 0.8)
-
-    msg:SetFont('p', 'Fonts\\FRIZQT__.TTF', 14)
-    msg:SetTextColor('p', 225 / 256, 225 / 256, 225 / 256, 0.8)
-
-    msg:SetFont('h1', 'Fonts\\FRIZQT__.TTF', 16)
-    msg:SetTextColor('h1', 136 / 256, 221 / 256, 221 / 256, 0.8)
-
-    msg:SetFont('h2', 'Fonts\\MORPHEUS.ttf', 36)
-    msg:SetShadowColor('h2', 0, 0, 0, 1)
-    msg:SetShadowOffset('h2', 1, -1)
-    msg:SetTextColor('h2', 221 / 256, 36 / 256, 36 / 256, 0.8)
-
-    msg:SetFont('h3', 'Fonts\\FRIZQT__.ttf', 22)
-    msg:SetShadowColor('h3', 0, 0, 0, 1)
-    msg:SetShadowOffset('h3', 0, 0)
-    msg:SetTextColor('h3', 136 / 256, 221 / 256, 221 / 256, 0.8)
-
-    msg:SetText(
-        string.format(
-            L[
-                '<html><body>' ..
-                    '<h3 align="center">oQueue v%d.%d.%d </h3>' ..
-                        '<br/>' ..
-                            '<h2 align="center">Required Update</h2>' ..
-                                '<br/>' ..
-                                    '<p>An update is required to connect to the mesh</p>' ..
-                                        '<br/>' ..
-                                            '<h1 align="left">main site</h1>' ..
-                                                '<p><a href="main">solidice.com</a></p>' ..
-                                                    '<br/>' ..
-                                                        '<h1 align="left">vent support</h1>' ..
-                                                            '<p>wow.publicvent.org : 4135  room 0</p>' ..
-                                                                '<br/>' ..
-                                                                    '<h1 align="left">forums</h1>' ..
-                                                                        '<p><a href="forums">solidice.com/forums</a></p>' ..
-                                                                            '<br/>' .. '</body></html>'
-            ],
-            major,
-            minor,
-            rev
-        )
-    )
-    msg:Show()
-    msg:SetScript('OnHyperLinkClick', oq.href)
-
-    f.html = msg
-
-    parent._requiredupdate = f
-    return f
-end
-
 function oq.onShadeHide(f)
     oq.tremove_value(getglobal('UISpecialFrames'), f:GetName())
     tinsert(getglobal('UISpecialFrames'), oq.ui:GetName())
@@ -13110,10 +13026,6 @@ end
 
 function oq.pending_note_shade(self)
     oq.shaded_dialog(oq.create_pending_note(oq.create_ui_shade(), self:GetParent().token), nil)
-end
-
-function oq.required_update_shade()
-    oq.shaded_dialog(oq.create_required_updatebox(oq.create_ui_shade(), oq._major, oq._minor, oq._rev), true)
 end
 
 function oq.create_tab_setup()
@@ -16743,102 +16655,6 @@ function oq.decode_score_xdata(xdata)
     )
 end
 
-function oq.verify_version(proto_version, oq_version)
-    if (proto_version == nil) or (oq_version == nil) then
-        return
-    end
-    if (proto_version == OQ_BUILD_STR) and (oq_version == OQUEUE_VERSION) then
-        if (oq.version_marquee ~= nil) then
-            oq.version_marquee:Hide()
-        end
-        return
-    end
-    -- older or newer?
-    local major = tonumber(oq_version:sub(1, 1))
-    local minor = tonumber(oq_version:sub(2, 2))
-    local rev = tonumber(oq_version:sub(3, 3))
-    if (major == nil) or (minor == nil) or (rev == nil) then
-        -- all digits, no alpha allowed
-        if (oq.version_marquee ~= nil) then
-            oq.version_marquee:Hide()
-        end
-        return
-    end
-    local ver = major * 100 + minor * 10 + rev -- ie: 107
-    local my_ver = OQ_MAJOR * 100 + OQ_MINOR * 10 + OQ_REVISION
-    if (ver <= my_ver) then
-        if (oq.version_marquee ~= nil) then
-            oq.version_marquee:Hide()
-        end
-        return
-    end
-    oq._update_required = (proto_version ~= OQ_BUILD_STR)
-    -- update ui component to reflect new version
-    if (oq._update_required) then
-        oq._major = major
-        oq._minor = minor
-        oq._rev = rev
-        oq.required_update_shade()
-    else
-        oq.version_marquee = oq.create_version_marquee()
-        oq.version_marquee.line_1:SetText(string.format(OQ.DLG_18a, major, minor, rev))
-        oq.version_marquee:SetHeight(35)
-        oq.version_marquee.line_2:Hide()
-        oq.version_marquee:Show()
-    end
-    local now = oq.utc_time()
-    if (OQ_data._fanfare_queued == nil) or (OQ_data._fanfare_queued < now) then
-        OQ_data._fanfare_queued = now + 2 * 60 * 60 -- let's you know once every 2 hours
-        -- will check every second to see if the marquee is up, and when it is
-        -- it'll play the fanfare and stop the timer
-        oq.timer('fanfare', 1, oq.new_version_fanfare, true)
-    end
-    -- new version detected, sending msg on
-    _ok2relay = 1
-    oq.forward_msg(_source, oq._sender, _vars[3]:sub(1, 1), _vars[5], _msg)
-end
-
-function oq.new_version_fanfare()
-    if (oq.version_marquee) and (not oq.version_marquee:IsVisible()) then
-        return nil
-    end
-    oq.excited_cheer()
-    return 1
-end
-
-function oq.create_version_marquee()
-    if (oq.version_marquee ~= nil) then
-        return oq.version_marquee
-    end
-
-    local cx = 300
-    local cy = 65
-    local parent = OQMainFrame
-    local x = floor(parent:GetWidth() - cx) / 2
-    local y = parent:GetHeight() - 2 * cy
-
-    local f = oq.panel(parent, 'OQVerMarquee', x, y, cx, cy)
-    if (oq.__backdrop14 == nil) then
-        oq.__backdrop14 = {
-            bgFile = 'Interface/Tooltips/UI-Tooltip-Background',
-            edgeFile = 'Interface/Tooltips/UI-Tooltip-Border',
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = {left = 4, right = 3, top = 4, bottom = 3}
-        }
-    end
-    f:SetBackdrop(oq.__backdrop14)
-    f:SetBackdropColor(0.2, 0.2, 0.2, 1.0)
-    f:SetFrameLevel(f:GetFrameLevel() + 100) -- top
-
-    f.line_1 = oq.label(f, 10, 10, cx - 2 * 10, 22, 'new version available', 'TOP', 'CENTER')
-    f.line_1:SetFont(OQ.FONT, 14, '')
-    f.line_2 = oq.label(f, 10, 35, cx - 2 * 10, 22, 'required', 'TOP', 'CENTER')
-    f.line_2:SetFont(OQ.FONT, 14, '')
-    return f
-end
-
 function oq.fmt_time(t)
     if (t == nil) then
         t = 0
@@ -18306,7 +18122,6 @@ function oq.procs_init()
     oq.proc['proxy_target'] = oq.on_proxy_target
     oq.proc['oq_user'] = oq.on_oq_user
     oq.proc['oq_user_ack'] = oq.on_oq_user
-    oq.proc['oq_version'] = oq.on_oq_version
     oq.proc['ready_check'] = oq.on_ready_check
     oq.proc['ready_check_complete'] = oq.on_ready_check_complete
     oq.proc['remove'] = oq.on_remove
@@ -18652,52 +18467,26 @@ function oq.on_oq_user(toonName, realmName, faction, btag, ts_, is_ack)
     oq.n_connections()
 end
 
-function oq.on_oq_version(version, build)
-    build = tonumber(build)
-    if (build == nil) or (build == OQ_BUILD) then
+function oq.CheckForUpdates(oq_ver)
+    oq_ver = tonumber(oq_ver)
+    if (oq_ver == nil) or (oq_ver == OQ_BUILD) then
         -- match, bail out
         return
     end
-    -- x.xx
-    if (#version > 4) then
-        return
-    end
-    local major, minor, revision = version:match('(%d+).(%d+)(%w?)')
-    if (major == nil) or (minor == nil) then
-        return
-    end
+
     local now = oq.utc_time()
-    if (build < OQ_BUILD) then
+    if (oq_ver < OQ_BUILD) then
         -- my version is the same or newer, nothing to do.
         return
-    elseif (OQ_data.next_update_notice == nil) or (OQ_data.next_update_notice < now) then
+    end
+    
+    if (OQ_data.next_update_notice == nil) or (OQ_data.next_update_notice < now) then
         -- notify user
-        local dialog = StaticPopup_Show('OQ_NewVersionAvailable', version, build)
+        local dialog = StaticPopup_Show('OQ_NewVersionAvailable', oq.get_version_str(oq_ver))
         dialog:SetWidth(400)
         dialog:SetHeight(175)
         -- update notification cycle
         OQ_data.next_update_notice = now + OQ_NOTIFICATION_CYCLE
-    end
-end
-
-function oq.check_version(vars)
-    local oq_sig = vars[1]
-    local oq_ver = vars[2]
-    --  local token    = vars[3] ;
-    local msg_id = vars[5]
-    local version = vars[6]
-    local build = vars[7]
-    if (msg_id == nil) or (oq_sig ~= OQ_HEADER) then
-        -- definitely not an OQ msg
-        return
-    end
-    -- definitely an OQ msg if it gets this far
-    --
-
-    if (msg_id == 'oq_version') then
-        oq.on_oq_version(version, build)
-    elseif (msg_id == 'scores') then
-        oq.verify_version(oq_ver, vars[8]) -- vars[8] is the 3rd arg for 'scores'
     end
 end
 
@@ -18904,6 +18693,7 @@ function oq.process_msg(sender, msg)
     if (msg:find(OQ.DRUNK)) or (oq._isAfk) then
         return
     end
+
     tbl.fill_match(_vars, msg, ',')
     _msg = msg
     _core_msg, _to_name, _to_realm, _from = oq.crack_bn_msg(msg)
@@ -18923,11 +18713,17 @@ function oq.process_msg(sender, msg)
         return
     end
 
-    if (oq_sig ~= OQ_HEADER) or (oq_ver ~= OQ_BUILD_STR) or (oq.toon.disabled) then
+    if (oq_sig ~= OQ_HEADER or oq.toon.disabled) then
         -- not the same protocol, cannot proceed
-        oq.check_version(_vars)
         return
     end
+    
+    if (oq_ver ~= OQ_BUILD_STR) then
+        -- different versions
+        oq.CheckForUpdates(oq_ver)
+        return
+    end
+    
     _msg_type = token:sub(1, 1)
 
     if (_msg_type == 'A') then
@@ -20745,11 +20541,7 @@ function oq.ui_toggle()
             oq.badtag_shade()
             return
         end
-        -- update required
-        if (oq._update_required) then
-            oq.required_update_shade()
-            return
-        end
+        
         -- initial prep
         oq.oqgeneral_join()
         if (oq.toon.disabled) then

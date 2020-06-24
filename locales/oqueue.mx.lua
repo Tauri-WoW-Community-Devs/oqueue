@@ -158,7 +158,7 @@ OQ.DLG_03 = 'Por favor da un nombre a tu premade:'
 OQ.DLG_04 = 'Por favor introduce tu ID Real:'
 OQ.DLG_05 = 'Contrase�a:'
 OQ.DLG_06 = 'Por favor, introduce el id real o el nombre del nuevo lider de grupo:'
-OQ.DLG_07 = '\n�� Disponible NUEVA VERSI�N !!\n\noQueue  v%s  build  %d\n'
+OQ.DLG_07 = '\n�� Disponible NUEVA VERSI�N !!\n\noQueue  v%s\n'
 OQ.DLG_08 =
     'Por favor, deja tu grupo para unirte a la\nlista de espera o pide a tu lider de grupo\nque ponga en cola el grupo completo'
 OQ.DLG_09 = 'Solo el lider del grupo puede crear una Premade OQ'

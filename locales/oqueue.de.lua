@@ -156,7 +156,7 @@ OQ.DLG_03 = 'Bitte benenne deine Premade:'
 OQ.DLG_04 = 'Bitte gib deine real-id ein:'
 OQ.DLG_05 = 'Passwort:'
 OQ.DLG_06 = 'Bitte gib die real-id oder den Namen des neuen Gruppenleiters ein:'
-OQ.DLG_07 = 'nNEUE VERSION JETZT verf�gbar !!nnoQueue v%s build %dn'
+OQ.DLG_07 = 'nNEUE VERSION JETZT verf�gbar !!nnoQueue v%s\n'
 OQ.DLG_08 =
     'Bitte verlasse deine Gruppe, um der Warteschlange beizutreten odernbitte deinen Leiter als ganze Gruppe beizutreten'
 OQ.DLG_09 = 'Nur der Gruppenleiter kann eine OQ-Vorgefertigte-Gruppe erstellen'
