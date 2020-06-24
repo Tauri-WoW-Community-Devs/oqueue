@@ -7,7 +7,7 @@ local tbl = OQ.table
 -------------------------------------------------------------------------------
 local OQ_MAJOR = 2
 local OQ_MINOR = 0
-local OQ_REVISION = 2
+local OQ_REVISION = 3
 local OQ_BUILD_STR = tostring(OQ_MAJOR) .. tostring(OQ_MINOR) .. tostring(OQ_REVISION)
 local OQ_BUILD = tonumber(OQ_BUILD_STR)
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
@@ -2171,7 +2171,7 @@ function oq.get_spell_crit()
     local minCrit = GetSpellCritChance(2)
     local i
     for i = 1, 7 do
-        minCrit = min(minCrit, GetSpellCritChance(i))
+        minCrit = max(minCrit, GetSpellCritChance(i))
     end
     return minCrit
 end
@@ -17406,8 +17406,13 @@ function oq.get_stat_spr()
 end
 
 function oq.get_spell_hit()
-    local spellhit = GetSpellHitModifier() or 0
+    local spellhit =  GetCombatRatingBonus(CR_HIT_SPELL) + GetSpellHitModifier()
     return floor(spellhit * 100)
+end
+
+function oq.get_spell_haste()
+    local haste = UnitSpellHaste("player") or 0
+    return floor(haste)
 end
 
 function oq.get_melee_hit()
@@ -17508,7 +17513,7 @@ function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_t
             s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_stam() or 0)) -- stam
             s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
             s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_str() or 0)) -- str
-            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+			s = s .. oq.encode_mime64_2digit(0) -- placeholder
             s = s .. oq.encode_mime64_2digit(0) -- placeholder
         elseif (type == OQ.CASTER) then
             --
@@ -17521,9 +17526,9 @@ function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_t
             s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_hit() or 0)) -- spell hit
             s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_dmg() or 0)) -- spell damage
             s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_stam() or 0)) -- stam
-            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_agil() or 0)) -- agil
+            s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_int() or 0)) -- agil
             s = s .. oq.encode_mime64_2digit(floor(oq.get_stat_str() or 0)) -- str
-            s = s .. oq.encode_mime64_2digit(0) -- placeholder
+			s = s .. oq.encode_mime64_2digit(floor(oq.get_spell_haste() or 0)) -- spell haste
             s = s .. oq.encode_mime64_2digit(0) -- placeholder
         elseif (type == OQ.HEALER) then
             --
@@ -17666,6 +17671,7 @@ function oq.decode_their_stats(m, s)
             m.spell_crit = (oq.decode_mime64_digits(s:sub(21, 22)) or 0) / 100
             m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
             m.spr = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
+			m.spell_haste = (oq.decode_mime64_digits(s:sub(27, 28)) or 0)
             m.raids = s:sub(31, -1)
         elseif (m.spec_type == OQ.HEALER) then
             --
