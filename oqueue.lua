@@ -123,49 +123,25 @@ end
 -------------------------------------------------------------------------------
 --   local defines
 -------------------------------------------------------------------------------
-local OQ_versions = {
-    ['2.0.0'] = 1,
-    ['2.0.1'] = 2,
-    ['2.0.2'] = 3,
-    ['2.0.3'] = 4,
-    ['2.0.4'] = 5,
-    ['2.0.5'] = 6,
-    ['2.0.6'] = 7,
-    ['2.0.7'] = 8,
-    ['2.0.8'] = 9,
-    ['2.0.9'] = 10,
-    ['2.1.0'] = 11,
-    ['2.1.1'] = 12,
-    ['2.1.2'] = 13,
-    ['2.1.3'] = 14,
-    ['2.1.4'] = 15,
-    ['2.1.5'] = 16,
-    ['2.1.6'] = 17,
-    ['2.1.7'] = 18,
-    ['2.1.8'] = 19,
-    ['2.1.9'] = 20,
-    ['2.1.0'] = 21
-}
 
-function oq.get_version_id()
-    return OQ_versions[OQUEUE_VERSION] or 0
+function oq.get_version_str(version)
+    if (version == nil) then
+        return 'Unknown'
+    end
+
+    version = tostring(version)
+    if (version == '') then
+        return 'Unknown'
+    end
+
+    local major, minor, rev = version:match('(%d)(%d)(%d)')
+    if (major == nil or minor == nil or rev == nil) then
+        return 'Unknown'
+    end
+    
+    return major .. "." .. minor .. "." ..rev
 end
 
-function oq.get_version_str(id)
-    if (id == 0) then
-        return ''
-    end
-    if (id == 99) then
-        return '--'
-    end
-    local i, v
-    for i, v in pairs(OQ_versions) do
-        if (v == id) then
-            return i
-        end
-    end
-    return ''
-end
 -------------------------------------------------------------------------------
 --   slash commands
 -------------------------------------------------------------------------------
@@ -276,20 +252,6 @@ function oq.on_update_instance_info()
         print('-')
     end
 end
-
-local bg_points = {
-    [1] = 'AB',
-    [2] = 'AV',
-    [3] = 'BFG',
-    [4] = 'EotS',
-    [5] = 'IoC',
-    [6] = 'SotA',
-    [7] = 'TP',
-    [8] = 'WSG',
-    [9] = 'SSM',
-    [10] = 'ToK',
-    [11] = 'DWG'
-}
 
 function oq.toggle_mini()
     if (OQ_MinimapButton:IsVisible()) then
@@ -4154,7 +4116,7 @@ function oq.send_my_premade_info()
         oq.raid.leader_xp,
         player_karma,
         oq.raid._preferences,
-        oq.get_version_id()
+        OQ_BUILD
     )
     oq._my_group = nil
 
@@ -4444,7 +4406,7 @@ function oq.push_initial_raid_info()
             oq.raid.leader_xp,
             player_karma,
             oq.raid._preferences,
-            oq.get_version_id()
+            OQ_BUILD
         )
     end
 end
@@ -4490,7 +4452,7 @@ function oq.raid_create()
     oq.raid.pword = oq.tab3_pword:GetText() or ''
     oq.raid.leader_xp = oq.get_leader_experience()
     oq.raid.next_advert = 0
-    oq.raid.oq_ver = oq.get_version_id()
+    oq.raid.oq_ver = OQ_BUILD
 
     local m = tbl.new()
     m.level = player_level
@@ -15558,7 +15520,7 @@ function oq.on_req_invite(raid_token, raid_type, n_members_, req_token, enc_data
         oq.send_invite_response(name_, realm_, realid_, raid_token, req_token, 'N', L['invalid password'])
         tbl.delete(m)
         return
-    elseif ((m.oq_ver + 1) < oq.get_version_id()) or (raid_type ~= oq.raid.type) or (raid_type ~= m.premade_type) then
+    elseif ((m.oq_ver + 1) < OQ_BUILD) or (raid_type ~= oq.raid.type) or (raid_type ~= m.premade_type) then
         oq.send_invite_response(name_, realm_, realid_, raid_token, req_token, 'N', L['outdated oQueue. please update'])
         tbl.delete(m)
         return
@@ -16719,7 +16681,7 @@ function oq.gather_my_stats()
         hks = 0
     end
     me.hks = floor(hks / 1000)
-    me.oq_ver = oq.get_version_id()
+    me.oq_ver = OQ_BUILD
     me.tears = oq.total_tears()
     me.pvppower = oq.get_pvppower()
     me.mmr = oq.get_mmr()
@@ -17406,7 +17368,7 @@ function oq.get_stat_spr()
 end
 
 function oq.get_spell_hit()
-    local spellhit =  GetCombatRatingBonus(CR_HIT_SPELL) + GetSpellHitModifier()
+    local spellhit = (GetCombatRatingBonus(CR_HIT_SPELL) + GetSpellHitModifier()) or 0
     return floor(spellhit * 100)
 end
 
@@ -17416,7 +17378,7 @@ function oq.get_spell_haste()
 end
 
 function oq.get_melee_hit()
-    local meleehit = GetHitModifier() or 0
+    local meleehit = (GetCombatRatingBonus(CR_HIT_MELEE) + GetHitModifier()) or 0
     return floor(meleehit * 100)
 end
 
@@ -17426,7 +17388,7 @@ function oq.get_melee_haste()
 end
 
 function oq.get_range_hit()
-    local rangehit = GetHitModifier() or 0
+    local rangehit = (GetCombatRatingBonus(CR_HIT_RANGED) + GetHitModifier()) or 0
     return floor(rangehit * 100)
 end
 
@@ -17442,8 +17404,7 @@ function oq.get_ranged_atk_pow()
 end
 
 function oq.get_spell_crit()
-    local spellcrit = GetSpellCritChance() or 0
-    return floor(spellcrit * 100)
+    return GetSpellCritChance(2)
 end
 
 function oq.get_spell_mp5()
@@ -17462,6 +17423,7 @@ function oq.get_spell_dmg()
     for i = 1, 7 do
         dmg = max(dmg, GetSpellBonusDamage(i) or 0)
     end
+    
     return dmg
 end
 
@@ -17492,7 +17454,7 @@ function oq.encode_my_stats(flags, xflags, charm, s1, s2, ignore_raid_xp, raid_t
     s = s .. oq.encode_mime64_1digit(oq.get_player_role())
     s = s .. oq.encode_mime64_1digit(OQ.CLASS_SPEC[spec_id].id)
     s = s .. oq.encode_mime64_2digit(player_ilevel)
-    s = s .. oq.encode_mime64_1digit(oq.get_version_id())
+    s = s .. oq.encode_mime64_2digit(OQ_BUILD)
     --
 
     --[[ premade type specific data ]] if
@@ -17638,7 +17600,7 @@ function oq.decode_their_stats(m, s)
     m.role = oq.decode_mime64_digits(s:sub(12, 12))
     m.spec_id = oq.decode_mime64_digits(s:sub(13, 13))
     m.ilevel = oq.decode_mime64_digits(s:sub(14, 15))
-    m.oq_ver = oq.decode_mime64_digits(s:sub(16, 16))
+    m.oq_ver = oq.decode_mime64_digits(s:sub(16, 17))
     m.spec_type = oq.get_class_spec_type(m.spec_id) -- tank, healer, dmg
     m.role_type_id, m.role_type = oq.role_type(m.spec_id) -- ie: 0x0001, 'dps'
     m.karma = nil
@@ -17652,12 +17614,12 @@ function oq.decode_their_stats(m, s)
             -- agil
             -- str
             --
-            m.melee_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100 -- now a percentage
-            m.armor = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
-            m.stam = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
-            m.agil = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
-            m.str = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
-            m.raids = s:sub(31, -1)
+            m.melee_hit = (oq.decode_mime64_digits(s:sub(18, 19)) or 0) / 100 -- now a percentage
+            m.armor = (oq.decode_mime64_digits(s:sub(20, 21)) or 0)
+            m.stam = (oq.decode_mime64_digits(s:sub(22, 23)) or 0)
+            m.agil = (oq.decode_mime64_digits(s:sub(24, 25)) or 0)
+            m.str = (oq.decode_mime64_digits(s:sub(26, 27)) or 0)
+            m.raids = s:sub(32, -1)
         elseif (m.spec_type == OQ.CASTER) then
             --
             -- spell hit
@@ -17681,12 +17643,12 @@ function oq.decode_their_stats(m, s)
             -- int
             -- spell crit
             --
-            m.bonus_heal = (oq.decode_mime64_digits(s:sub(17, 18)) or 0)
-            m.spr = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
-            m.heal_mp5 = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
-            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
-            m.spell_crit = (oq.decode_mime64_digits(s:sub(25, 26)) or 0) / 100
-            m.raids = s:sub(31, -1)
+            m.bonus_heal = (oq.decode_mime64_digits(s:sub(18, 19)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(20, 21)) or 0)
+            m.heal_mp5 = (oq.decode_mime64_digits(s:sub(22, 23)) or 0)
+            m.int = (oq.decode_mime64_digits(s:sub(24, 25)) or 0)
+            m.spell_crit = (oq.decode_mime64_digits(s:sub(26, 27)) or 0) / 100
+            m.raids = s:sub(32, -1)
         elseif (m.spec_type == OQ.RDPS) then
             --
             -- range hit
@@ -17697,14 +17659,14 @@ function oq.decode_their_stats(m, s)
             -- ranged crit
             -- ranged atk power
             --
-            m.ranged_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
-            m.agil = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
-            m.stam = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
-            m.int = (oq.decode_mime64_digits(s:sub(23, 24)) or 0)
-            m.spr = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
-            m.ranged_crit = (oq.decode_mime64_digits(s:sub(27, 28)) or 0) / 100
-            m.ranged_atk_pow = (oq.decode_mime64_digits(s:sub(29, 30)) or 0)
-            m.raids = s:sub(31, -1)
+            m.ranged_hit = (oq.decode_mime64_digits(s:sub(18, 19)) or 0) / 100
+            m.agil = (oq.decode_mime64_digits(s:sub(20, 21)) or 0)
+            m.stam = (oq.decode_mime64_digits(s:sub(22, 23)) or 0)
+            m.int = (oq.decode_mime64_digits(s:sub(24, 25)) or 0)
+            m.spr = (oq.decode_mime64_digits(s:sub(26, 27)) or 0)
+            m.ranged_crit = (oq.decode_mime64_digits(s:sub(28, 29)) or 0) / 100
+            m.ranged_atk_pow = (oq.decode_mime64_digits(s:sub(30, 31)) or 0)
+            m.raids = s:sub(32, -1)
         elseif (m.spec_type == OQ.MDPS) then
             --
             -- melee hit
@@ -17713,25 +17675,26 @@ function oq.decode_their_stats(m, s)
             -- melee crit
             -- melee attack power ( oq.meleeAP )
             --
-            m.melee_hit = (oq.decode_mime64_digits(s:sub(17, 18)) or 0) / 100
-            m.str = (oq.decode_mime64_digits(s:sub(19, 20)) or 0)
-            m.agil = (oq.decode_mime64_digits(s:sub(21, 22)) or 0)
-            m.melee_crit = (oq.decode_mime64_digits(s:sub(23, 24)) or 0) / 100
-            m.melee_atk_pow = (oq.decode_mime64_digits(s:sub(25, 26)) or 0)
-            m.raids = s:sub(31, -1)
+            m.melee_hit = (oq.decode_mime64_digits(s:sub(18, 19)) or 0) / 100
+            m.str = (oq.decode_mime64_digits(s:sub(20, 21)) or 0)
+            m.agil = (oq.decode_mime64_digits(s:sub(22, 23)) or 0)
+            m.melee_crit = (oq.decode_mime64_digits(s:sub(24, 25)) or 0) / 100
+            m.melee_atk_pow = (oq.decode_mime64_digits(s:sub(26, 27)) or 0)
+            m.raids = s:sub(32, -1)
         end
         m.karma = m.raids:sub(-1, -1) -- last character
         m.raids = m.raids:sub(1, -2) -- trim off last character
     else --
-        --[[ pvp data ]] m.resil = oq.decode_mime64_digits(s:sub(17, 19))
-        m.pvppower = oq.decode_mime64_digits(s:sub(20, 22))
-        m.wins = oq.decode_mime64_digits(s:sub(23, 25))
-        m.losses = oq.decode_mime64_digits(s:sub(26, 28))
-        m.tears = oq.decode_mime64_digits(s:sub(29, 31))
-        m.mmr = oq.decode_mime64_digits(s:sub(32, 33))
-        m.hks = oq.decode_mime64_digits(s:sub(34, 35))
+        --[[ pvp data ]] 
+        m.resil = oq.decode_mime64_digits(s:sub(18, 20))
+        m.pvppower = oq.decode_mime64_digits(s:sub(21, 23))
+        m.wins = oq.decode_mime64_digits(s:sub(24, 26))
+        m.losses = oq.decode_mime64_digits(s:sub(27, 29))
+        m.tears = oq.decode_mime64_digits(s:sub(30, 32))
+        m.mmr = oq.decode_mime64_digits(s:sub(33, 34))
+        m.hks = oq.decode_mime64_digits(s:sub(35, 36))
 
-        m.ranks = s:sub(38, -1)
+        m.ranks = s:sub(39, -1)
 
         -- tail:  223355k
         --    m.arena2s  = oq.decode_mime64_digits( m.ranks:sub( -7, -6 ) ) ;
@@ -17973,7 +17936,7 @@ function oq.encode_premade_info(raid_token, stat, tm, has_pword, is_realm_specif
                                 oq.encode_mime64_6digit(tm) ..
                                     oq.encode_mime64_2digit(min_number) ..
                                         oq.encode_mime64_1digit((karma or 0) + 25) .. -- will change it from -25..25 to 0..50
-                                            oq.encode_mime64_1digit(oq.get_version_id())
+                                            oq.encode_mime64_2digit(OQ_BUILD)
 end
 
 function oq.decode_premade_info(data)
@@ -17990,11 +17953,18 @@ function oq.decode_premade_info(data)
         karma = oq.decode_mime64_digits(karma) - 25
     end
 
-    return faction, has_pword, is_realm_specific, is_source, range, oq.decode_mime64_digits(data:sub(3, 4)), oq.decode_mime64_digits( -- min ilevel
-        data:sub(5, 7)
-    ), oq.decode_mime64_digits(data:sub(8, 8)), oq.decode_mime64_digits(data:sub(9, 9)), oq.decode_mime64_digits( -- min resil -- nmembers -- nwaiting
-        data:sub(10, 10)
-    ), oq.utc_time(), oq.decode_mime64_digits(data:sub(17, 18)), karma, oq.decode_mime64_digits(data:sub(20, 20)) --         oq.decode_mime64_digits( data:sub(11,16) ), -- raid.tm -- stat -- raid.tm is now local time since it came across a realm channel -- min mmr -- karma; must be -25..25 -- oq version
+    return faction, has_pword, is_realm_specific, is_source, 
+    range,
+    oq.decode_mime64_digits( data:sub( 3, 4) ), -- min ilevel
+    oq.decode_mime64_digits( data:sub( 5, 7) ), -- min resil
+    oq.decode_mime64_digits( data:sub( 8, 8) ), -- nmembers
+    oq.decode_mime64_digits( data:sub( 9, 9) ), -- nwaiting
+    oq.decode_mime64_digits( data:sub(10,10) ), -- stat
+--         oq.decode_mime64_digits( data:sub(11,16) ), -- raid.tm
+    oq.utc_time(),  -- raid.tm is now local time since it came across a realm channel
+    oq.decode_mime64_digits( data:sub(17,18) ), -- min mmr
+    karma                                     , -- karma; must be -25..25
+    oq.decode_mime64_digits( data:sub(20,21) )  -- oq version
 end
 
 function oq.encode_preferences(voip_, role_, classes_, lang_)
