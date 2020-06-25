@@ -147,7 +147,7 @@ end
 
 SLASH_OQUEUE1 = '/oqueue'
 SLASH_OQUEUE2 = '/oq'
-SlashCmdList['OQUEUE'] = function(msg, editbox)
+SlashCmdList['OQUEUE'] = function(msg)
     if (msg == nil) or (msg == '') then
         oq.ui_toggle()
         return
@@ -165,7 +165,7 @@ end
 
 SLASH_OQLOG1 = '/oqlog'
 SLASH_OQLOG2 = '/log'
-SlashCmdList['OQLOG'] = function(msg, editbox)
+SlashCmdList['OQLOG'] = function()
     oq.toggle_log()
 end
 
@@ -504,7 +504,7 @@ end
 -- new browser capability
 -- might be able to show armory in-game (nice for quick lookups off waitlist)
 -- not ready yet; doesn't seem to work and may break key binds
-function oq.armory(opts)
+function oq.armory()
     if (oq.browser == nil) then
         oq.browser = oq.CreateFrame('Browser', 'oQueueBrowser', UIParent)
     end
@@ -4757,7 +4757,7 @@ function oq.WhisperRaidLeader(msg)
     oq.XRealmWhisper(oq.raid.leader, oq.raid.leader_realm, msg)
 end
 
-function oq.send_invite_accept(raid_token, group_id, slot, name, class, realm, realid, req_token)
+function oq.send_invite_accept(raid_token, group_id, slot, _, class, _, _, req_token)
     -- the 'W' stands for 'whisper' and should not be echo'd far and wide
     local msg_tok = 'W' .. oq.token_gen()
     oq.token_push(msg_tok)
@@ -4797,7 +4797,7 @@ function oq.check_for_deserter()
     return player_deserter
 end
 
-function oq.check_my_role(changedPlayer, changedBy, oldRole, newRole)
+function oq.check_my_role(changedPlayer, _, _, newRole)
     if (changedPlayer == player_name) then
         local role = OQ.ROLES[newRole]
         if (role ~= player_role) then
@@ -6652,7 +6652,7 @@ end
 --------------------------------------------------------------------------
 --
 --------------------------------------------------------------------------
-function oq.on_enter_bg(ndx)
+function oq.on_enter_bg()
     if (oq.raid.raid_token == nil) or (oq.raid.type ~= OQ.TYPE_BG) then
         return
     end
@@ -6746,7 +6746,7 @@ function oq.reset_button(f)
     end
     f:SetScript(
         'PostClick',
-        function(self)
+        function()
         end
     )
     f._is_big = nil
@@ -6987,7 +6987,7 @@ function oq.UninviteUnit(name)
 end
 
 -- TODO remove this, since we will always operate on either only char_name or char_name-realm_short
-function oq.InviteUnit(name, realm, req_token, ok2remove)
+function oq.InviteUnit(name, realm, req_token)
     oq.log(true, 'oq.InviteUnit - please convert to InviteUnitRealID')
     if (realm == nil) or (realm == player_realm) then
         InviteUnit(name)
@@ -7004,7 +7004,7 @@ function oq.InviteUnit(name, realm, req_token, ok2remove)
     next_invite_tm = 0 -- able to invite another player now
 end
 
-function oq.InviteUnitRealID(realId, reqToken, okToremove)
+function oq.InviteUnitRealID(realId, reqToken)
     if (realId == nil or realId == '' or strlower(realId) == 'nil') then
         return
     end
@@ -7123,7 +7123,7 @@ function oq.group_invite_slot(req_token, group_id, slot)
     oq.reform_keep(r.name, r.realm, enc_data_, req_token)
 
     oq.XRealmWhisper(r.name, r.realm, msg)
-    oq.timer_oneshot(1.0, oq.InviteUnitRealID, r.realid, req_token)
+    oq.timer_oneshot(1.0, oq.InviteUnitRealID, r.realid)
 end
 
 function oq.group_invite_first_available(req_token)
@@ -7209,7 +7209,7 @@ function oq.on_classdot_enter(self)
     oq.tooltip_set2(self, m)
 end
 
-function oq.on_classdot_exit(self)
+function oq.on_classdot_exit()
     oq.tooltip_hide()
 end
 
@@ -7227,7 +7227,7 @@ function oq.on_ladderdot_enter(self)
     oq.tooltip_set2(self, m)
 end
 
-function oq.on_ladderdot_exit(self)
+function oq.on_ladderdot_exit()
     oq.tooltip_hide()
 end
 
@@ -7411,7 +7411,7 @@ function oq.make_classdot_dropdown(cell)
         if (oq.is_set(v.f, mask)) then
             local func = nil
             if (v.notClickable == nil) then
-                func = function(self, arg1, arg2)
+                func = function(_, arg1, arg2)
                     oq.on_classdot_menu_select(arg2.gid, arg2.slot, arg1)
                 end
             end
@@ -7716,7 +7716,7 @@ function oq.create_challenge_dot(parent, x, y, cx, cy)
     return f
 end
 
-function oq.on_ladderdot_click(cell, frame)
+function oq.on_ladderdot_click(cell)
     if (oq.iam_raid_leader() and oq.cell_occupied(cell.gid, cell.slot)) then
         cell:SetPoint('Center', UIParent, 'Center')
         oq.make_classdot_dropdown(cell)
@@ -7814,7 +7814,7 @@ function oq.create_ladder_seat(parent, x, y, cx, cy)
     return f
 end
 
-function oq.create_group(parent, x, y, cx, cy, label_cx, title, group_id)
+function oq.create_group(parent, x, y, cx, cy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'GroupRegion'
     local f = oq.panel(parent, n, x, y, cx, cy)
@@ -7845,7 +7845,7 @@ function oq.create_group(parent, x, y, cx, cy, label_cx, title, group_id)
     return f
 end
 
-function oq.create_dungeon_group(parent, x_, y_, ix, iy, label_cx, title, group_id)
+function oq.create_dungeon_group(parent, x_, y_, ix, iy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'GroupRegion'
     local f = oq.panel(parent, n, x_, y_, ix, iy)
@@ -7872,7 +7872,7 @@ function oq.create_dungeon_group(parent, x_, y_, ix, iy, label_cx, title, group_
     return f
 end
 
-function oq.create_challenge_group(parent, x_, y_, ix, iy, label_cx, title, group_id)
+function oq.create_challenge_group(parent, x_, y_, ix, iy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'GroupRegion'
     local f = oq.panel(parent, n, x_, y_, ix, iy)
@@ -7899,7 +7899,7 @@ function oq.create_challenge_group(parent, x_, y_, ix, iy, label_cx, title, grou
     return f
 end
 
-function oq.create_scenario_group(parent, x, y, ix, iy, label_cx, title, group_id)
+function oq.create_scenario_group(parent, x, y, ix, iy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'GroupRegion'
     local f = oq.panel(parent, n, x, y, ix, iy)
@@ -7952,7 +7952,7 @@ function oq.create_arena_group(parent, x_, y_, ix, iy, label_cx, title, group_id
     return f
 end
 
-function oq.create_ladder_group(parent, x_, y_, ix, iy, label_cx, title, group_id)
+function oq.create_ladder_group(parent, x_, y_, ix, iy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'LadderRegion'
     local f = oq.panel(parent, n, x_, y_, ix, iy)
@@ -7966,7 +7966,7 @@ function oq.create_ladder_group(parent, x_, y_, ix, iy, label_cx, title, group_i
     f.gid = oq.label(f, 2, 2, 16, cy - 8, title)
 
     f.slots = tbl.new()
-    local x = 10
+    local x
     local y = (iy / 2) - 2 * (cy + 2)
     local ndx = 2
     for _ = 1, 4 do
@@ -8124,13 +8124,13 @@ function oq.orbit_show(f)
 
     f:SetScript(
         'OnUpdate',
-        function(self, elasped)
-            oq.orbit_update(self, elasped)
+        function(self)
+            oq.orbit_update(self)
         end
     )
 end
 
-function oq.orbit_update(f, elapsed)
+function oq.orbit_update(f)
     if (f.__orbit ~= nil) then
         local o = f.__orbit
 
@@ -8382,7 +8382,7 @@ function oq.create_premade_listing(parent, x, y, cx, cy, token, type)
             OQ.X_BUTTON_UP,
             OQ.X_BUTTON_DN,
             OQ.X_BUTTON_UP,
-            function(self, button, down)
+            function(self, button)
                 local tok = self:GetParent().token
                 if (button == 'LeftButton') then
                     oq.send_leave_waitlist(tok)
@@ -8557,7 +8557,7 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
                 75,
                 cy - 2,
                 OQ.BUT_INVITE,
-                function(self, button, down)
+                function(self, button)
                     if (oq.player_realid == nil) then
                         return
                     else
@@ -8672,16 +8672,6 @@ function oq.set_group_member(group_id, slot, name_, realm_, class_, rid, s1, s2)
     oq.assure_slot_exists(group_id, slot)
 
     local m = oq.raid.group[group_id].member[slot]
-
-    if (m.realid ~= rid) then
-        if (rid) and (rid ~= '-') and (rid ~= '') and (name_) and (realm_) and (realm_ ~= 'nil') then
-            -- new member
-            oq.on_member_join(name_, realm_, rid)
-        elseif ((rid == nil) or ((rid) and ((rid == '') or (rid == '-')))) and (m.realid ~= '-') then
-            -- member left
-            oq.on_member_left(m.name, m.realm, m.realid)
-        end
-    end
 
     m.name = name_
     m.class = class_
@@ -8995,12 +8985,10 @@ function oq.pass_filter(premade)
         return true
     end
     local result = nil
-    local p1 = 1
-    local p2 = 1
     local cond = nil
-    local c1 = nil
-    local r = nil
-    local f = nil
+    local p1 = 1
+    local p2
+    local c1, r, f
     while (str) do
         p2, c1 = oq.strcspn(str, '&|')
         f = oq.trim(str:sub(p1, (p2 or 0) - 1))
@@ -10137,7 +10125,6 @@ function oq.create_ladder_seats(parent, x_, y_, cx_, cy_)
     x = x_ + cx_ - (3 * cx_ / 8) - cx
     y = y_ + (cy_ / 2) - cy / 2
     seats[ndx] = oq.create_ladder_seat(parent, x, y, cx, cy)
-    ndx = ndx + 1
 
     return seats
 end
@@ -10157,8 +10144,6 @@ function oq.create_tab1_common(parent)
     local x, y, cx, cy, label_cx
     x = 20
     y = 65
-
-    oq.theme_set(parent)
 
     cx = parent:GetWidth() - 2 * x
     cy = (425 - 2 * y) / 10
@@ -10250,7 +10235,7 @@ function oq.create_tab1_common(parent)
         100,
         25,
         OQ.ROLE_CHK,
-        function(self)
+        function()
             InitiateRolePoll()
         end
     )
@@ -10264,7 +10249,7 @@ function oq.create_tab1_common(parent)
         145,
         25,
         OQ.LEAVE_PREMADE,
-        function(self)
+        function()
             oq.quit_raid()
         end
     )
@@ -10377,18 +10362,6 @@ function oq.onShow_tab1()
     --  elseif (oq.raid.type == OQ.TYPE_LADDER) then
     --    oq.ui.ladder_frame:Show();
     end
-end
-
-function oq.theme_set(parent) --
-    --[[ resize looks like crap.  would need to redo entire framing and titlebar 
-  parent.backdrop = parent:CreateTexture(nil, "BACKGROUND");
-  parent.backdrop:SetTexture("Interface/EncounterJournal/UI-EJ-WrathoftheLichKing.blp");
-  parent.backdrop:SetWidth (floor(parent:GetWidth()) - 10);
-  parent.backdrop:SetHeight(floor(parent:GetHeight()) - 10);
-  parent.backdrop:SetTexCoord(0, 762/1024, 0, 424/512);
-  parent.backdrop:SetPoint("TOPLEFT", parent, "TOPLEFT", 5, -5);
-  parent.backdrop:SetAlpha(1.0);
-]]
 end
 
 function oq.theme_resize(parent)
@@ -10595,7 +10568,7 @@ function oq.make_dropdown_premade_type_selector()
     local m = oq.menu_create()
     for arg, text in tbl.orderedByValuePairs(OQ.premade_selections) do
         oq.menu_add(text, arg, text, nil,
-            function(cb_edit, arg1, arg2)
+            function(_, arg1)
                 oq.premade_type_selection(arg1)
             end
         )
@@ -10627,7 +10600,7 @@ function oq.make_dropdown_difficulty_filter()
             diff_id,
             desc,
             nil,
-            function(cb_edit, arg1, arg2)
+            function(_, arg1, arg2)
                 oq.premade_difficulty_selection(arg1, arg2)
             end
         )
@@ -10670,7 +10643,7 @@ function oq.make_dropdown_premade_subtype_selector()
         0,
         '',
         nil,
-        function(cb_edit, arg1, arg2)
+        function(_, arg1, arg2)
             oq.premade_subtype_selection(arg1, arg2)
         end
     )
@@ -10679,7 +10652,7 @@ function oq.make_dropdown_premade_subtype_selector()
         63,
         '',
         nil,
-        function(cb_edit, arg1, arg2)
+        function(_, arg1, arg2)
             oq.premade_subtype_selection(arg1, arg2)
         end
     )
@@ -10691,7 +10664,7 @@ function oq.make_dropdown_premade_subtype_selector()
                 text,
                 raid_id,
                 nil,
-                function(cb_edit, arg1, arg2)
+                function(_, arg1, arg2)
                     oq.premade_subtype_selection(arg1, arg2)
                 end
             )
@@ -10779,7 +10752,7 @@ OQ.voip_selections = {
     [OQ.VOIP_VENTRILO] = OQ.LABEL_VENTRILO,
     [OQ.VOIP_WOWVOIP] = OQ.LABEL_WOWVOIP
 }
-function oq.add_voip_subselection(m, arg, text, func)
+function oq.add_voip_subselection(arg, text, func)
     local t = '|T'
     if (OQ.VOIP_ICON[arg]) then
         t = t .. OQ.VOIP_ICON[arg]
@@ -10794,20 +10767,18 @@ function oq.make_dropdown_voip_selector()
     local m = oq.menu_create()
 
     oq.add_voip_subselection(
-        m,
         OQ.VOIP_NOVOICE,
         OQ.LABEL_NOVOICE,
-        function(cb_edit, arg1)
+        function(_, arg1)
             oq.voip_selection(arg1)
         end
     )
     for arg, text in tbl.orderedByValuePairs(OQ.voip_selections) do
         if (arg ~= OQ.VOIP_UNSPECIFIED) and (arg ~= OQ.VOIP_NOVOICE) then
             oq.add_voip_subselection(
-                m,
                 arg,
                 text,
-                function(cb_edit, arg1)
+                function(_, arg1)
                     oq.voip_selection(arg1)
                 end
             )
@@ -10816,7 +10787,7 @@ function oq.make_dropdown_voip_selector()
     return m
 end
 
-function oq.add_voip_suboption(m, arg, text, func)
+function oq.add_voip_suboption(arg, text, func)
     local t = '|T'
     local cnt = ''
     if (OQ.VOIP_ICON[arg]) then
@@ -10840,28 +10811,25 @@ function oq.make_dropdown_voip_filter()
     local m = oq.menu_create()
 
     oq.add_voip_suboption(
-        m,
         OQ.VOIP_UNSPECIFIED,
         OQ.LABEL_UNSPECIFIED,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_voip_filter(arg1, (button == 'RightButton'))
         end
     )
     oq.add_voip_suboption(
-        m,
         OQ.VOIP_NOVOICE,
         OQ.LABEL_NOVOICE,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_voip_filter(arg1, (button == 'RightButton'))
         end
     )
     for arg, text in tbl.orderedByValuePairs(OQ.voip_selections) do
         if (arg ~= OQ.VOIP_UNSPECIFIED) and (arg ~= OQ.VOIP_NOVOICE) then
             oq.add_voip_suboption(
-                m,
                 arg,
                 text,
-                function(cb_edit, arg1, arg2, button)
+                function(_, arg1, _, button)
                     oq.set_voip_filter(arg1, (button == 'RightButton'))
                 end
             )
@@ -10891,7 +10859,7 @@ OQ.lang_selections = {
     [OQ.LANG_ARABIC] = OQ.LABEL_ARABIC,
     [OQ.LANG_KOREAN] = OQ.LABEL_KOREAN
 }
-function oq.add_lang_subselection(m, arg, text, func)
+function oq.add_lang_subselection(arg, text, func)
     local t = '|T'
     if (OQ.LANG_ICON[arg]) then
         t = t .. OQ.LANG_ICON[arg]
@@ -10906,26 +10874,23 @@ function oq.make_dropdown_lang_selector()
     local m = oq.menu_create()
 
     oq.add_lang_subselection(
-        m,
         OQ.LANG_US_ENGLISH,
         OQ.LABEL_US_ENGLISH,
-        function(cb_edit, arg1, arg2)
+        function(_, arg1)
             oq.set_lang_preference(arg1)
         end
     )
     oq.add_lang_subselection(
-        m,
         OQ.LANG_UK_ENGLISH,
         OQ.LABEL_UK_ENGLISH,
-        function(cb_edit, arg1, arg2)
+        function(_, arg1)
             oq.set_lang_preference(arg1)
         end
     )
     oq.add_lang_subselection(
-        m,
         OQ.LANG_OC_ENGLISH,
         OQ.LABEL_OC_ENGLISH,
-        function(cb_edit, arg1, arg2)
+        function(_, arg1)
             oq.set_lang_preference(arg1)
         end
     )
@@ -10935,10 +10900,9 @@ function oq.make_dropdown_lang_selector()
                 (arg ~= OQ.LANG_OC_ENGLISH)
          then
             oq.add_lang_subselection(
-                m,
                 arg,
                 text,
-                function(cb_edit, arg1)
+                function(_, arg1)
                     oq.set_lang_preference(arg1)
                 end
             )
@@ -10947,7 +10911,7 @@ function oq.make_dropdown_lang_selector()
     return m
 end
 
-function oq.add_lang_suboption(m, arg, text, func)
+function oq.add_lang_suboption(arg, text, func)
     local t = '|T'
     local cnt = ''
     if (OQ.LANG_ICON[arg]) then
@@ -10971,23 +10935,20 @@ function oq.make_dropdown_lang_filter()
     local m = oq.menu_create()
 
     oq.add_lang_suboption(
-        m,
         OQ.LANG_UNSPECIFIED,
         OQ.LABEL_UNSPECIFIED,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_lang_filter(arg1, (button == 'RightButton'))
         end
     )
     oq.add_lang_suboption(
-        m,
         OQ.LANG_US_ENGLISH,
         OQ.LABEL_US_ENGLISH,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_lang_filter(arg1, (button == 'RightButton'))
         end
     )
     oq.add_lang_suboption(
-        m,
         OQ.LANG_UK_ENGLISH,
         OQ.LABEL_UK_ENGLISH,
         function(_, arg1, _, button)
@@ -10995,7 +10956,6 @@ function oq.make_dropdown_lang_filter()
         end
     )
     oq.add_lang_suboption(
-        m,
         OQ.LANG_OC_ENGLISH,
         OQ.LABEL_OC_ENGLISH,
         function(_, arg1, _, button)
@@ -11008,7 +10968,6 @@ function oq.make_dropdown_lang_filter()
                 (arg ~= OQ.LANG_OC_ENGLISH)
          then
             oq.add_lang_suboption(
-                m,
                 arg,
                 text,
                 function(_, arg1, _, button)
@@ -11069,7 +11028,7 @@ function oq.get_premade_type_id(text)
     return OQ.TYPE_NONE
 end
 
-function oq.add_premade_suboption(m, id, desc, func)
+function oq.add_premade_suboption(id, desc, func)
     local text = desc
     if (oq.is_premade_excluded(id)) then
         text = '|cFF606060' .. text .. '|r'
@@ -11093,17 +11052,15 @@ function oq.make_dropdown_premade_filter()
     local m = oq.menu_create()
 
     oq.add_premade_suboption(
-        m,
         OQ.TYPE_NONE,
         OQ.LABEL_ALL,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, arg2, button)
             oq.on_premade_filter(arg1, arg2, (button == 'RightButton'))
         end
     )
     for arg, text in tbl.orderedByValuePairs(OQ.findpremade_types) do
         if (arg ~= OQ.TYPE_NONE) then
             oq.add_premade_suboption(
-                m,
                 arg,
                 text,
                 function(_, arg1, arg2, button)
@@ -11247,7 +11204,7 @@ function oq.create_tab2()
     x = x + 185
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('name')
         end
     )
@@ -11257,7 +11214,7 @@ function oq.create_tab2()
     x = x + 90
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('lead')
         end
     )
@@ -11265,7 +11222,7 @@ function oq.create_tab2()
     x = x + 47
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('level')
         end
     )
@@ -11331,7 +11288,7 @@ function oq.create_tab2()
         24,
         OQ.BUT_CLEARFILTERS,
         14,
-        function(self, button)
+        function(_, button)
             if (button == 'RightButton') then
                 oq.invert_exclusions()
             else
@@ -11657,7 +11614,7 @@ function oq.create_tab3()
         cy + 4,
         L['All'],
         10,
-        function(self)
+        function()
             oq.tab3_class_all()
         end
     )
@@ -11670,7 +11627,7 @@ function oq.create_tab3()
         cy + 4,
         L['None'],
         10,
-        function(self)
+        function()
             oq.tab3_class_none()
         end
     )
@@ -11846,7 +11803,7 @@ function oq.create_tab3()
             oq.tab3_class(self, 'wa')
         end
     )
-    y = y + cy + 10
+    -- y = y + cy + 10
 
     if (oq.raid.type == nil) or (oq.raid.raid_token == nil) then
         oq.tab3_radio_buttons_clear()
@@ -11864,7 +11821,7 @@ function oq.create_tab3()
         25,
         L['hard drop'],
         14,
-        function(self)
+        function()
             oq.harddrop()
         end
     )
@@ -11880,7 +11837,7 @@ function oq.create_tab3()
         45,
         OQ.CREATE_BUTTON,
         14,
-        function(self)
+        function()
             oq.tab3_create_activate()
         end
     )
@@ -11922,7 +11879,7 @@ function oq.tab3_class_none()
     end
 end
 
-function oq.tab3_role(cb, c)
+function oq.tab3_role()
     oq.get_role_preference()
 end
 
@@ -11947,7 +11904,7 @@ function oq.set_role_preference(p)
     end
 end
 
-function oq.tab3_class(cb, c)
+function oq.tab3_class()
     oq.get_class_preference()
 end
 
@@ -12100,7 +12057,7 @@ function oq.create_tab_waitlist()
     x = x + (25 + 5 + 25 + 5)
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('cls')
         end
     )
@@ -12108,7 +12065,7 @@ function oq.create_tab_waitlist()
     x = x + (25 + 5)
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('role')
         end
     )
@@ -12185,7 +12142,7 @@ function oq.create_tab_waitlist()
     f.label:SetJustifyH('right')
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('time')
         end
     )
@@ -12219,7 +12176,7 @@ function oq.create_tab_waitlist()
         24,
         OQ.BUT_REMOVE_OFFLINE,
         14,
-        function(self)
+        function()
             oq.remove_offline_members()
         end
     )
@@ -12443,9 +12400,8 @@ function oq.on_pending_note(raid_token, btag, txt, token)
 end
 
 function oq.pending_note_update(self, str)
-    local remaining = OQ.MAX_PENDING_NOTE
     if (str ~= nil) then
-        remaining = OQ.MAX_PENDING_NOTE - string.len(str)
+        local remaining = OQ.MAX_PENDING_NOTE - string.len(str)
         self:GetParent().remaining:SetText(remaining)
     end
 end
@@ -12458,7 +12414,7 @@ function oq.on_pending_note_enter_pressed(self)
     oq.send_pending_note(self:GetParent().send_pb)
 end
 
-function oq.on_pending_note_escape_pressed(self)
+function oq.on_pending_note_escape_pressed()
     oq.hide_shade()
 end
 
@@ -12588,7 +12544,7 @@ function oq.create_pending_note(parent, token)
     return f
 end
 
-function oq.href(self, link, text, button)
+function oq.href(_, link)
     if (Icebox) then
         Icebox.link(link)
     end
@@ -12945,7 +12901,7 @@ function oq.create_tab_setup()
     oq.tab5._oq_gmt = oq.label(parent, x2 - 66, y, 125, cy, '0', 'CENTER', 'RIGHT')
     oq.tab5._oq_gmt:SetFont(OQ.FONT_FIXED, 10, '')
     oq.tab5._oq_gmt:SetTextColor(1, 1, 1)
-    y = y - cy -- moving up
+    -- y = y - cy -- moving up
 
     parent._resize = function(self)
         local h = self:GetHeight()
@@ -12966,7 +12922,7 @@ function oq.create_tab_setup()
         y = y - cy
         oq.move_y(self._oq_gmt, y)
         oq.move_y(self._oq_gmt_label, y)
-        y = y - cy
+        -- y = y - cy
         oq.theme_resize(self)
     end
 
@@ -13057,12 +13013,6 @@ function oq.create_main_ui()
     --  tab 7: waiting list
     ------------------------------------------------------------------------
     oq.create_tab_waitlist()
-
-    oq.theme_set(oq.tab2)
-    oq.theme_set(oq.tab3)
-    oq.theme_set(oq.tab5)
-    oq.theme_set(oq.tab6)
-    oq.theme_set(oq.tab7)
 
     oq.update_alltab_text()
 
@@ -14014,7 +13964,7 @@ function oq.on_ping_ack(token, ts, g_id)
     end
 end
 
-function oq.premade_remove(lead_name, lead_realm, lead_rid, tm)
+function oq.premade_remove(lead_rid, tm)
     local found = nil
 
     for _, v in pairs(oq.premades) do
@@ -14637,7 +14587,7 @@ function oq.process_premade_info(
         return
     end
 
-    oq.premade_remove(lead_name, lead_realm, lead_rid, tm_)
+    oq.premade_remove(lead_rid, tm_)
     local r = tbl.new()
     r.raid_token = raid_tok
     r.name = raid_name
@@ -15091,7 +15041,7 @@ function oq.waitlist_check(name, realm)
 
     for req_token, v in pairs(oq.waitlist) do
         if ((v.name == name) and (v._2binvited == true)) then
-            oq.InviteUnit(name, realm, req_token, true)
+            oq.InviteUnit(name, realm, req_token)
             return
         end
     end
@@ -15099,7 +15049,7 @@ function oq.waitlist_check(name, realm)
     if (oq.pending_invites) then
         for id, v in pairs(oq.pending_invites) do
             if (id == key) then
-                oq.InviteUnitRealID(id, v.req_token, true)
+                oq.InviteUnitRealID(id, v.req_token)
                 return
             end
         end
@@ -15575,30 +15525,6 @@ function oq.set_textures(g_id, slot)
     end
 end
 
-function oq.get_model_standin(gender, race)
-    -- Character\\NightElf\\Female\\NightElfFemale.m2
-    --
-    local fname = 'Character'
-    local base = ''
-
-    for i, v in pairs(OQ.RACE) do
-        if (v == race) then
-            base = i
-            fname = fname .. '\\' .. base
-            break
-        end
-    end
-    if (gender == 0) then
-        fname = fname .. '\\Male'
-        base = base .. 'Male'
-    else
-        fname = fname .. '\\Female'
-        base = base .. 'Female'
-    end
-    return nil
-    --  return fname .."\\".. base ..".m2" ;
-end
-
 function oq.is_dungeon_premade(raid_type)
     return (raid_type == OQ.TYPE_DUNGEON) or (raid_type == OQ.TYPE_SCENARIO) or (raid_type == OQ.TYPE_CHALLENGE) or
         (raid_type == OQ.TYPE_QUESTS)
@@ -15787,7 +15713,7 @@ function oq.get_model(parent, name, gender, race)
         oq._models[key]._name = name
         oq._models[key]._race = race
         oq._models[key]._gender = gender
-        oq._models[key]._fname = oq.get_model_standin(gender, race)
+        oq._models[key]._fname = nil
         oq._models[key]:SetScript(
             'OnEnter',
             function(self)
@@ -17458,18 +17384,6 @@ function oq.get_party_roles()
     return m
 end
 
-function oq.find_first_empty_slot(gid)
-    local grp = oq.raid.group[my_group]
-
-    for i = 2, 5 do
-        local p = grp.member[i]
-        if (p.name == nil) or (p.name == '-') then
-            return i
-        end
-    end
-    return nil
-end
-
 function oq.first_raid_slot()
     local n = oq.nMaxGroups()
 
@@ -17484,21 +17398,6 @@ function oq.first_raid_slot()
     return 0, 0
 end
 
-function oq.on_member_join(name, realm, btag)
-    if (btag == nil) or (btag == '') then
-        return -- don't report if no btag
-    end
-    realm = oq.GetRealmNameFromID(realm)
-    oq.log(nil, oq.btag_link('member', name, realm, btag))
-end
-
-function oq.on_member_left(name, realm, btag)
-    if (btag == nil) or (btag == '') then
-        return -- don't report if no btag
-    end
-    realm = oq.GetRealmNameFromID(realm)
-end
-
 function oq.set_name(gid, slot, name, realm, class, is_online)
     if ((gid == 0) or (slot == 0)) then
         return
@@ -17511,17 +17410,11 @@ function oq.set_name(gid, slot, name, realm, class, is_online)
     end
     local m = oq.raid.group[gid].member[slot]
     if (name == '-') then
-        if (m.name ~= nil) then
-            oq.on_member_left(m.name, m.realm, m.realid)
-        end
         m.name = nil
         m.realm = nil
         m.realm_id = 0
         m.class = nil
     else
-        if (m.name ~= name) then
-            oq.on_member_join(name, realm, m.realid) -- use existing realid if already have it, otherwise it'll be nil
-        end
         m.name = name
         m.realm = realm
         m.realm_id = realm_id
@@ -17909,7 +17802,7 @@ function oq.ForwardRaidMessage(msg)
     end
 end
 
-function oq.forward_msg(source, sender, msg_type, msg_id, msg)
+function oq.forward_msg(source, sender, msg_type, _, msg)
     -- no relaying while in a BG.  BATTLEGROUND msgs are BG-wide, everything else stops here
     --
     if _msg_id == 'p8' and _inc_channel ~= OQ_REALM_CHANNEL and my_slot ~= 1 and oq._raid_token ~= oq.raid.raid_token then
@@ -18017,7 +17910,7 @@ function oq.send_oq_user_ack(toon_pid, toonName, realmName)
     oq.ping_oq_toon(toon_pid, toonName, realmName, oq.utc_time(), 'true')
 end
 
-function oq.on_oq_user(toonName, realmName, faction, btag, ts_, is_ack)
+function oq.on_oq_user(toonName, realmName, faction, _, ts_, is_ack)
     if (_source ~= 'bnet') then
         return
     end
@@ -18112,9 +18005,7 @@ function oq.recover_premades()
     local now = oq.utc_time()
     local tm = nil
     local msg = nil
-    local p1 = nil
-    local p2 = nil
-    local f = nil
+    local p1, p2, f
     local dt = floor(OQ_PREMADE_STAT_LIFETIME / 2)
 
     for i, v in pairs(OQ_data._premade_info) do
@@ -18161,9 +18052,7 @@ function oq.show_premade_cache()
     local now = oq.utc_time()
     local tm = nil
     local msg = nil
-    local p1 = nil
-    local p2 = nil
-    local f = nil
+    local p1, p2, f
     local nCurrent = 0
     local nOld = 0
     local notInList = 0
@@ -18210,8 +18099,7 @@ function oq.trim_old_premades()
     local now = oq.utc_time()
     local tm = nil
     local msg = nil
-    local p1 = nil
-    local p2 = nil
+    local p1, p2
     local dt = floor(OQ_PREMADE_STAT_LIFETIME / 2)
     local n = 0
     local oldies = tbl.new()
@@ -18285,7 +18173,7 @@ function oq.process_msg(sender, msg)
     local oq_ver = _vars[2]
     local token = _vars[3]
     local msg_id = _vars[5]
-    local atok = nil
+    local atok
 
     -- every msg recv'd is counted, not just those processed
     oq.pkt_recv:inc()
@@ -18566,11 +18454,6 @@ function oq.on_player_target_change()
     if (name == nil) then
         return
     end
-    local now = oq.utc_time()
-    if (name:find('-') == nil) then
-        name = name .. ' - ' .. player_realm
-    end
-    name = strlower(name or '')
 
     oq.save_boss_level() -- conditional
     oq.inspect_check()
@@ -18589,7 +18472,7 @@ function OQ_AutoInspect()
     end
 end
 
-function oq.on_bg_event(event)
+function oq.on_bg_event()
     if (my_group < 1) or (my_slot < 1) then
         return
     end
@@ -18803,8 +18686,8 @@ function oq.on_addon_load_init()
     oq.ui.closepb = oq.ui.closepb or oq.closebox(oq.ui)
     oq.ui.closepb:SetScript(
         'OnHide',
-        function(self)
-            oq.onHide(self)
+        function()
+            oq.onHide()
         end
     )
     oq.init_if_good_region()
@@ -18839,7 +18722,7 @@ end
 function oq.init_if_good_region()
     oq.loaded = true
     if (oq.good_region_info()) and (oq.get_raid_progression ~= nil) then
-        oq.on_init(oq.utc_time())
+        oq.on_init()
     elseif (not oq.good_region_info()) then
         -- no region info.
         print(OQ.LILREDX_ICON)
@@ -19032,8 +18915,7 @@ function oq.on_party_member_disable(member)
     if (member:find('raid') == nil) then
         return
     end
-    local name, realm = UnitName(member)
-    realm = realm or player_realm
+    local name = UnitName(member)
     local g, s = oq.find_members_seat(oq.raid.group, name)
     if (g == nil) or (s == nil) then
         return
@@ -19167,14 +19049,10 @@ function oq.is_current_tier(name)
         (name == L['Terrace of Endless Spring'])
 end
 
-function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize, endStatus)
+function oq.on_encounter_end(encounterID, _, difficultyID, _, endStatus)
     --print("encounter end: ".. tostring(encounterID) .."  ".. encounterName .."  diff: ".. tostring(difficultyID) .."  sz: ".. tostring(raidSize) .."  end: ".. tostring(endStatus));
     -- UnitGUID doesn't work for bosses like spoils. I recommend sending the encounterID. If you do, take this GUID stuff out.
     local guid = UnitGUID('boss1')
-    local id
-    if guid ~= nil then
-        id = tonumber(guid:sub(-13, -9), 16)
-    end
     local name = GetInstanceInfo()
 
     -- endStatus is 1 for kills, 0 for wipe/boss resets.
@@ -19230,16 +19108,9 @@ function oq.on_encounter_end(encounterID, encounterName, difficultyID, raidSize,
         -- TODO: make sure to get the receipt for the transaction
         --
         local lowest, highest = oq.get_group_level_range()
-        guid = guid or 0
-
         return pts
     end
     return 0
-end
-
-function oq.on_encounter_start(encounterID, encounterName, difficultyID, raidSize)
-    --print("started:".. tostring(UnitName("boss1")) .." ".. tostring(UnitGUID("boss1")) .."  eID: ".. tostring(tostring(encounterID)) .." name: ".. tostring(encounterName) .."  diff: ".. tostring(difficultyID) .." sz: ".. tostring(raidSize) );
-    -- This usually returns nil. When done on encounter end, it returns the guid unless its something wierd, like spoils.
 end
 
 function oq.attr(attr, s)
@@ -19262,7 +19133,6 @@ function oq.register_events()
     oq.msg_handler['CHAT_MSG_CHANNEL'] = oq.on_channel_msg
     oq.msg_handler['CHAT_MSG_WHISPER'] = oq.on_received_whisper
     oq.msg_handler['ENCOUNTER_END'] = oq.on_encounter_end
-    oq.msg_handler['ENCOUNTER_START'] = oq.on_encounter_start
     oq.msg_handler['INSPECT_READY'] = oq.on_inspect_ready
     oq.msg_handler['PARTY_INVITE_REQUEST'] = oq.on_party_invite_request
     oq.msg_handler['PARTY_LOOT_METHOD_CHANGED'] = oq.verify_loot_rules_acceptance
@@ -19289,8 +19159,8 @@ function oq.register_events()
 
     oq.ui:SetScript(
         'OnShow',
-        function(self)
-            oq.onShow(self)
+        function()
+            oq.onShow()
         end
     )
 
@@ -19520,7 +19390,7 @@ function oq.onHyperlink_btag(link)
             token,
             v.action,
             nil,
-            function(self, btag, action)
+            function(_, btag, action)
                 oq.btag_hyperlink_action(btag, action)
             end
         )
@@ -19556,7 +19426,7 @@ function oq.onHyperlink_oqueue(link)
             token,
             v.action,
             nil,
-            function(self, token, action)
+            function(_, token, action)
                 if (action == 'waitlist') then
                     oq.check_and_send_request(token)
                 elseif (action == 'ban') then
@@ -19664,7 +19534,7 @@ function oq.blizz_workarounds()
     --
     UIParent:HookScript(
         'OnEvent',
-        function(s, e, a1, a2)
+        function(_, e, a1, a2)
             if e:find('ACTION_FORBIDDEN') and ((a1 or '') .. (a2 or '')):find('IsDisabledByParentalControls') then
                 StaticPopup_Hide(e)
             end
@@ -19672,7 +19542,7 @@ function oq.blizz_workarounds()
     )
 end
 
-function oq.on_init(now)
+function oq.on_init()
     if (oq._initialized) then
         return
     end
@@ -20047,7 +19917,7 @@ function OQ_onLoad(self)
     oq.register_base_events()
 end
 
-function oq.onHide(self)
+function oq.onHide()
     _ui_open = nil
     oq.ui.hide_tm = GetTime() -- hold this in-case the UI was forced-closed when the map was brought up
     PlaySound('igCharacterInfoClose')
@@ -20059,7 +19929,7 @@ function oq.hide_shade()
     end
 end
 
-function oq.onShow(self)
+function oq.onShow()
     _ui_open = true
     PlaySound('igCharacterInfoOpen')
 
@@ -20129,7 +19999,7 @@ function oq.mini_count_create()
     d:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
     d:SetScript(
         'OnClick',
-        function(self, button)
+        function(_, button)
             if (button == 'LeftButton') then
                 -- open waitlist
                 if (not oq.ui:IsVisible()) then
@@ -20193,19 +20063,14 @@ end
 OQ.minimap_menu_options = {
     {
         text = OQ.MM_OPTION1,
-        f = function(self, arg1)
+        f = function()
             oq.ui_toggle()
         end
     },
     {
         text = OQ.MM_OPTION7,
-        f = function(self, arg1)
+        f = function()
             oq.reposition_ui()
-        end
-    },
-    {
-        text = '---',
-        f = function(self, arg1)
         end
     }
 }
