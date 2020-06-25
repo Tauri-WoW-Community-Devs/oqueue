@@ -270,13 +270,13 @@ function oq.tt_raids(tt, ndx, left_txt, right_txt)
     tt.right[ndx]:SetText(right_txt)
 end
 
-function oq.tooltip_set2(f, m, totheside, is_lead)
+function oq.tooltip_set2(f, m)
     if (m == nil) then
         return
     end
     local tooltip = oq.tooltip_create()
     tooltip:ClearAllPoints()
-    totheside = true
+    local totheside = true
     if (totheside) then
         tooltip:SetParent(OQMainFrame, 'ANCHOR_RIGHT')
         tooltip:SetPoint('TOPLEFT', OQMainFrame, 'TOPRIGHT', 10, 0)
@@ -839,8 +839,7 @@ function oq.pm_tooltip_set(f, raid_token)
         nMembers, _, _, nWaiting = oq.calc_raid_stats()
     end
 
-    local nWins = 0
-    local nLosses = 0
+    local nWins, nLosses
 
     pm_tooltip.left[1]:SetText(raid.name)
     pm_tooltip.right[1]:SetText('')
@@ -887,8 +886,8 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetWidth(pm_tooltip:GetWidth() + 20)
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(oq.get_rank_achieves(raid.leader_xp:sub(10, -1)))
     elseif (raid.type == OQ.TYPE_SCENARIO) then
-        local nWins = oq.decode_mime64_digits(raid.leader_xp:sub(1, 3))
-        local nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
+        nWins = oq.decode_mime64_digits(raid.leader_xp:sub(1, 3))
+        nLosses = oq.decode_mime64_digits(raid.leader_xp:sub(4, 5))
 
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
@@ -935,7 +934,6 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.left[7]:SetText(OQ.TT_PVERECORD)
         pm_tooltip.right[7]:SetText(nWins .. ' - ' .. nLosses)
 
-        local dots = ''
         local raids = raid.leader_xp
         pm_tooltip.left[pm_tooltip.nRows - 6]:SetText('|cFFFFD331' .. OQ.LABEL_RAIDS .. '|r')
         pm_tooltip.right[pm_tooltip.nRows - 6]:SetText('')
@@ -954,7 +952,7 @@ function oq.pm_tooltip_set(f, raid_token)
         ) -- last 2 params: break insert
 
         pm_tooltip.left[pm_tooltip.nRows - 2]:SetText(OQ.RAID_TOT)
-        dots = oq.pm_tooltip_get_xpbar(raids:sub(7, 7), raids:sub(9, 9), nil, 6, 3, 6)
+        local dots = oq.pm_tooltip_get_xpbar(raids:sub(7, 7), raids:sub(9, 9), nil, 6, 3, 6)
         dots = dots .. '' .. oq.pm_tooltip_get_xpbar(raids:sub(8, 8), raids:sub(10, 10), nil, 6, 3, nil)
         pm_tooltip.right[pm_tooltip.nRows - 2]:SetText(dots)
         pm_tooltip.left[pm_tooltip.nRows - 1]:SetText(OQ.RAID_RA_DEN)

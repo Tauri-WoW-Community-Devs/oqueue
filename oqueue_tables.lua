@@ -8,7 +8,6 @@ local tbl = OQ.table
 function tbl.clear(t, deep)
     if (t) then
         if (deep) then
-            local k
             for k in pairs(t) do
                 if (type(t[k]) == 'table') then
                     tbl.delete(tbl.clear(t[k], deep)) -- clear sub tables and be able to reclaim
@@ -29,7 +28,7 @@ function tbl.copy(src, dest, clear_first)
     if (clear_first) then
         tbl.clear(dest, true)
     end
-    local i, v
+
     for i, v in pairs(src) do
         if (type(v) == 'table') then
             dest[i] = tbl.copy(v, dest[i])
@@ -57,7 +56,6 @@ function tbl.delete(t, deep)
 end
 
 function tbl.dump(t, s)
-    local i, v
     for i, v in pairs(t) do
         if (type(v) == 'table') then
             tbl.dump(v, (s or '') .. '-')
@@ -75,7 +73,6 @@ function tbl.fill(t, ...)
             print(L['**warning:  watched table found  '] .. tostring(t))
         end
         tbl.clear(t)
-        local i
         for i = 1, select('#', ...) do
             t[i] = select(i, ...)
             n = n + 1
@@ -105,7 +102,6 @@ end
 
 function tbl.find_keybyvalue(t, v)
     if (t) and (v) then
-        local key, val
         for key, val in pairs(t) do
             if (val == v) then
                 return key
@@ -127,7 +123,7 @@ function tbl.new()
         tbl.__inuse = {}
     end
     local ndx = tbl.next(tbl.__pool)
-    local t = nil
+    local t
     if (ndx) then
         t = tbl.__pool[ndx]
         tbl.__pool[ndx] = nil
@@ -148,8 +144,7 @@ end
 
 function tbl.next(t)
     if (t) then
-        local i, v
-        for i, v in pairs(t) do
+        for i, _ in pairs(t) do
             if (i ~= 0) then
                 return i
             end
@@ -170,8 +165,7 @@ function tbl.size(t, type_)
         return nil
     end
     local n = 0
-    local i, v
-    for i, v in pairs(t) do
+    for _, v in pairs(t) do
         if (type_ == nil) or (type(v) == type_) then
             n = n + 1
         end
@@ -189,15 +183,14 @@ function tbl.dump_track(min_cnt, dump, sub)
     min_cnt = tonumber(min_cnt or 0) or 0
 
     print('-- table track dump ')
-    local i, v, dt, n, cnt
+    local dt, n, cnt
     local now = GetTime()
-    for i, v in pairs(tbl._track) do
+    for i, _ in pairs(tbl._track) do
         n = tbl.size(i)
         cnt = (cnt or 0) + 1
         if (n >= min_cnt) then
             print('  ' .. tostring(i) .. '  sz: ' .. tostring(n))
             if (dump) and (type(i) == 'table') then
-                local j, x
                 for j, x in pairs(i) do
                     if (sub == nil) or ((sub) and (type(j) == 'string') and j:find(sub)) then
                         print('    ' .. tostring(j) .. ' (' .. type(j) .. ')  [' .. tostring(x) .. ']')
@@ -223,7 +216,6 @@ function tbl.__genOrderedIndex(t, orderedIndex)
     else
         tbl.clear(orderedIndex)
     end
-    local key
     for key in pairs(t) do
         table.insert(orderedIndex, key)
     end
@@ -244,7 +236,6 @@ function tbl.orderedNext(t, state)
     end
     -- fetch the next value
     local key = nil
-    local i
     for i = 1, table.getn(t.__orderedIndex) do
         if t.__orderedIndex[i] == state then
             key = t.__orderedIndex[i + 1]
@@ -266,8 +257,7 @@ function tbl.__genOrderedValue(t, orderedIndex)
     else
         tbl.clear(orderedIndex)
     end
-    local key, value
-    for key, value in pairs(t) do
+    for _, value in pairs(t) do
         table.insert(orderedIndex, value)
     end
     table.sort(orderedIndex)
@@ -279,7 +269,7 @@ function tbl.orderedByValueNext(t, state)
     -- order. We use a temporary ordered key table that is stored in the
     -- table being iterated.
     local key = nil
-    local i, n
+    local n
     if state == nil then
         -- the first time, generate the index
         t.__orderedIndex = tbl.__genOrderedValue(t, t.__orderedIndex)

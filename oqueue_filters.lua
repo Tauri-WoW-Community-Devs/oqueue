@@ -3,7 +3,7 @@ local L = OQ._T -- for literal string translations
 local oq = OQ:mod() -- thank goodness i stumbled across this trick
 local _  -- throw away (was getting taint warning; what happened blizz?)
 
-function oq.chat_filter(self, event, msg, author, ...)
+function oq.chat_filter(_, _, msg)
     if (oq.is_oqueue_msg(msg)) then
         -- make sure 'author' is bn.enabled
         return true

@@ -14,11 +14,11 @@ StaticPopupDialogs['OQ_AddToonName'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetText('')
         self.editBox:SetFocus()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         local text = self.editBox:GetText()
         oq.add_toon(text)
     end,
@@ -40,11 +40,11 @@ StaticPopupDialogs['OQ_ArmoryPopup'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetWidth(275)
         self.editBox:SetFocus()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function()
     end,
     EditBoxOnEnterPressed = function(self)
         self:GetParent():Hide()
@@ -65,11 +65,11 @@ StaticPopupDialogs['OQ_BanBTag'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetText('')
         self.editBox:SetFocus()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         local text = self.editBox:GetText()
         oq.ban_user(text)
     end,
@@ -92,11 +92,11 @@ StaticPopupDialogs['OQ_BanUser'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data, data2)
+    OnShow = function(self)
         self.editBox:SetText('')
         self.editBox:SetFocus()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         local reason = self.editBox:GetText()
         local d = self.data2
         if (d.flag == 1) then
@@ -114,7 +114,7 @@ StaticPopupDialogs['OQ_BanUser'] = {
         end
         self:Hide()
     end,
-    EditBoxOnEnterPressed = function(self, data, data2)
+    EditBoxOnEnterPressed = function(self)
         local reason = self:GetText()
         local d = self:GetParent().data2
         if (d.flag == 1) then
@@ -145,18 +145,12 @@ StaticPopupDialogs['OQ_EnterBattle'] = {
     timeout = 30,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
-        if (data == nil) then
-            data = 1
-        end
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
-        if (data == nil) then
-            data = 1
-        end
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -170,7 +164,7 @@ StaticPopupDialogs['OQ_EnterPremadeName'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetText('')
         self.editBox:SetFocus()
     end,
@@ -180,7 +174,7 @@ StaticPopupDialogs['OQ_EnterPremadeName'] = {
         end
         self:Hide()
     end,
-    EditBoxOnEnterPressed = function(self)
+    EditBoxOnEnterPressed = function(self, data, data2)
         if (data2) then
             data2(data)
         end
@@ -200,15 +194,15 @@ StaticPopupDialogs['OQ_EnterPword'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetText('')
         self.editBox:SetFocus()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self, data)
         oq.send_req_waitlist(data, self.editBox:GetText())
         self:Hide()
     end,
-    EditBoxOnEnterPressed = function(self, data, data2)
+    EditBoxOnEnterPressed = function(self, data)
         oq.send_req_waitlist(data, self:GetText())
         self:GetParent():Hide()
     end,
@@ -225,14 +219,14 @@ StaticPopupDialogs['OQ_NewVersionAvailable'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         self.editBox:SetWidth(275)
         self.editBox:SetText('https://github.com/Tauri-WoW-Community-Devs/oqueue/releases')
         self.editBox:SetFocus()
         -- fanfare for new version
         oq.excited_cheer()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
     EditBoxOnEnterPressed = function(self)
@@ -252,14 +246,14 @@ StaticPopupDialogs['OQ_NotPartyLead'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         LeaveParty()
         oq.timer_oneshot(1.5, oq.check_and_send_request, self._token)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -272,12 +266,12 @@ StaticPopupDialogs['OQ_NoPartyWaitlists'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -291,10 +285,10 @@ StaticPopupDialogs['OQ_NoWaitlistWhilePremade'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         oq.center(self)
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         if (not oq.iam_raid_leader()) and (not oq.iam_party_leader()) then
             oq.member_quit_raid()
         else
@@ -303,7 +297,7 @@ StaticPopupDialogs['OQ_NoWaitlistWhilePremade'] = {
         oq.timer_oneshot(1.5, oq.check_and_send_request, self._token)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -317,10 +311,10 @@ StaticPopupDialogs['OQ_NoWaitlistWhilePremadeLead'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         oq.center(self)
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         if (not oq.iam_raid_leader()) and (not oq.iam_party_leader()) then
             oq.member_quit_raid()
         else
@@ -329,7 +323,7 @@ StaticPopupDialogs['OQ_NoWaitlistWhilePremadeLead'] = {
         oq.timer_oneshot(1.5, oq.check_and_send_request, self._token)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -342,13 +336,13 @@ StaticPopupDialogs['OQ_CannotCreatePremade'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         oq.center(self)
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -361,13 +355,13 @@ StaticPopupDialogs['OQ_DoNotQualifyPremade'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         oq.center(self)
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -380,13 +374,13 @@ StaticPopupDialogs['OQ_PremadeTypeMissing'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function(self)
         oq.center(self)
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -400,13 +394,13 @@ StaticPopupDialogs['OQ_QueuePoppedLeader'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self, data)
         oq.raid_announce('enter_bg,' .. data)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self, data)
         oq.raid_announce('leave_queue,' .. data)
         self:Hide()
         oq.ui:Show() -- force it, in case the user hit esc
@@ -422,12 +416,12 @@ StaticPopupDialogs['OQ_QueuePoppedMember'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -441,9 +435,9 @@ StaticPopupDialogs['OQ_QuitRaidConfirm'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         if (not oq.iam_raid_leader()) then
             oq.member_quit_raid()
         else
@@ -451,7 +445,7 @@ StaticPopupDialogs['OQ_QuitRaidConfirm'] = {
         end
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         self:Hide()
     end,
     hasEditBox = false
@@ -465,17 +459,17 @@ StaticPopupDialogs['OQ_ReadyCheck'] = {
     timeout = 20,
     whileDead = true,
     hideOnEscape = false,
-    OnShow = function(self, data)
+    OnShow = function()
         local my_group, my_slot = oq.my_seat()
         oq.ready_check(my_group, my_slot, OQ.FLAG_WAITING)
         PlaySound('ReadyCheck')
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         local my_group, my_slot = oq.my_seat()
         oq.ready_check(my_group, my_slot, OQ.FLAG_READY)
         self:Hide()
     end,
-    OnCancel = function(self, data, reason)
+    OnCancel = function(self, _, reason)
         local my_group, my_slot = oq.my_seat()
         if (reason == 'timeout') then
             oq.ready_check(my_group, my_slot, OQ.FLAG_CLEAR)
@@ -494,13 +488,13 @@ StaticPopupDialogs['OQ_ReloadUI'] = {
     timeout = 0,
     whileDead = true,
     hideOnEscape = true,
-    OnShow = function(self, data)
+    OnShow = function()
     end,
-    OnAccept = function(self, data, data2)
+    OnAccept = function(self)
         oq.on_reload_now()
         self:Hide()
     end,
-    OnCancel = function(self, data, data2)
+    OnCancel = function(self)
         oq.on_reload_now()
         self:Hide()
     end,
@@ -584,7 +578,7 @@ end
 
 local Flasher = {}
 function Aspect_CreateFlasher(color)
-    local frameImage = 'None'
+    local frameImage
     if (color == 'Blue') then
         frameImage = 'Interface\\FullScreenTextures\\OutofControl'
     elseif (color == 'Red') then
@@ -636,11 +630,7 @@ function oq.angry_lil_button(button)
         local y = 300
         local f = {}
 
-        f.adjust = function(self) --
-            --[[
-                 self.ok.string:SetFont( OQ.FONT, self.ok.font_sz ) ;
-                 oq.setpos( self.ok, 20, 20, self:GetWidth() - 2*20, self:GetHeight() - 2*20 ) ;
-]]
+        f.adjust = function()
         end
         f.center = function(self)
             local but = self._button

@@ -143,8 +143,7 @@ function oq.frame_report(opt)
         arg = strlower(opt:sub(opt:find(' ') + 1, -1))
     end
     print('--[ frame dump ]--')
-    local n = 0
-    local s = nil
+    local n, s
     for i, v in pairs(oq.__frame_pool) do
         if (arg == nil) or (strlower(i):find(arg)) then
             n = tbl.size(v)
@@ -227,7 +226,7 @@ function oq.CreateFrame(type_, name, parent, template)
 
     local pool = oq.__frame_pool[name]
     local ndx = tbl.next(pool)
-    local f = nil
+    local f
     if (ndx) and (pool[ndx]) and (type(pool[ndx]) == 'table') and (pool[ndx].SetParent) then
         f = pool[ndx]
         pool[ndx] = nil
@@ -244,7 +243,7 @@ function oq.CreateFrame(type_, name, parent, template)
     return f
 end
 
-function oq.editline(parent, name, x, y, cx, cy, max_chars)
+function oq.editline(parent, _, x, y, cx, cy, max_chars)
     oq.nthings = (oq.nthings or 0) + 1
     local e = oq.CreateFrame('EditBox', 'OQEditline' .. tostring(oq.nthings), parent, 'InputBoxTemplate')
     e:SetPoint('TOPLEFT', parent, 'TOPLEFT', 0, 0)
@@ -275,7 +274,7 @@ function oq.editline(parent, name, x, y, cx, cy, max_chars)
     return e
 end
 
-function oq.editbox(parent, name, x, y, cx, cy, max_chars, func, init_val)
+function oq.editbox(parent, _, x, y, cx, cy, max_chars, func, init_val)
     local e = oq.CreateFrame('EditBox', 'OQEditBox', parent)
     e:SetMultiLine(true)
     e:SetPoint('TOPLEFT', parent, 'TOPLEFT', x - 4, -y)
@@ -345,13 +344,13 @@ function oq.checkbox(parent, x, y, cx, cy, text_cx, text, is_checked, on_click_f
     button:Show()
     button:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, true)
         end
     )
     button:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, nil)
         end
     )
@@ -486,7 +485,7 @@ function oq.texture_button(parent, x, y, cx, cy, up_texture, dn_texture, disable
     f:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
     f:SetScript(
         'OnMouseDown',
-        function(self, button)
+        function(self)
             if (self._dn_texture) and (self:IsEnabled()) then
                 self.texture:SetTexture(self._dn_texture)
             elseif (self.texture) then
@@ -496,7 +495,7 @@ function oq.texture_button(parent, x, y, cx, cy, up_texture, dn_texture, disable
     )
     f:SetScript(
         'OnMouseUp',
-        function(self, button)
+        function(self)
             if (self._up_texture) and (self:IsEnabled()) then
                 self.texture:SetTexture(self._up_texture)
             elseif (self.texture) then
@@ -579,13 +578,13 @@ function oq.button(parent, x, y, cx, cy, text, on_click_func)
     button:Show()
     button:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, true)
         end
     )
     button:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, nil)
         end
     )
@@ -610,13 +609,13 @@ function oq.button2(parent, x, y, cx, cy, text, font_sz, on_click_func)
     button:Show()
     button:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, true)
         end
     )
     button:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.hint(self, self.tt, nil)
         end
     )
@@ -676,19 +675,19 @@ function oq.menu_create()
         oq.__menu._cy = 18
         oq.__menu:SetScript(
             'OnShow',
-            function(self, ...)
+            function(self)
                 self._last_move_tm = GetTime()
             end
         )
         oq.__menu:SetScript(
             'OnHide',
-            function(self, ...)
+            function(self)
                 self._last_move_tm = nil
             end
         )
         oq.__menu:SetScript(
             'OnUpdate',
-            function(self, ...)
+            function(self)
                 if ((self._last_move_tm) and (abs(GetTime() - self._last_move_tm) > OQ.MENU_DISPLAY_TM)) then
                     self:Hide()
                 end
@@ -727,7 +726,7 @@ function oq.menu_create()
             m._label:SetTextColor(1, 1, 1, 1)
             m:SetScript(
                 'OnEnter',
-                function(self, ...)
+                function(self)
                     if (self._func) then
                         self._highlight:Show()
                     end
@@ -738,7 +737,7 @@ function oq.menu_create()
             )
             m:SetScript(
                 'OnLeave',
-                function(self, ...)
+                function(self)
                     if (self._func) then
                         self._highlight:Hide()
                     end

@@ -137,7 +137,7 @@ function oq.get_version_str(version)
     if (major == nil or minor == nil or rev == nil) then
         return 'Unknown'
     end
-    
+
     return major .. "." .. minor .. "." ..rev
 end
 
@@ -272,7 +272,7 @@ function oq.csv(t)
         return t
     end
     local m
-    for i, v in pairs(t) do
+    for _, v in pairs(t) do
         if (m) then
             m = m .. ',' .. v
         else
@@ -590,7 +590,7 @@ function oq.show_count()
     local nLeaders = 0
     local nWaiting = 0
     local nMembers = 0
-    for i, v in pairs(oq.premades) do
+    for _, v in pairs(oq.premades) do
         nLeaders = nLeaders + 1
         nMembers = nMembers + v.nMembers
         nWaiting = nWaiting + v.nWaiting
@@ -693,7 +693,7 @@ end
 
 function oq.show_waitlist()
     print('-- waitlist rows')
-    for n, v in pairs(oq.tab7.waitlist) do
+    for _, v in pairs(oq.tab7.waitlist) do
         local btag = strlower(oq.waitlist[v.token].realid)
         print('  ' .. tostring(v.token) .. '  btag: ' .. tostring(btag))
     end
@@ -1436,18 +1436,9 @@ local function tprint_col(tbl, indent, key)
     end
 end
 
-function oq.n_rows(t)
-    local n = 0
-
-    for i, v in pairs(t) do
-        n = n + 1
-    end
-    return n
-end
-
 function oq.total_tears()
     local n = 0
-    for i, v in pairs(OQ_data.tear_cup) do
+    for _, v in pairs(OQ_data.tear_cup) do
         n = n + v
     end
     return n
@@ -1466,7 +1457,7 @@ end
 function oq.n_premades()
     local nShown, nPremades = 0, 0
 
-    for n, p in pairs(oq.premades) do
+    for _, p in pairs(oq.premades) do
         if (p) then
             if (p._isvis) then
                 nShown = nShown + 1
@@ -1772,7 +1763,7 @@ function oq.check_oqgeneral_lockdown()
     table.sort(_names)
     -- determine player position in list
     count = 0
-    for i, v in pairs(_names) do
+    for _, v in pairs(_names) do
         count = count + 1
         if (v == player_name) or (count > MAX_OQGENERAL_TALKERS) then
             _oqgeneral_lockdown = (count > MAX_OQGENERAL_TALKERS)
@@ -2187,8 +2178,8 @@ function oq.is_in_raid(name)
 
     name = name:gsub('%s+', '')
     name = strlower(name)
-    for i, grp in pairs(oq.raid.group) do
-        for j, mem in pairs(grp.member) do
+    for _, grp in pairs(oq.raid.group) do
+        for _, mem in pairs(grp.member) do
             local n = strlower(mem.name or '')
             if ((n) and (n ~= '') and (n ~= '-')) then
                 if ((mem.realm) and (mem.realm ~= player_realm)) then
@@ -2506,7 +2497,7 @@ function oq.flag_watcher()
     end
 
     if (nplayers > 10) then -- just incase the GetBattlefieldScore was wonky
-        for i, e in pairs(_enemy) do
+        for _, e in pairs(_enemy) do
             if (e.last_seen ~= nil) then
                 if (e.last_seen ~= now) and (e.reported == nil) then
                     if (e.strike >= 1) then
@@ -2918,7 +2909,7 @@ function oq.create_snitch_button(parent, name)
 
     b:SetScript(
         'OnClick',
-        function(self, button)
+        function()
             OQ_Snitch_Toggle()
         end
     )
@@ -3004,7 +2995,7 @@ function oq.snitch_ui_create()
         50,
         25,
         L['clear'],
-        function(self)
+        function()
             oq.snitch_clear()
         end
     )
@@ -3017,7 +3008,7 @@ function oq.snitch_ui_create()
         50,
         25,
         L['start'],
-        function(self)
+        function()
             oq.snitch_start_inspect()
         end
     )
@@ -3030,7 +3021,7 @@ function oq.snitch_ui_create()
         50,
         25,
         L['stop'],
-        function(self)
+        function()
             oq.snitch_stop()
         end
     )
@@ -3149,7 +3140,7 @@ function oq.snitch_log(...)
     if (table.getn(OQ_data._snitch) > OQ.MAX_SNITCH_LINES) then
         local n = table.getn(OQ_data._snitch) - OQ.MAX_SNITCH_LINES
 
-        for i = 1, n do
+        for _ = 1, n do
             table.remove(OQ_data._snitch, 1)
         end
     end
@@ -4242,18 +4233,6 @@ function oq.nActiveGroups()
     return n
 end
 
--- bnet conversation only used for regular bgs
--- only started when the number of groups exceeds 3
-function oq.add_to_conversation(pid)
-    if (not oq.iam_raid_leader()) or (oq.raid.type ~= OQ.TYPE_BG) then
-        return
-    end
-    if (oq.nActiveGroups() < 3) and (oq._hConversation == nil) then
-        -- no conversation yet
-        return
-    end
-end
-
 function oq.show_raid()
     print('raid_name: ' .. tostring(oq.raid.name) .. '  token(' .. tostring(oq.raid.raid_token) .. ')')
     print(
@@ -4495,7 +4474,7 @@ function oq.bn_ok2send(msg, pid)
         return nil
     end
 
-    for i, v in pairs(OQ_data.bn_friends) do
+    for _, v in pairs(OQ_data.bn_friends) do
         if ((v.toon_id == pid) and v.isOnline and v.oq_enabled and (v.faction == oq.player_faction)) then
             return true
         end
@@ -4924,7 +4903,7 @@ function oq.bnpresence(name)
 end
 
 function oq.mbsync_toons(to_name)
-    for ndx, friend in pairs(OQ_data.bn_friends) do
+    for _, friend in pairs(OQ_data.bn_friends) do
         if ((friend.toon_id ~= 0) and friend.isOnline and friend.oq_enabled) then
             local m =
                 'OQ,' ..
@@ -4942,7 +4921,7 @@ function oq.mbsync_toons(to_name)
 end
 
 function oq.mbsync_single(toonName, toonRealm  )
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         local m =
             'OQ,' ..
             OQ_BUILD_STR ..
@@ -4957,7 +4936,7 @@ function oq.mbsync_single(toonName, toonRealm  )
 end
 
 function oq.mbsync()
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         oq.mbsync_toons(v.name)
     end
 end
@@ -4990,7 +4969,7 @@ function oq.bnpresence_realm(realm)
         return nil
     end
 
-    for i, v in pairs(OQ_data.bn_friends) do
+    for _, v in pairs(OQ_data.bn_friends) do
         if (v.realm == realm) and (v.oq_enabled) and (v.isOnline) and (v.faction == oq.player_faction) then
             return v.pid
         end
@@ -5053,10 +5032,10 @@ function oq.cmdline_clear(opt)
 end
 
 function oq.invert_exclusions()
-    for i, v in pairs(OQ.voip_selections) do
+    for i, _ in pairs(OQ.voip_selections) do
         oq.set_voip_filter(i, true, true)
     end
-    for i, v in pairs(OQ.lang_selections) do
+    for i, _ in pairs(OQ.lang_selections) do
         oq.set_lang_filter(i, true, true)
     end
     for i, v in pairs(OQ.findpremade_types) do
@@ -5108,7 +5087,7 @@ function oq.show_premades(opt)
         print('--[ premades ]--')
     end
 
-    for tok, r in pairs(oq.premades) do
+    for _, r in pairs(oq.premades) do
         if (r) then
             if
                 ((arg == nil) and (r._isvis)) or
@@ -5196,7 +5175,7 @@ function oq.bn_show_pending()
         print('waitlisted ---')
         local cnt = 0
         local r
-        for i, m in pairs(OQ_data._pending_info) do
+        for i, _ in pairs(OQ_data._pending_info) do
             cnt = cnt + 1
             r = oq.premades[i]
             print(tostring(i) .. '.' .. tostring(r.name or '') .. ' [' .. tostring(r._my_note) .. ']')
@@ -5348,7 +5327,7 @@ function oq.ejectall()
                 t[n] = x
             end
         end
-        for i, v in pairs(t) do
+        for _, v in pairs(t) do
             oq.UninviteUnit(v)
         end
         tbl.delete(t)
@@ -5466,7 +5445,7 @@ function oq.on_selfie(ts)
 end
 
 function oq.remove_all_premades()
-    for token, v in pairs(oq.premades) do
+    for token, _ in pairs(oq.premades) do
         oq.remove_premade(token, true)
     end
     tbl.clear(oq.premades)
@@ -5484,7 +5463,7 @@ function oq.remove_dead_premades()
     local now = oq.utc_time()
     local dt = floor(OQ_PREMADE_STAT_LIFETIME / 2)
 
-    for i, v in pairs(oq.premades) do
+    for _, v in pairs(oq.premades) do
         -- don't remove my own premade
         if (v.raid_token ~= oq.raid.raid_token) and ((v.tm == nil) or ((now - v.tm) > dt)) then
             oq.remove_premade(v.raid_token)
@@ -5686,7 +5665,7 @@ end
 function oq.premades_of_type(filter_type)
     local nPremades = 0
 
-    for n, p in pairs(oq.premades) do
+    for _, p in pairs(oq.premades) do
         if (p) then
             if
                 ((OQ_data.premade_filter_qualified == 1) and (oq.qualified(p.raid_token))) or
@@ -5754,7 +5733,7 @@ function oq.reshuffle_premades_now()
     cx = oq.tab2._list:GetWidth() - 2 * x
 
     table.sort(_items, oq.compare_premades)
-    for i, v in pairs(_items) do
+    for _, v in pairs(_items) do
         oq.setpos(oq.premades[v]._row, x, y, cx, cy)
         oq.premades[v].__x = x
         oq.premades[v].__y = y
@@ -5770,7 +5749,7 @@ end
 function oq.n_waiting()
     local n = 0
     if (oq.tab7) and (oq.tab7.waitlist) then
-        for i, v in pairs(oq.tab7.waitlist) do
+        for _, v in pairs(oq.tab7.waitlist) do
             n = n + v.nMembers
         end
     end
@@ -5919,14 +5898,14 @@ function oq.reshuffle_banlist()
     cx = oq.tab6._list:GetWidth() - 2 * x
 
     tbl.clear(_items)
-    for n, v in pairs(oq.tab6_banlist) do
+    for n, _ in pairs(oq.tab6_banlist) do
         if (n ~= nil) then
             table.insert(_items, n)
         end
     end
     table.sort(_items, oq.compare_banlist)
     oq._nbanlist = 0
-    for i, v in pairs(_items) do
+    for _, v in pairs(_items) do
         oq.setpos(oq.tab6_banlist[v], x, y, cx, cy)
         y = y + cy + 2
         oq._nbanlist = oq._nbanlist + 1
@@ -6073,7 +6052,7 @@ function oq.reshuffle_waitlist()
 
     local n = 0
     table.sort(_items, oq.compare_waitlist)
-    for i, v in pairs(_items) do
+    for _, v in pairs(_items) do
         oq.setpos(oq.tab7.waitlist[v], x, y, cx, cy)
         y = y + cy + 2
         n = n + oq.tab7.waitlist[v].nMembers
@@ -6120,14 +6099,14 @@ function oq.send_removed_notice(token)
 end
 
 function oq.reject_all_waitlist()
-    for i, v in pairs(oq.tab7.waitlist) do
+    for _, v in pairs(oq.tab7.waitlist) do
         oq.send_removed_notice(v.token)
     end
     oq.remove_all_waitlist()
 end
 
 function oq.find_waitlist_row(token)
-    for i, v in pairs(oq.tab7.waitlist) do
+    for _, v in pairs(oq.tab7.waitlist) do
         if (v.token == token) then
             return v
         end
@@ -6456,10 +6435,6 @@ function oq.hint(button, txt, show)
     oq.gen_tooltip_set(button, txt)
 end
 
-function oq.battleground_join(ndx, bg_type)
-    -- HonorFrameSoloQueueButton:Click()
-end
-
 function oq.normalize_static_button_height()
     if (HonorFrameSoloQueueButton) then
         if (not HonorFrameSoloQueueButton:IsVisible()) then
@@ -6600,7 +6575,7 @@ function oq.reshuffle_alts()
     y = 10
     cy = 20
     cx = oq.tab5._list:GetWidth() - 2 * x
-    for i, v in pairs(oq.tab5_alts) do
+    for _, v in pairs(oq.tab5_alts) do
         oq.setpos(v, x, y, cx, cy)
         y = y + cy + 2
     end
@@ -6616,7 +6591,7 @@ function oq.add_toon(toonName)
         oq.toon.my_toons = tbl.new()
     end
 
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         if (v.name == toonName) then
             return
         end
@@ -6643,7 +6618,7 @@ function oq.populate_alt_list()
     y = 1
     cx = 200
     cy = 22
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         local f = oq.create_alt_listitem(oq.tab5._list, x, y, cx, cy, v.name)
         f.toonName:SetText(v.name)
         y = y + cy
@@ -7231,7 +7206,7 @@ function oq.on_classdot_enter(self)
     if ((m == nil) or (m.name == nil) or (m.name == '-')) then
         return
     end
-    oq.tooltip_set2(self, m, nil, ((gid == 1) and (slot == 1)))
+    oq.tooltip_set2(self, m)
 end
 
 function oq.on_classdot_exit(self)
@@ -7349,7 +7324,7 @@ function oq.is_my_toon(name, realm)
     end
     name = strlower(name)
 
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         if (name == strlower(v.name)) then
             return true
         end
@@ -7432,7 +7407,7 @@ function oq.make_classdot_dropdown(cell)
 
     oq.menu_create()
 
-    for i, v in pairs(options) do
+    for _, v in pairs(options) do
         if (oq.is_set(v.f, mask)) then
             local func = nil
             if (v.notClickable == nil) then
@@ -7994,9 +7969,9 @@ function oq.create_ladder_group(parent, x_, y_, ix, iy, label_cx, title, group_i
     local x = 10
     local y = (iy / 2) - 2 * (cy + 2)
     local ndx = 2
-    for i = 1, 4 do
+    for _ = 1, 4 do
         x = (ix / 2) - 2 * (cx + 2)
-        for j = 1, 4 do
+        for _ = 1, 4 do
             f.slots[ndx] = oq.create_ladder_dot(f, x, y, cx, cy)
             f.slots[ndx].gid = group_id
             f.slots[ndx].slot = ndx
@@ -8452,7 +8427,7 @@ end
 
 function oq.set_waitlist_tooltip(f)
     if (f ~= nil) and (f.token ~= nil) then
-        oq.tooltip_set2(f, oq.waitlist[f.token], true)
+        oq.tooltip_set2(f, oq.waitlist[f.token])
     end
 end
 
@@ -8511,7 +8486,7 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
             OQ.X_BUTTON_UP,
             OQ.X_BUTTON_DN,
             OQ.X_BUTTON_UP,
-            function(self, button, down)
+            function(self, button)
                 local tok = self:GetParent().token
                 if (button == 'LeftButton') then
                     oq.remove_waitlist(tok)
@@ -8755,7 +8730,6 @@ function oq.queue_button_action(self, button, ndx)
             -- will trigger exception
             oq.raid_announce('join,' .. ndx)
         end
-        oq.battleground_join(ndx)
     end
     oq.update_tab1_queue_controls()
 end
@@ -9126,13 +9100,13 @@ function oq.create_filter_button(parent)
           end );
 ]] b._edit:SetScript(
         'OnEditFocusGained',
-        function(self)
+        function()
             OQ_data._was_filter_editing = true
         end
     )
     b._edit:SetScript(
         'OnEditFocusLost',
-        function(self)
+        function()
             OQ_data._was_filter_editing = nil
         end
     )
@@ -9171,7 +9145,7 @@ function oq.log(echo, ...)
     tinsert(OQ_data._history, '|cFF00B000' .. date('%H:%M:%S', now) .. '|r  ' .. tostring(...))
     if (table.getn(OQ_data._history) > OQ.MAX_LOG_LINES) then
         local n = table.getn(OQ_data._history) - OQ.MAX_LOG_LINES
-        for i = 1, n do
+        for _ = 1, n do
             table.remove(OQ_data._history, 1)
         end
     end
@@ -9234,7 +9208,7 @@ function oq.create_log_button(parent)
 
     b:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.toggle_log()
         end
     )
@@ -9265,7 +9239,7 @@ function oq.create_log_button(parent)
     )
     d:SetScript(
         'OnHide',
-        function(self)
+        function()
             if (oq.log_button) then
                 oq.log_button:SetChecked(nil)
             end
@@ -9280,7 +9254,7 @@ function oq.create_log_button(parent)
 
     d.update_text = function(self)
         local str = '<html><body>'
-        for i, v in pairs(OQ_data._history) do
+        for _, v in pairs(OQ_data._history) do
             str = str .. '<h3>' .. tostring(v) .. '</h3>'
         end
         str = str .. '</body></html>'
@@ -9676,7 +9650,7 @@ function oq.create_bg_queue_chart(parent, x, y, cx, cy)
         local sum = 0
         local cnt = 0
         local total_cnt = 0
-        for i, v in pairs(self._data) do
+        for _, v in pairs(self._data) do
             if (v > 0) then
                 hi = math.max(hi, v)
                 if (v > 0) then
@@ -9762,7 +9736,7 @@ function oq.create_bg_queue_chart(parent, x, y, cx, cy)
         self.line1:SetText(string.format('n = %d', n))
     end
     f.zero_data = function(self)
-        for key, v in pairs(self._data) do
+        for key, _ in pairs(self._data) do
             self._data[key] = 0
         end
     end
@@ -10233,7 +10207,7 @@ function oq.create_tab1_common(parent)
         100,
         28,
         OQ.ILL_BRB,
-        function(self)
+        function()
             oq.brb()
         end
     )
@@ -10248,7 +10222,7 @@ function oq.create_tab1_common(parent)
         100,
         25,
         OQ.LUCKY_CHARMS,
-        function(self)
+        function()
             oq.assign_lucky_charms()
         end
     )
@@ -10262,7 +10236,7 @@ function oq.create_tab1_common(parent)
         100,
         25,
         OQ.READY_CHK,
-        function(self)
+        function()
             oq.start_ready_check()
         end
     )
@@ -10509,7 +10483,7 @@ function oq.create_tab1()
     oq.ui_player()
 end
 
-function oq.ladder_matchup(self)
+function oq.ladder_matchup()
     print('match up')
     local slots = oq.ladder_group.slots
     -- move dots 2-16 into ladder positions... randomly
@@ -10646,7 +10620,7 @@ OQ.difficulty_selections = {
 function oq.make_dropdown_difficulty_filter()
     local m = oq.menu_create()
     local arg, text
-    for diff_id, d in tbl.orderedPairs(OQ.difficulty_selections) do
+    for diff_id, _ in tbl.orderedPairs(OQ.difficulty_selections) do
         local desc = OQ._difficulty[diff_id].desc
         oq.menu_add(
             desc,
@@ -10733,7 +10707,7 @@ function oq.get_voip_count(id)
     local ex2 = oq.tab2._voip._id
     OQ_data._voip_exclusion[id] = nil
     oq.tab2._voip._id = OQ.VOIP_UNSPECIFIED
-    for i, p in pairs(oq.premades) do
+    for _, p in pairs(oq.premades) do
         if (p.voip == id) then
             if
                 (((OQ_data.premade_filter_qualified == 1) and (oq.qualified(p.raid_token))) or
@@ -10759,7 +10733,7 @@ function oq.get_lang_count(id)
     OQ_data._lang_exclusion[id] = nil
     oq.tab2._lang._id = OQ.LANG_UNSPECIFIED
 
-    for i, p in pairs(oq.premades) do
+    for _, p in pairs(oq.premades) do
         if (p.lang == id) then
             if
                 (((OQ_data.premade_filter_qualified == 1) and (oq.qualified(p.raid_token))) or
@@ -10823,7 +10797,7 @@ function oq.make_dropdown_voip_selector()
         m,
         OQ.VOIP_NOVOICE,
         OQ.LABEL_NOVOICE,
-        function(cb_edit, arg1, arg2, button)
+        function(cb_edit, arg1)
             oq.voip_selection(arg1)
         end
     )
@@ -10833,7 +10807,7 @@ function oq.make_dropdown_voip_selector()
                 m,
                 arg,
                 text,
-                function(cb_edit, arg1, arg2, button)
+                function(cb_edit, arg1)
                     oq.voip_selection(arg1)
                 end
             )
@@ -10964,7 +10938,7 @@ function oq.make_dropdown_lang_selector()
                 m,
                 arg,
                 text,
-                function(cb_edit, arg1, arg2)
+                function(cb_edit, arg1)
                     oq.set_lang_preference(arg1)
                 end
             )
@@ -11016,7 +10990,7 @@ function oq.make_dropdown_lang_filter()
         m,
         OQ.LANG_UK_ENGLISH,
         OQ.LABEL_UK_ENGLISH,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_lang_filter(arg1, (button == 'RightButton'))
         end
     )
@@ -11024,7 +10998,7 @@ function oq.make_dropdown_lang_filter()
         m,
         OQ.LANG_OC_ENGLISH,
         OQ.LABEL_OC_ENGLISH,
-        function(cb_edit, arg1, arg2, button)
+        function(_, arg1, _, button)
             oq.set_lang_filter(arg1, (button == 'RightButton'))
         end
     )
@@ -11037,7 +11011,7 @@ function oq.make_dropdown_lang_filter()
                 m,
                 arg,
                 text,
-                function(cb_edit, arg1, arg2, button)
+                function(_, arg1, _, button)
                     oq.set_lang_filter(arg1, (button == 'RightButton'))
                 end
             )
@@ -11132,7 +11106,7 @@ function oq.make_dropdown_premade_filter()
                 m,
                 arg,
                 text,
-                function(cb_edit, arg1, arg2, button)
+                function(_, arg1, arg2, button)
                     oq.on_premade_filter(arg1, arg2, (button == 'RightButton'))
                 end
             )
@@ -11213,7 +11187,7 @@ function oq.trim_big_list(self)
     local y1 = offset - 20
     local y2 = y1 + cy + 20
 
-    for n, p in pairs(oq.premades) do
+    for _, p in pairs(oq.premades) do
         if (p) and (p._isvis) and (oq.valid_premade_type(p.type)) and (p.__y >= 0) then
             local y = floor(p.__y or 0)
             if (y >= y1) and (y <= y2) then
@@ -11299,7 +11273,7 @@ function oq.create_tab2()
     x = x + 40
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('ilevel')
         end
     )
@@ -11307,7 +11281,7 @@ function oq.create_tab2()
     x = x + 45
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('resil')
         end
     )
@@ -11315,7 +11289,7 @@ function oq.create_tab2()
     x = x + 45
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_premades('mmr')
         end
     )
@@ -11930,7 +11904,7 @@ function oq.create_tab3()
 end
 
 function oq.tab3_class_all()
-    for i, v in pairs(OQ.CLASS_FLAG) do
+    for i, _ in pairs(OQ.CLASS_FLAG) do
         local cb = oq.tab3['_class_' .. strlower(i)]
         if (cb) then
             cb:SetChecked(true)
@@ -11940,7 +11914,7 @@ end
 
 function oq.tab3_class_none()
     local cb
-    for i, v in pairs(OQ.CLASS_FLAG) do
+    for i, _ in pairs(OQ.CLASS_FLAG) do
         cb = oq.tab3['_class_' .. strlower(i)]
         if (cb) then
             cb:SetChecked(nil)
@@ -12142,7 +12116,7 @@ function oq.create_tab_waitlist()
     x = x + 120
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('name')
         end
     )
@@ -12150,7 +12124,7 @@ function oq.create_tab_waitlist()
     x = x + 100
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('rlm')
         end
     )
@@ -12159,7 +12133,7 @@ function oq.create_tab_waitlist()
     x = x + 40
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('level')
         end
     )
@@ -12168,7 +12142,7 @@ function oq.create_tab_waitlist()
     x = x + 40
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_waitlist('ilevel')
         end
     )
@@ -12228,7 +12202,7 @@ function oq.create_tab_waitlist()
         24,
         OQ.BUT_INVITE_ALL,
         14,
-        function(self)
+        function()
             oq.waitlist_invite_all()
         end
     )
@@ -12285,7 +12259,7 @@ function oq.create_tab_banlist()
     x = x + 130 + 6
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_banlist('ts')
         end
     )
@@ -12293,14 +12267,14 @@ function oq.create_tab_banlist()
     x = x + 200 + 4
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_banlist('btag')
         end
     )
     f = oq.click_label(parent, x, y, 450, cy, OQ.HDR_REASON)
     f:SetScript(
         'OnClick',
-        function(self)
+        function()
             oq.sort_banlist('reason')
         end
     )
@@ -12316,7 +12290,7 @@ function oq.create_tab_banlist()
         24,
         OQ.BUT_BAN_BTAG,
         14,
-        function(self)
+        function()
             StaticPopup_Show('OQ_BanBTag')
         end
     )
@@ -12569,7 +12543,7 @@ function oq.create_pending_note(parent, token)
     f:SetAlpha(1.0)
     oq.closebox(
         f,
-        function(self)
+        function()
             oq.hide_shade()
         end
     )
@@ -13262,11 +13236,6 @@ function oq.on_disband(raid_tok, token, local_override)
     oq.raid_cleanup()
 end
 
-function oq.on_join(ndx, bg_type)
-    -- will trigger exception
-    --  oq.battleground_join(tonumber(ndx), tonumber(bg_type));
-end
-
 function oq.on_leave(ndx)
     oq.battleground_leave(tonumber(ndx))
 end
@@ -13361,7 +13330,7 @@ function oq.reform_clear()
     end
 
     for raid_token, group in pairs(OQ_data.reform) do
-        for key, p in pairs(group) do
+        for key, _ in pairs(group) do
             group[key] = tbl.delete(group[key], true)
         end
         OQ_data.reform[raid_token] = tbl.delete(OQ_data.reform[raid_token], true)
@@ -14048,7 +14017,7 @@ end
 function oq.premade_remove(lead_name, lead_realm, lead_rid, tm)
     local found = nil
 
-    for i, v in pairs(oq.premades) do
+    for _, v in pairs(oq.premades) do
         --    if ((v.leader == lead_name) and (v.leader_realm == lead_realm) and (v.leader_rid == lead_rid)) then
         if (v.leader_rid == lead_rid) then
             if ((tm == nil) or (v.tm == nil) or (v.tm < tm)) then
@@ -14333,7 +14302,7 @@ function oq.show_locals()
     print('--[ local premade leaders ]--')
 
     for sender, v in pairs(OQ_data._locals) do
-        for raid_tok, tm in pairs(v) do
+        for raid_tok, _ in pairs(v) do
             local p = oq.premades[raid_tok]
             if (p) then
                 print('  ' .. tostring(sender) .. ': [' .. tostring(raid_tok) .. '] ' .. tostring(p.name))
@@ -14369,7 +14338,7 @@ function oq.bad_source(raid_tok)
         return true
     else
         local cnt = 0
-        for i, v in pairs(OQ_data._locals[sender]) do
+        for _ in pairs(OQ_data._locals[sender]) do
             cnt = cnt + 1
         end
         if (cnt > OQ.MAX_ORIGINALS) then
@@ -14378,7 +14347,7 @@ function oq.bad_source(raid_tok)
                     '  ' .. L['group spammer spotted.'] .. '  ' .. tostring(sender) .. ' ' .. L['added to the ban list']
             )
             oq.ban_add(sender, L['auto-add: group spammer'])
-            for i, v in pairs(OQ_data._locals[sender]) do
+            for i, _ in pairs(OQ_data._locals[sender]) do
                 oq.remove_premade(i)
             end
             return true
@@ -15222,7 +15191,7 @@ end
 function oq.update_wait_times()
     local now = oq.utc_time()
 
-    for i, v in pairs(oq.tab7.waitlist) do
+    for _, v in pairs(oq.tab7.waitlist) do
         if (v.m.create_tm) then
             v.wait_tm:SetText(date('!%H:%M:%S', (now - v.m.create_tm)))
         end
@@ -15251,7 +15220,7 @@ function oq.get_sorted_waitlist(players)
     tbl.clear(_items)
     tbl.clear(players)
 
-    for n, v in pairs(oq.tab7.waitlist) do
+    for n, _ in pairs(oq.tab7.waitlist) do
         if (n ~= nil) then
             table.insert(_items, n)
         end
@@ -15259,7 +15228,7 @@ function oq.get_sorted_waitlist(players)
 
     table.sort(_items, oq.compare_waitlist)
 
-    for i, v in pairs(_items) do
+    for _, v in pairs(_items) do
         table.insert(players, oq.tab7.waitlist[v].token)
     end
 end
@@ -15284,7 +15253,7 @@ function oq.waitlist_invite_all()
         end
         oq.get_sorted_waitlist(oq._sorted_wait_tokens)
 
-        for i, req_token in pairs(oq._sorted_wait_tokens) do
+        for _, req_token in pairs(oq._sorted_wait_tokens) do
             oq.group_invite_first_available(req_token)
             nfriends = nfriends + 1
             cnt = cnt + 1
@@ -16733,7 +16702,7 @@ function oq.get_class_spec(spec_id)
         return nil
     end
 
-    for i, v in pairs(OQ.CLASS_SPEC) do
+    for _, v in pairs(OQ.CLASS_SPEC) do
         if (v.id == spec_id) then
             return v
         end
@@ -17468,7 +17437,7 @@ function oq.check_party_members()
         end
     end
     -- cleanup
-    for i, v in pairs(rost) do
+    for _, v in pairs(rost) do
         tbl.delete(v)
     end
     tbl.delete(rost)
@@ -17735,7 +17704,6 @@ function oq.procs_init()
     oq.proc['invite_accepted'] = oq.on_invite_accepted
     oq.proc['invite_group'] = oq.on_invite_group
     oq.proc['invite_req_response'] = oq.on_invite_req_response
-    oq.proc['join'] = oq.on_join
     oq.proc['lag_times'] = oq.on_lag_times
     oq.proc['leave'] = oq.on_leave
     oq.proc['leave_slot'] = oq.on_leave_slot
@@ -17793,7 +17761,6 @@ function oq.procs_join_raid()
     oq.proc['enter_bg'] = oq.on_enter_bg
     oq.proc['iam_back'] = oq.on_iam_back
     oq.proc['identify'] = oq.on_identify
-    oq.proc['join'] = oq.on_join
     oq.proc['lag_times'] = oq.on_lag_times
     oq.proc['leave'] = oq.on_leave
     oq.proc['leave_slot'] = oq.on_leave_slot
@@ -18125,7 +18092,7 @@ function oq.iam_related_to_boss()
         return nil
     end
 
-    for i, v in pairs(oq.toon.my_toons) do
+    for _, v in pairs(oq.toon.my_toons) do
         if (oq.stricmp(v.name, oq.raid.leader)) then
             return true
         end
@@ -18264,7 +18231,7 @@ function oq.trim_old_premades()
         msg = nil
     end
 
-    for tok, v in pairs(oldies) do
+    for tok, _ in pairs(oldies) do
         oq.remove_premade(tok)
     end
     tbl.delete(oldies)
@@ -18293,7 +18260,7 @@ function oq.process_bundle(sender, realm, msg)
     local bundle = msg:sub((msg:find('|') or 0) + 1, -1)
     tbl.fill_match(oq._bundle, bundle, '|')
 
-    for i, v in pairs(oq._bundle) do
+    for _, v in pairs(oq._bundle) do
         _source = 'bnet'
         _ok2relay = nil
         oq._sender = sender
@@ -18662,7 +18629,7 @@ function oq.queue_popped(ndx)
         -- show raid leader dialog
         PVPReadyDialogEnterBattleButton:SetScript(
             'PostClick',
-            function(self)
+            function()
                 oq._send_immediate = 1
                 oq.raid_announce('enter_bg,' .. ndx)
                 oq._send_immediate = nil
@@ -18671,7 +18638,7 @@ function oq.queue_popped(ndx)
         )
         PVPReadyDialogLeaveQueueButton:SetScript(
             'PostClick',
-            function(self)
+            function()
                 oq.raid_announce('leave_queue,' .. ndx)
                 oq.timer_oneshot(1, oq.clear_postclicks)
             end
@@ -18911,7 +18878,7 @@ end
 --------------------------------------------------------------------------
 -- initialization functions & event handlers
 --------------------------------------------------------------------------
-function oq.on_event(self, event, ...)
+function oq.on_event(_, event, ...)
     if (oq.msg_handler[event] ~= nil) then
         oq._event = event
         oq.msg_handler[event](...)
@@ -19174,23 +19141,6 @@ end
 ---------------------------------
 -- General (local) functions --
 ---------------------------------
--- checks if a given value is in an array
--- returns true if it finds the value, false otherwise
-local function checkEntry(t, val)
-    for i, v in ipairs(t) do
-        if v == val then
-            return true
-        end
-    end
-    return false
-end
-
-function oq.is_boss(cId)
-    if (oq.BossID[cId]) then
-        return true
-    end
-    return nil
-end
 
 function oq.get_group_level_range()
     local highest = UnitLevel('player')
@@ -19348,7 +19298,7 @@ function oq.register_events()
     hooksecurefunc(
         WorldMapFrame,
         'Show',
-        function(self)
+        function()
             oq.WorldMap_show()
         end
     )
@@ -19564,7 +19514,7 @@ function oq.onHyperlink_btag(link)
     -- popup menu on the battle-tag
     oq.menu_create():Raise()
 
-    for i, v in pairs(OQ.btag_hyperlink) do
+    for _, v in pairs(OQ.btag_hyperlink) do
         oq.menu_add(
             v.text,
             token,
@@ -19600,7 +19550,7 @@ function oq.onHyperlink_oqueue(link)
     -- popup menu on the battle-tag
     oq.menu_create():Raise()
 
-    for i, v in pairs(OQ.premade_hyperlink) do
+    for _, v in pairs(OQ.premade_hyperlink) do
         oq.menu_add(
             v.text,
             token,

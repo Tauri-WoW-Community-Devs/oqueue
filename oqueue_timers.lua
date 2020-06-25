@@ -103,7 +103,6 @@ function oq.timer_dump(opt)
 
     print('--[ timers ]------')
     local now = GetTime()
-    local i, v
     for i, v in pairs(oq.timers) do
         if (arg) then
             if (v.one_shot) then
@@ -143,14 +142,13 @@ function oq.timer_trigger(now)
     if (now < oq.next_timer_cycle) then
         return
     end
-    local i, v
     for i, v in pairs(oq.timers) do
         if (v.tm) and (v.tm < now) then
             local arg1 = v.arg1
             if (arg1 == nil) or (arg1 == '#now') then
                 arg1 = now
             end
-            local retOK, rc = 0, 0
+            local retOK, rc
             oq._timer_id = i
             retOK, rc = pcall(v.func, arg1, v.arg2, v.arg3, v.arg4, v.arg5, v.arg6, v.arg7)
             if (retOK == true) then

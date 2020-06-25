@@ -12,12 +12,13 @@ function PacketStatistics:new(max_cnt)
     o._cnt = 0
     o._max = max_cnt
     o.array = tbl.new()
-    local i
+
     for i = 1, max_cnt do
         o.array[i] = tbl.new()
         o.array[i]._x = nil
         o.array[i]._tm = nil
     end
+
     o._n = 0
     o._aps = 0
     o._dt = 0
@@ -34,7 +35,7 @@ function PacketStatistics:avg()
     local t2 = nil
     local n1 = 0
     local n2 = 0
-    local i = 0
+
     self._n = 0
     self._aps = 0 -- avg per second
 
@@ -64,7 +65,7 @@ end
 function PacketStatistics:mean()
     local n = 0
     local sum = 0
-    local i = 0
+
     for i = 1, self._max do
         if (self.array[i]._x ~= nil) then
             n = n + 1
@@ -80,11 +81,12 @@ end
 
 function PacketStatistics:reset()
     self._cnt = 0
-    local i = 0
+
     for i = 1, self._max do
         self.array[i]._x = nil
         self.array[i]._tm = nil
     end
+
     self._n = 0
     self._cnt = 0
     self._aps = 0
@@ -104,7 +106,6 @@ function PacketStatistics:noop()
 end
 
 function PacketStatistics:push(x, use_mean)
-    local i = 0
     for i = self._max, 2, -1 do
         self.array[i]._x = self.array[i - 1]._x
         self.array[i]._tm = self.array[i - 1]._tm
@@ -120,8 +121,7 @@ end
 
 function PacketStatistics:median()
     local t = tbl.new()
-    local i, v
-    for i, v in pairs(self.array) do
+    for _, v in pairs(self.array) do
         table.insert(t, v._x)
     end
     local median = oq.stats.median(t)
@@ -145,9 +145,8 @@ oq.stats = tbl.new()
 function oq.stats.mean(t)
     local sum = 0
     local count = 0
-    local k, v
 
-    for k, v in pairs(t) do
+    for _, v in pairs(t) do
         if type(v) == 'number' then
             sum = sum + v
             count = count + 1
@@ -160,9 +159,8 @@ end
 -- Works on anything (not just numbers).
 function oq.stats.mode(t)
     local counts = tbl.new()
-    local k, v
 
-    for k, v in pairs(t) do
+    for _, v in pairs(t) do
         if counts[v] == nil then
             counts[v] = 1
         else
@@ -171,7 +169,7 @@ function oq.stats.mode(t)
     end
 
     local biggestCount = 0
-    for k, v in pairs(counts) do
+    for _, v in pairs(counts) do
         if (v > biggestCount) then
             biggestCount = v
         end
@@ -191,11 +189,10 @@ end
 -- Get the median of a table.
 function oq.stats.median(t, skip_zero)
     local temp = tbl.new()
-    local k, v
 
     -- deep copy table so that when we sort it, the original is unchanged
     -- also weed out any non numbers
-    for k, v in pairs(t) do
+    for _, v in pairs(t) do
         if (type(v) == 'number') and ((skip_zero == nil) or (v > 0)) then
             table.insert(temp, v)
         end
@@ -225,8 +222,8 @@ function oq.stats.standardDeviation(t)
     local sum = 0
     local count = 0
     local result
-    local k, v
-    for k, v in pairs(t) do
+
+    for _, v in pairs(t) do
         if type(v) == 'number' then
             vm = v - m
             sum = sum + (vm * vm)
@@ -241,8 +238,8 @@ end
 function oq.stats.maxmin(t)
     local max = -math.huge
     local min = math.huge
-    local k, v
-    for k, v in pairs(t) do
+
+    for _, v in pairs(t) do
         if type(v) == 'number' then
             max = math.max(max, v)
             min = math.min(min, v)

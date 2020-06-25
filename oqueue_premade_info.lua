@@ -104,7 +104,7 @@ end
 function oq.get_raid_progression()
     --  GetStatistic(588)
     -- oq.bset( m.flags, OQ_FLAG_DESERTER, deserter ) ;
-    local flags = 0
+    local flags
 
     -- terrace of endless spring
     local toes = ''
@@ -294,7 +294,7 @@ function oq.get_pvp_experience()
     -- get top rbg rank
     local rank = 0
     local faction = 1
-    local flags = 0
+    local flags
     if (strlower(select(1, UnitFactionGroup('player'))) == 'alliance') then
         faction = 15
     end
@@ -390,7 +390,7 @@ function oq.get_medal_count(id)
     return b
 end
 
-function oq.get_challenge_experience(as_lead)
+function oq.get_challenge_experience()
     local str = ''
     str = str .. '' .. oq.encode_mime64_2digit(oq.get_medal_count(7400))
     str = str .. '' .. oq.encode_mime64_2digit(oq.get_medal_count(7401))
@@ -406,7 +406,7 @@ function oq.get_challenge_experience(as_lead)
                     oq.encode_mime64_2digit(nwipes)
 end
 
-function oq.get_scenario_experience(as_lead)
+function oq.get_scenario_experience()
     -- bbbWWdddmmm
     -- bosses and wipes
     local nbosses, nwipes = oq.get_nboss_kills()
@@ -455,7 +455,7 @@ function oq.best_arena_rank(sz)
     return best
 end
 
-function oq.get_arena_experience(as_lead)
+function oq.get_arena_experience()
     -- rmmm5wwwlll3wwwlll2wwwlllC
     -- r        best rank
     -- mmm      bets mmr of all 3
@@ -507,13 +507,13 @@ function oq.get_leader_experience()
         return oq.get_rbg_experience(true)
     end
     if (oq.raid.type == OQ.TYPE_CHALLENGE) then
-        return oq.get_challenge_experience(true)
+        return oq.get_challenge_experience()
     end
     if (oq.raid.type == OQ.TYPE_SCENARIO) then
-        return oq.get_scenario_experience(true)
+        return oq.get_scenario_experience()
     end
     if (oq.raid.type == OQ.TYPE_ARENA) then
-        return oq.get_arena_experience(true)
+        return oq.get_arena_experience()
     end
 
     return 'A' -- ie: nothing
@@ -533,10 +533,10 @@ function oq.get_past_experience()
         return oq.get_rbg_experience(nil)
     end
     if (oq.raid.type == OQ.TYPE_CHALLENGE) then
-        return oq.get_challenge_experience(nil)
+        return oq.get_challenge_experience()
     end
     if (oq.raid.type == OQ.TYPE_SCENARIO) then
-        return oq.get_scenario_experience(nil)
+        return oq.get_scenario_experience()
     end
 
     return 'A' -- ie: nothing
@@ -719,7 +719,7 @@ function oq.get_boss_bits(raid_id, maxBosses)
     return boss_bits
 end
 
-function oq.get_boss_locks(raid_name, raid_ndx, maxBosses)
+function oq.get_boss_locks(raid_name, maxBosses)
     local raid_id = oq.get_raid_id(raid_name)
     if (raid_id == 0) then
         return 0
@@ -794,7 +794,7 @@ function oq.get_raid_boss_progression(name)
     for index = 1, n do
         local iName, _, _, _, _, _, _, _, _, _, maxBosses = GetSavedInstanceInfo(index)
         if (iName == name) then
-            return oq.encode_mime64_3digit(oq.get_boss_locks(name, index, maxBosses))
+            return oq.encode_mime64_3digit(oq.get_boss_locks(name, maxBosses))
         end
     end
     return 'AAA'
@@ -863,8 +863,7 @@ function oq.get_current_raid_status(sub_type)
         difficultyIndex = OQ_data._premade_diff or 3
     end
     local nkilled, maxBosses = oq.get_raid_bosses_killed(name)
-    local boss_id = nkilled + 1
-    local hp = 100
+    local boss_id, hp
 
     local unit = oq.scan_for_boss(rid)
     if (unit) then
