@@ -8,6 +8,7 @@ local tbl = OQ.table
 local OQ_MAJOR = 2
 local OQ_MINOR = 0
 local OQ_REVISION = 3
+local OQ_SPECIAL_TAG = ""
 local OQ_BUILD_STR = tostring(OQ_MAJOR) .. tostring(OQ_MINOR) .. tostring(OQ_REVISION)
 local OQ_BUILD = tonumber(OQ_BUILD_STR)
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
@@ -1156,7 +1157,7 @@ local _consts = {
 
 function oq.CRC32(s)
     local bit_band, bit_bxor, bit_rshift, str_byte, str_len = bit.band, bit.bxor, bit.rshift, string.byte, string.len
-    local crc = 0xFFFFFFFF, str_len(s), 0
+    local crc, l = 0xFFFFFFFF, str_len(s)
     for i = 1, l, 1 do
         crc = bit_bxor(bit_rshift(crc, 8), _consts[bit_band(bit_bxor(crc, str_byte(s, i)), 0xFF) + 1])
     end
@@ -6054,7 +6055,6 @@ function oq.reshuffle_waitlist()
     y = 10
     cy = 25
     cx = oq.tab7._list:GetWidth() - 2 * x
-    n = 0
 
     tbl.clear(_items)
     for n, v in pairs(oq.tab7.waitlist) do
@@ -6071,6 +6071,7 @@ function oq.reshuffle_waitlist()
     end
     oq._nwaitlist = 0
 
+    local n = 0
     table.sort(_items, oq.compare_waitlist)
     for i, v in pairs(_items) do
         oq.setpos(oq.tab7.waitlist[v], x, y, cx, cy)
@@ -7824,7 +7825,7 @@ end
 
 function oq.create_ladder_seat(parent, x, y, cx, cy)
     oq.nthings = (oq.nthings or 0) + 1
-    local f = oq.panel(parent, n, x, y, cx, cy)
+    local f = oq.panel(parent, "DotRegion", x, y, cx, cy)
 
     f.cy = cy
 
@@ -11930,7 +11931,7 @@ end
 
 function oq.tab3_class_all()
     for i, v in pairs(OQ.CLASS_FLAG) do
-        cb = oq.tab3['_class_' .. strlower(i)]
+        local cb = oq.tab3['_class_' .. strlower(i)]
         if (cb) then
             cb:SetChecked(true)
         end
@@ -18024,23 +18025,24 @@ function oq.ping_oq_toon(toon_pid, toonName, realmName, ts, ack)
     local msg =
         'OQ,' ..
         OQ_BUILD_STR ..
-            ',' ..
-                'W1,' ..
-                    '1,' .. -- OQ_TTL ..",".. (only one hop... to the specified target)
-                        'oq_user,' ..
-                            player_name ..
-                                ',' ..
-                                    player_realm ..
-                                        ',' ..
-                                            oq.player_faction ..
-                                                ',' .. oq.player_realid .. ',' .. oq.encode_mime64_5digit(ts or 0)
+        ',' ..
+        'W1,' ..
+        '1,' .. -- OQ_TTL ..",".. (only one hop... to the specified target)
+        'oq_user,' ..
+        player_name ..
+        ',' ..
+        player_realm ..
+        ',' ..
+        oq.player_faction ..
+        ',' .. oq.player_realid .. ',' .. oq.encode_mime64_5digit(ts or 0)
+
     if (ack) and (ack ~= '') then
         msg = msg .. ',' .. ack
     end
 
     local f = oq.toon.disabled
     oq.toon.disabled = nil
-    oq.XRealmWhisper(toonName, toonRealm, msg)
+    oq.XRealmWhisper(toonName, realmName, msg)
     oq.toon.disabled = f
 end
 
@@ -19452,8 +19454,8 @@ function oq.player_new_level()
     local txt = tostring(minlevel) .. ' - ' .. tostring(maxlevel)
     if (minlevel == 0) then
         txt = 'UNK'
-    elseif (minlevel == TOP_LEVEL) then
-        txt = tostring(TOP_LEVEL)
+    elseif (minlevel == OQ.TOP_LEVEL) then
+        txt = tostring(OQ.TOP_LEVEL)
     end
     oq.tab3_level_range = txt
 end
@@ -19531,7 +19533,7 @@ function oq.btag_hyperlink_action(realId, action)
         if (isFriend) then
             print(OQ.LILTRIANGLE_ICON .. ' ' .. string.format(OQ.ALREADY_FRIENDED, realId))
         else
-            AddFriend(realid)
+            AddFriend(realId)
         end
     end
 end

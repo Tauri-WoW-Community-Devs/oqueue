@@ -30,6 +30,13 @@ globals = {
 	"OQTabPage5",
 	"OQTabPage6",
 	"OQTabPage7",
+	"OQMainFrameTab1",
+	"OQMainFrameTab2",
+	"OQMainFrameTab3",
+	"OQMainFrameTab4",
+	"OQMainFrameTab5",
+	"OQMainFrameTab6",
+	"OQMainFrameTab7",
 
 	-- Addons and Libraries
 	"LibStub",
@@ -78,6 +85,7 @@ globals = {
 	"UIDropDownMenu_CreateInfo",
 	"UIDropDownMenu_Initialize",
 	"UISpecialFrames",
+	"PanelTemplates_SetTab",
 
 	-- FrameXML frames
 	"AlertFrame",
@@ -92,12 +100,16 @@ globals = {
 	"UIParent",
 	"WorldFrame",
 	"WorldMapFrame",
+	"PVPUIFrame",
+	"PVPReadyDialogEnterBattleButton",
+	"PVPReadyDialogLeaveQueueButton",
 
 	-- FrameXML globals
 	"ChatFontNormal",
 	"GameFontNormal",
 
 	-- framexml functions
+	"InspectUnit",
 	"GetUnitName",
 	"getglobal",
 	"message",
