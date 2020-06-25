@@ -97,7 +97,7 @@ StaticPopupDialogs['OQ_BanUser'] = {
         self.editBox:SetFocus()
     end,
     OnAccept = function(self, data, data2)
-        reason = self.editBox:GetText()
+        local reason = self.editBox:GetText()
         local d = self.data2
         if (d.flag == 1) then
             local m = oq.raid.group[d.gid].member[d.slot_]

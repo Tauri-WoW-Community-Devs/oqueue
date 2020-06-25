@@ -986,21 +986,21 @@ function oq.pm_tooltip_set(f, raid_token)
         pm_tooltip.right[pm_tooltip.nRows - 7]:SetText(oq.decode_mime64_digits(raid.leader_xp:sub(2, 4)))
 
         pm_tooltip.left[pm_tooltip.nRows - 5]:SetText(
-            '2v2  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(19, 19))] or ''
+            ('2v2  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(19, 19))]) or ''
         )
         pm_tooltip.right[pm_tooltip.nRows - 5]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(20, 22)) ..
                 ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(23, 25))
         )
         pm_tooltip.left[pm_tooltip.nRows - 4]:SetText(
-            '3v3  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(12, 12))] or ''
+            ('3v3  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(12, 12))]) or ''
         )
         pm_tooltip.right[pm_tooltip.nRows - 4]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(13, 15)) ..
                 ' - ' .. oq.decode_mime64_digits(raid.leader_xp:sub(16, 18))
         )
         pm_tooltip.left[pm_tooltip.nRows - 3]:SetText(
-            '5v5  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(5, 5))] or ''
+            ('5v5  ' .. OQ.ARENA_MMR_RANK_ACHIEVE[oq.decode_mime64_digits(raid.leader_xp:sub(5, 5))]) or ''
         )
         pm_tooltip.right[pm_tooltip.nRows - 3]:SetText(
             oq.decode_mime64_digits(raid.leader_xp:sub(6, 8)) ..
