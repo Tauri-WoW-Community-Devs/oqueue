@@ -532,7 +532,7 @@ function oq.reposition_ui()
     f:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', x, -150)
 
     x = x + OQ.DEFAULT_WIDTH
-    
+
     -- toggle minimap button so it's on top
     OQ_MinimapButton:Show()
     OQ_MinimapButton:SetFrameStrata('MEDIUM')
@@ -1964,7 +1964,7 @@ end
 --------------------------------------------------------------------------
 --[[
     http://www.wowpedia.org/API_GetCombatRating
-    
+
     CR_WEAPON_SKILL = 1;
     CR_DEFENSE_SKILL = 2;
     CR_DODGE = 3;
@@ -1990,8 +1990,8 @@ end
     CR_WEAPON_SKILL_RANGED = 23;
     CR_EXPERTISE = 24;
     CR_ARMOR_PENETRATION = 25;
-    CR_MASTERY = 26; 
-    CR_PVP_POWER = 27; 
+    CR_MASTERY = 26;
+    CR_PVP_POWER = 27;
 ]]
 function oq.get_pvppower()
     return (GetCombatRating(27) or 0)
@@ -5837,7 +5837,7 @@ function oq.populate_ban_list()
     y = 1
     cx = 200
     cy = 22
-    
+
     for i, v in pairs(OQ_data.banned) do
         local f = oq.create_ban_listitem(oq.tab6._list, x, y, cx, cy, i, v.reason, v.ts)
         table.insert(oq.tab6_banlist, f)
@@ -9080,9 +9080,9 @@ function oq.create_filter_button(parent)
     end
     --
     --[[ will clear filter text; removed to allow user to hit esc to close the ui while keeping filter text
-  b._edit:SetScript( "OnEscapePressed", 
-          function(self) 
-            self:ClearFocus(); 
+  b._edit:SetScript( "OnEscapePressed",
+          function(self)
+            self:ClearFocus();
             self:SetText("");
             oq._filter:Click();
           end );
@@ -9904,13 +9904,11 @@ function oq.create_tab1_dungeon(parent)
 end
 
 function oq.create_tab1_challenge(parent)
-    local x, y, cx, cy, label_cx
+    local x, y, label_cx
     local group_id = 1 -- only one group
 
     x = 20
     y = 65
-    cx = 50
-    cy = 50
     label_cx = 150
 
     oq.challenge_group =
@@ -9918,13 +9916,10 @@ function oq.create_tab1_challenge(parent)
 end
 
 function oq.create_tab1_ratedbgs(parent)
-    local x, y, cx, cy, label_cx
+    local x, y
 
     x = 20
     y = 65
-    cx = parent:GetWidth() - 2 * x
-    cy = (425 - 2 * y) / 10
-    label_cx = 150
 
     -- group menus
     oq.nthings = (oq.nthings or 0) + 1
@@ -9975,13 +9970,11 @@ function oq.create_tab1_raid(parent)
 end
 
 function oq.create_tab1_scenario(parent)
-    local x, y, cx, cy, label_cx
+    local x, y, label_cx
     local group_id = 1 -- only one group
 
     x = 20
     y = 65
-    cx = 50
-    cy = 50
     label_cx = 150
 
     oq.scenario_group =
@@ -9989,13 +9982,11 @@ function oq.create_tab1_scenario(parent)
 end
 
 function oq.create_tab1_arena(parent)
-    local x, y, cx, cy, label_cx
+    local x, y, label_cx
     local group_id = 1 -- only one group
 
     x = 20
     y = 65
-    cx = 50
-    cy = 50
     label_cx = 150
 
     oq.arena_group = oq.create_arena_group(parent, x, y, parent:GetWidth() - x * 2, 250, label_cx, title, group_id)
@@ -10008,7 +9999,6 @@ function oq.create_tab1_ladder(parent)
     x = 20
     y = 65
     cx = parent:GetWidth() - 2 * x
-    cy = (425 - 2 * y)
     cy = 250
     label_cx = 150
 
@@ -10016,11 +10006,6 @@ function oq.create_tab1_ladder(parent)
 
     -- create ladder seats
     oq.ladder_seats = oq.create_ladder_seats(parent, x, y, cx, cy)
-
-    -- match up button
-    local iy, ix
-    iy = 16
-    ix = 16
 
     x = x + (cx - 100) / 2
     oq.button(
@@ -12666,7 +12651,6 @@ function oq.create_tab_setup()
     y = 65
     x = 20
     oq.label(parent, x, y, cx, cy, OQ.REALID_MOP)
-    
 
     --
     -- alt list
@@ -13637,7 +13621,7 @@ function oq.on_raid_join(raid_name, premade_type, raid_leader_class, enc_data, r
     oq.timer_oneshot(3, oq.check_stats)
 end
 
-function oq.on_party_join(group_id, raid_name, raid_leader_class, enc_data, raid_token, raid_notes, raid_type)
+function oq.on_party_join(_, raid_name, raid_leader_class, enc_data, raid_token, raid_notes, raid_type)
     if ((_msg_type ~= 'P') and (_msg_type ~= 'R')) then
         return
     end
@@ -13790,7 +13774,7 @@ function oq.find_player_slot(g_id, name, realm)
     return 0
 end
 
-function oq.on_promote(g_id, name, realm, lead_rid, leader_realm, req_token)
+function oq.on_promote(g_id, name, realm, _, _, req_token)
     g_id = tonumber(g_id)
     local slot = 1
     if (my_group ~= g_id) and (g_id ~= 1) then
@@ -13908,7 +13892,7 @@ function oq.on_member(group_id, slot, class, name, realm)
     oq.set_group_member(group_id, slot, name, realm, class, nil)
 end
 
-function oq.on_pass_lead(raid_token, nuleader, nuleader_realm, nuleader_rid)
+function oq.on_pass_lead(_, nuleader, nuleader_realm, nuleader_rid)
     oq.raid.leader = nuleader
     oq.raid.leader_realm = nuleader_realm
     oq.raid.leader_realid = nuleader_rid
@@ -16747,7 +16731,7 @@ function oq.get_spell_dmg()
     for i = 1, 7 do
         dmg = max(dmg, GetSpellBonusDamage(i) or 0)
     end
-    
+
     return dmg
 end
 
@@ -17009,7 +16993,7 @@ function oq.decode_their_stats(m, s)
         m.karma = m.raids:sub(-1, -1) -- last character
         m.raids = m.raids:sub(1, -2) -- trim off last character
     else --
-        --[[ pvp data ]] 
+        --[[ pvp data ]]
         m.resil = oq.decode_mime64_digits(s:sub(18, 20))
         m.pvppower = oq.decode_mime64_digits(s:sub(21, 23))
         m.wins = oq.decode_mime64_digits(s:sub(24, 26))
@@ -17276,7 +17260,7 @@ function oq.decode_premade_info(data)
         karma = oq.decode_mime64_digits(karma) - 25
     end
 
-    return faction, has_pword, is_realm_specific, is_source, 
+    return faction, has_pword, is_realm_specific, is_source,
     range,
     oq.decode_mime64_digits( data:sub( 3, 4) ), -- min ilevel
     oq.decode_mime64_digits( data:sub( 5, 7) ), -- min resil
@@ -17956,7 +17940,7 @@ function oq.CheckForUpdates(oq_ver)
         -- my version is the same or newer, nothing to do.
         return
     end
-    
+
     if (OQ_data.next_update_notice == nil) or (OQ_data.next_update_notice < now) then
         -- notify user
         local dialog = StaticPopup_Show('OQ_NewVersionAvailable', oq.get_version_str(oq_ver))
@@ -18186,13 +18170,13 @@ function oq.process_msg(sender, msg)
         -- not the same protocol, cannot proceed
         return
     end
-    
+
     if (oq_ver ~= OQ_BUILD_STR) then
         -- different versions
         oq.CheckForUpdates(oq_ver)
         return
     end
-    
+
     _msg_type = token:sub(1, 1)
 
     if (_msg_type == 'A') then
