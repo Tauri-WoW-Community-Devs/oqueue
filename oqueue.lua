@@ -4193,7 +4193,7 @@ end
 
 function oq.group_charm_clear(g_id)
     g_id = tonumber(g_id)
-    local i
+
     for i = 1, 5 do
         oq.raid.group[g_id].member[i].charm = 0
         oq.raid.group[g_id].member[i].check = OQ.FLAG_CLEAR
@@ -5812,13 +5812,13 @@ function oq.create_ban_listitem(parent, x, y, cx, cy, btag, reason, ts)
 
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             self._highlight:Show()
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             self._highlight:Hide()
         end
     )
@@ -7591,13 +7591,13 @@ function oq.create_class_dot(parent, x, y, cx, cy)
     --
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.on_classdot_enter(self)
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.on_classdot_exit(self)
         end
     )
@@ -7662,13 +7662,13 @@ function oq.create_dungeon_dot(parent, x, y, cx, cy)
     --
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.on_classdot_enter(self)
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.on_classdot_exit(self)
         end
     )
@@ -7738,13 +7738,13 @@ function oq.create_challenge_dot(parent, x, y, cx, cy)
     --
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.on_classdot_enter(self)
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.on_classdot_exit(self)
         end
     )
@@ -7820,13 +7820,13 @@ function oq.create_ladder_dot(parent, x, y, cx, cy)
     f.on_dot_click = oq.on_ladderdot_click
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             self.on_dot_enter(self)
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             self.on_dot_exit(self)
         end
     )
@@ -7846,13 +7846,11 @@ end
 
 function oq.create_ladder_seat(parent, x, y, cx, cy)
     oq.nthings = (oq.nthings or 0) + 1
-    local n = 'DotRegion'
     local f = oq.panel(parent, n, x, y, cx, cy)
 
     f.cy = cy
 
     f.ndx = 0
-    n = 'DotTexture' .. oq.nthings
     f.texture:SetAllPoints(f)
     f.texture:SetTexture(0.2, 0.2, 0.0, 1)
 
@@ -8461,19 +8459,19 @@ function oq.create_premade_listing(parent, x, y, cx, cy, token, type)
     --
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.on_premade_item_enter(self)
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.on_premade_item_exit(self)
         end
     )
     f:SetScript(
         'OnClick',
-        function(self, button, ...)
+        function(self, button)
             oq.on_premade_item_click(self, button)
         end
     )
@@ -8496,21 +8494,21 @@ function oq.create_waitlist_item(parent, x, y, cx, cy, token, n_members)
     f:SetFrameLevel(parent:GetFrameLevel() + 10)
     f:SetScript(
         'OnEnter',
-        function(self, ...)
+        function(self)
             oq.set_waitlist_tooltip(self)
             self._highlight:Show()
         end
     )
     f:SetScript(
         'OnLeave',
-        function(self, ...)
+        function(self)
             oq.tooltip_hide()
             self._highlight:Hide()
         end
     )
     f:SetScript(
         'OnClick',
-        function(self, button, ...)
+        function(self, button)
             oq.on_waitlist_item_click(self, button)
         end
     )
@@ -15877,13 +15875,13 @@ function oq.get_model(parent, name, gender, race)
         oq._models[key]._fname = oq.get_model_standin(gender, race)
         oq._models[key]:SetScript(
             'OnEnter',
-            function(self, ...)
+            function(self)
                 oq.on_classdot_enter(self:GetParent():GetParent())
             end
         )
         oq._models[key]:SetScript(
             'OnLeave',
-            function(self, ...)
+            function(self)
                 oq.on_classdot_exit(self:GetParent():GetParent())
             end
         )
@@ -15946,7 +15944,7 @@ function oq.get_model(parent, name, gender, race)
         end
         oq._models[key]:SetScript(
             'OnShow',
-            function(self, ...)
+            function(self)
                 self:RegisterEvent('UNIT_MODEL_CHANGED', self.update_model)
                 self:adjust_frame()
                 self:update_model()
@@ -15954,13 +15952,13 @@ function oq.get_model(parent, name, gender, race)
         )
         oq._models[key]:SetScript(
             'OnHide',
-            function(self, ...)
+            function(self)
                 self:UnregisterEvent('UNIT_MODEL_CHANGED')
             end
         )
         oq._models[key]:SetScript(
             'OnUpdate',
-            function(self, ...)
+            function(self)
                 self:check_model()
             end
         )
@@ -18680,7 +18678,7 @@ function OQ_AutoInspect()
     end
 end
 
-function oq.on_bg_event(event, ...)
+function oq.on_bg_event(event)
     if (my_group < 1) or (my_slot < 1) then
         return
     end
