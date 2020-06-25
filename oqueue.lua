@@ -12,7 +12,6 @@ local OQ_BUILD_STR = tostring(OQ_MAJOR) .. tostring(OQ_MINOR) .. tostring(OQ_REV
 local OQ_BUILD = tonumber(OQ_BUILD_STR)
 local OQUEUE_VERSION = tostring(OQ_MAJOR) .. '.' .. tostring(OQ_MINOR) .. '.' .. OQ_REVISION
 local OQ_NOTIFICATION_CYCLE = 2 * 60 * 60 -- every 2 hrs
-local OQ_REALISTIC_MAX_GAMELEN = 8 * 60 * 60 -- classic AV no longer exists
 local OQ_NOEMAIL = '.'
 local OQ_HEADER = 'OQ'
 local OQ_MSGHEADER = OQ_HEADER .. ','
@@ -2275,11 +2274,6 @@ function oq.mark_currency()
 end
 
 function oq.check_currency()
-    -- precaution
-    if (OQ_data.stats.bg_length == nil) or (OQ_data.stats.bg_length == 0) then
-        -- invalidates the rate calculation, but keeps it sane(ish)
-        OQ_data.stats.bg_length = 1
-    end
     local duration = oq._instance_duration
     if (duration == nil) or (duration == 0) and ((oq._instance_tm) and (oq._instance_tm > 0)) then
         duration = oq.utc_time() - (oq._instance_tm or 0)
@@ -2407,9 +2401,7 @@ function oq.check_currency()
         oq.log(true, OQ.LOST .. ' ' .. delta .. ' ' .. OQ.TT_MMR .. '  (' .. OQ.NOW .. ' ' .. mmr .. ')')
     end
 
-    if (OQ_data.nrage > 0) and (oq._instance_type == 'pvp') then
-        oq.report_rage()
-    elseif (oq._instance_end_tm) and (oq._instance_end_tm > 0) then
+    if (oq._instance_end_tm) and (oq._instance_end_tm > 0) then
         oq.log(
             true,
             OQ.INSTANCE_LASTED .. ' ' .. floor(duration / 60) .. ':' .. string.format('%02d', floor(duration % 60))
@@ -2580,9 +2572,6 @@ function oq.entering_bg()
 
     local s = oq.init_stats_data()
 
-    OQ_data.stats.bg_start = oq.utc_time()
-    OQ_data.stats.bg_end = 0
-    OQ_data.stats.bg_length = 1
     _winner = nil
 
     if (not oq.iam_raid_leader()) then
@@ -2597,18 +2586,6 @@ end
 
 function oq.game_ended()
     _winner = GetBattlefieldWinner()
-
-    if (OQ_data.stats.bg_start == 0) or ((OQ_data.stats.bg_end - OQ_data.stats.bg_start) > OQ_REALISTIC_MAX_GAMELEN) then
-        -- game never started.  clean up data and leave
-        OQ_data.stats.bg_start = 0
-        OQ_data.stats.bg_end = 0
-        OQ_data.stats.bg_length = 1
-    end
-
-    if (_winner ~= nil) then
-        OQ_data.stats.bg_end = oq.utc_time()
-        OQ_data.stats.bg_length = OQ_data.stats.bg_end - OQ_data.stats.bg_start
-    end
 
     oq.calc_game_stats()
     oq.calc_player_stats()
@@ -3786,16 +3763,6 @@ function oq.enemy_is_same_faction()
     return nil
 end
 
-function oq.report_rage()
-    if (_inside_bg) then
-        print(string.format(OQ.RAGEQUITS, OQ_data.nrage))
-    else
-        local min = floor((OQ_data.stats.bg_length) / 60)
-        local sec = OQ_data.stats.bg_length % 60
-        oq.log(true, string.format(OQ.RAGELASTGAME, OQ_data.nrage, min, sec))
-    end
-end
-
 function oq.show_raw_numbers()
     if (oq._show_raw) then
         oq._show_raw = nil
@@ -4477,9 +4444,6 @@ function oq.raid_create()
     end
 
     local s = oq.init_stats_data()
-    OQ_data.stats.start_tm = oq.utc_time()
-    OQ_data.stats.bg_start = 0 -- place holder - time() of bg start
-    OQ_data.stats.bg_end = 0 -- place holder - time() of bg end
 
     oq.raid.notes = oq.raid.notes or ''
     oq.raid.bgs = oq.raid.bgs or ''
@@ -19267,9 +19231,6 @@ function oq.load_oq_data()
         OQ_data.stats.nGames = 0
         OQ_data.stats.nWins = 0
         OQ_data.stats.nLosses = 0
-        OQ_data.stats.start_tm = 0 -- time() when this raid was created
-        OQ_data.stats.bg_start = 0 -- place holder - time() of bg start
-        OQ_data.stats.bg_end = 0 -- place holder - time() of bg end
         OQ_data.stats.tm = 0 -- time of last update from source.  able to know which data is the latest
     end
 end
