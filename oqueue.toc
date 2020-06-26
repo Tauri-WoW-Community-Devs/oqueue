@@ -8,31 +8,31 @@
 ## DefaultState: enabled
 ## SavedVariables: OQ_data
 
-oqueue.defines.lua 
+Defines.lua 
 
-locales\oqueue.en.lua
-locales\oqueue.br.lua
-locales\oqueue.de.lua
-locales\oqueue.es.lua
-locales\oqueue.mx.lua
-locales\oqueue.fr.lua
-locales\oqueue.it.lua
-locales\oqueue.ru.lua
+Locales\en.lua
+Locales\br.lua
+Locales\de.lua
+Locales\es.lua
+Locales\mx.lua
+Locales\fr.lua
+Locales\it.lua
+Locales\ru.lua
 
-region\realms.eu.lua
+Region\eu.lua
 
 Libs\LibStub\LibStub.lua
 Libs\LibBossIDs-1.0\lib.xml
 
-oqueue.lua
-oqueue_tables.lua
-oqueue_class_portraits.lua
-oqueue_dialogs.lua
-oqueue_filters.lua
-oqueue_premade_info.lua
-oqueue_stats.lua
-oqueue_timers.lua
-oqueue_tooltips.lua
-oqueue_ui_tools.lua
+Core.lua
+TableUtils.lua
+ClassPortraits.lua
+PopupDialogs.lua
+ChatFilter.lua
+PremadeInfo.lua
+Stats.lua
+Timers.lua
+Tooltips.lua
+UITools.lua
 
-oqueue.xml
+UI.xml
