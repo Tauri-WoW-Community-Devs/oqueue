@@ -12567,15 +12567,13 @@ function oq.create_tab_setup()
     t:SetFont(OQ.FONT, 14, '')
     t:SetTextColor(1.0, 1.0, 1.0, 1)
 
-    y = 65
-    x = 20
-    oq.label(parent, x, y, cx, cy, OQ.REALID_MOP)
-
     --
     -- alt list
     --
 
-    y = y + cy * 2
+    y = 65
+    x = 20
+
     oq.label(parent, x, y, cx, cy * 2, OQ.SETUP_ALTLIST)
 
     x = 250
@@ -12740,18 +12738,6 @@ function oq.create_tab_setup()
             oq.toggle_loot_acceptance(self)
         end
     )
-
-    --
-    -- edits and buttons
-    --
-    y = 65 -- skip comment
-    x = 250
-    cy = 25
-    cx = 145
-    oq.tab5_bnet = oq.editline(parent, 'BnetAddress', x, y, cx - 4, cy, 60)
-    oq.tab5_bnet:Disable()
-
-    y = y + cy
 
     --
     --  geek corner
@@ -13023,7 +13009,6 @@ function oq.populate_tab3()
 end
 
 function oq.populate_tab_setup()
-    oq.tab5_bnet:SetText(oq.player_realid or '')
     if (_oqgeneral_id) then
         SetSelectedDisplayChannel(_oqgeneral_id)
     end
