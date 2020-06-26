@@ -3792,7 +3792,7 @@ function oq.get_ad_text()
     if (bg == nil) then
         bg = 'BG'
     end
-    local aText = ''
+    local aText
     local hText = ''
     local line1 = ''
     if (AlwaysUpFrame1Text ~= nil) then
@@ -4446,7 +4446,6 @@ function oq.BNSendQ_push(func_, pid_, msg_, name_, realm_)
             -- bundle full.  cut it lose, set it to be deleted and create a new one for overflow
             t.ok2delete = 1 -- must already be queue'd up.  pop will delete it
             oq._bundles[pid_] = tbl.new()
-            t = oq._bundles[pid_]
             return
         end
 
@@ -4673,8 +4672,6 @@ function oq.crack_bn_msg(msg)
     realm = oq.GetRealmNameFromID(realm)
     from = oq.get_field(msg, OQ_FLD_FROM)
 
-    local from_name, from_realm = oq.crack_name(from)
-    from_realm = oq.GetRealmNameFromID(from_realm)
     return m, name, realm, from
 end
 
@@ -4686,10 +4683,6 @@ function oq.WhisperPartyLeader(msg)
         return
     end
     local lead = oq.raid.group[my_group].member[1]
-    local name = lead.name
-    if (lead.realm ~= player_realm) then
-        name = name .. '-' .. lead.realm
-    end
 
     -- TODO test whether XRealmWhisper or SendAddonMessage would be better
     -- oq.SendAddonMessage(OQ_HEADER, msg, "WHISPER", name)
@@ -7013,10 +7006,6 @@ function oq.group_invite_slot(req_token, group_id, slot)
 
     -- the 'W' stands for 'whisper' and should not be echo'd far and wide
     local msg_tok = 'W' .. oq.token_gen()
-    local g_leader_rid = oq.raid.group[group_id].member[1].realid
-    if (g_leader_rid == nil) then
-        g_leader_rid = OQ_NOEMAIL
-    end
 
     oq.token_push(msg_tok)
     local enc_data = oq.encode_data('abc123', oq.raid.leader, oq.raid.leader_realm, oq.raid.leader_rid)
@@ -7184,9 +7173,9 @@ function oq.btag_link3(desc, name_realm, btag)
     return str
 end
 
-function oq.on_btag(name, realm_id, rid, stats)
+function oq.on_btag(name, _, rid, stats)
     _ok2relay = 1
-    realm_id = tonumber(realm_id)
+
     local g, s = oq.find_members_seat(oq.raid.group, name)
     if (g) then
         local p = oq.raid.group[g].member[s]
@@ -7761,7 +7750,7 @@ function oq.create_group(parent, x, y, cx, cy, _, title, group_id)
     f.lag:SetJustifyH('RIGHT')
 
     f.slots = tbl.new()
-    local cx = cy - 2 * 2 -- to make them square
+    cx = cy - 2 * 2 -- to make them square
 
     for i = 1, 5 do
         f.slots[i] = oq.create_class_dot(f, 255 + 5 + (cx + 4) * (i - 1), 2, cx, cy - 2 * 2)
@@ -7839,7 +7828,7 @@ function oq.create_scenario_group(parent, x, y, ix, iy, _, title, group_id)
 
     f.gid = oq.label(f, 2, 2, 16, cy - 8, title)
     f.slots = tbl.new()
-    local x = 10
+    x = 10
 
     x = x + cx + 10 -- bump ahead one panel to center it
     for i = 1, 3 do
@@ -7852,7 +7841,7 @@ function oq.create_scenario_group(parent, x, y, ix, iy, _, title, group_id)
     return f
 end
 
-function oq.create_arena_group(parent, x_, y_, ix, iy, label_cx, title, group_id)
+function oq.create_arena_group(parent, x_, y_, ix, iy, _, title, group_id)
     oq.nthings = (oq.nthings or 0) + 1
     local n = 'ArenaRegion'
     local f = oq.panel(parent, n, x_, y_, ix, iy)
@@ -8172,7 +8161,7 @@ function oq.remove_wayward_rows()
     end
 end
 
-function oq.create_premade_listing(parent, x, y, cx, cy, token, type)
+function oq.create_premade_listing(parent, x, y, cx, cy, token)
     local r = oq.premades[token]
     if (r == nil) then
         return
@@ -8212,7 +8201,7 @@ function oq.create_premade_listing(parent, x, y, cx, cy, token, type)
     f.voip = f.voip or f:CreateTexture(nil, 'OVERLAY')
     oq.setpos(f.voip, x2, 2, 18, 18)
     f.voip:SetAlpha(0.8)
-    f.voip:SetTexture(OQ.VOIP_ICON[VOIP_UNSPECIFIED])
+    f.voip:SetTexture(OQ.VOIP_ICON[OQ.VOIP_UNSPECIFIED])
     x2 = x2 + 20 + 2
 
     f.lang = f.lang or f:CreateTexture(nil, 'OVERLAY')
@@ -9129,7 +9118,7 @@ function oq.create_log_button(parent)
     )
     b:Show()
 
-    local ht = b:CreateTexture()
+    ht = b:CreateTexture()
     ht:SetTexture([[Interface\Buttons\ButtonHilight-Square]])
     ht:SetAllPoints(b)
     b:SetHighlightTexture(ht)
@@ -10106,7 +10095,6 @@ function oq.create_tab1_common(parent)
     )
 
     -- lucky charms
-    y = y + 30
     oq.tab1._lucky_charms =
         oq.button(
         parent,
@@ -11020,7 +11008,7 @@ function oq.premade_row_show(p)
         p.raid_token,
         p.type
     )
-    oq.on_premade_stats(p.raid_token, p.nMembers, 1, p.tm, p.status, p.nWaiting, p.type, p.subtype)
+    oq.on_premade_stats(p.raid_token, p.nMembers, 1, p.tm, p.status, p.nWaiting)
     oq.update_premade_listitem(
         p.raid_token,
         p.name,
@@ -11418,7 +11406,6 @@ function oq.create_tab3()
     oq.tab3_notes:SetText(OQ.DEFAULT_PREMADE_TEXT)
 
     oq.tab3_pword = oq.editline(OQTabPage3, 'password', x, y, cx, cy, 10)
-    y = y + cy + 6
 
     oq.tab3_faction = oq.player_faction
     oq.tab3_channel_pword = 'p' .. oq.token_gen() -- no reason for the leader to set password.  just auto generate
@@ -12556,7 +12543,6 @@ function oq.create_tab_setup()
     parent:SetScript(
         'OnHide',
         function()
-            oq.onhide_tab_setup()
         end
     )
     x = 20
@@ -13013,13 +12999,6 @@ function oq.populate_tab_setup()
         SetSelectedDisplayChannel(_oqgeneral_id)
     end
     oq.calc_pkt_stats()
-end
-
-function oq.onhide_tab_setup()
-end
-
-function oq.is_my_req_token(req_tok)
-    return oq.token_was_seen(req_tok)
 end
 
 function oq.on_disband(raid_tok, token, local_override)
@@ -13823,10 +13802,6 @@ function oq.on_ping_ack(token, ts, g_id)
     for i, grp in pairs(oq.raid.group) do
         if ((grp.member[1].name) and (grp.member[1].name ~= '') and (grp.member[1].name ~= '-')) then
             local m = grp.member[1]
-            local n = m.name
-            if (m.realm ~= player_realm) then
-                n = n .. '-' .. m.realm
-            end
             if (m.name == oq._sender) then
                 grp._last_ping = oq.utc_time()
                 m.lag = lag
@@ -14436,7 +14411,7 @@ function oq.process_premade_info(
         end
         premade.has_pword = has_pword
         premade.is_realm_specific = is_realm_specific
-        oq.on_premade_stats(raid_tok, nMem, is_source, tm_, status_, nWait, type_, subtype_)
+        oq.on_premade_stats(raid_tok, nMem, is_source, tm_, status_, nWait)
         oq.update_premade_listitem(
             raid_tok,
             raid_name,
@@ -14496,7 +14471,7 @@ function oq.process_premade_info(
 
     npremades = npremades + 1
 
-    oq.on_premade_stats(raid_tok, nMem, is_source, tm_, status_, nWait, type_, subtype_)
+    oq.on_premade_stats(raid_tok, nMem, is_source, tm_, status_, nWait)
     oq.update_premade_listitem(
         raid_tok,
         raid_name,
@@ -14520,7 +14495,7 @@ function oq.process_premade_info(
     local rc = oq.announce_new_premade(raid_name, nil, raid_tok)
 end
 
-function oq.on_premade_stats(raid_token, nMem, is_source, tm, status, nWait, type_, subtype_)
+function oq.on_premade_stats(raid_token, nMem, is_source, tm, status, nWait)
     _ok2relay = 'bnet' -- should only bounce to bn-friends and oqgeneral, if raid-leader not on realm and msg never seen
     local raid = oq.premades[raid_token]
     if (raid == nil) then
@@ -20078,15 +20053,16 @@ function oq.XRealmWhisper(receiverName, receiverRealm, msg)
 
     oq.SendChatMessage(msg, 'WHISPER', nil, receiverName .. '-' .. receiverRealm)
 end
--- function oq.debug(msg, ...)
---   if type(msg) == "table" then
---     for k, v in pairs(msg) do
---         print("KEY")
---         print(k)
---         oq.debug(v)
---     end
---   else
---     print("VAL")
---     print(msg)
---   end
--- end
+
+function oq.debug(msg)
+  if type(msg) == "table" then
+    for k, v in pairs(msg) do
+        print("KEY")
+        print(k)
+        oq.debug(v)
+    end
+  else
+    print("VAL")
+    print(msg)
+  end
+end
