@@ -102,7 +102,6 @@ OQ.SETUP_BTAG = 'Battlenet email Addresse'
 OQ.SETUP_CAPCHK = 'Force OQ capability check' --dunno
 OQ.SETUP_ALTLIST = 'Twinks dieses battle.net Accounts:n(nur fuer multi-boxer)'
 OQ.SETUP_AUTOROLE = 'Setze Rolle automatisch'
-OQ.SETUP_CLASSPORTRAIT = 'Klassenportraits verwenden'
 OQ.SETUP_GARBAGE = 'Garbage collection (30 sec intervals)'
 OQ.SETUP_SHOUTADS = 'Verkünde Premades' -- "Premades ansagen" ;
 OQ.SETUP_ADD = 'Hinzufuegen'

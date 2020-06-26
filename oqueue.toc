@@ -26,7 +26,6 @@ Libs\LibBossIDs-1.0\lib.xml
 
 Core.lua
 TableUtils.lua
-ClassPortraits.lua
 PopupDialogs.lua
 ChatFilter.lua
 PremadeInfo.lua

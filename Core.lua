@@ -176,7 +176,6 @@ function oq.hook_options()
     oq.options['ban'] = oq.ban_user
     oq.options['brb'] = oq.brb
     oq.options['clear'] = oq.cmdline_clear
-    oq.options['cp'] = oq.toggle_class_portraits
     oq.options['debug'] = oq.debug_toggle
     oq.options['delist'] = oq.clear_pending
     oq.options['disband'] = oq.raid_disband
@@ -495,12 +494,6 @@ function oq.verify_loot_rules_acceptance()
     f:Show()
 end
 
-function string.find_end(self, s)
-    if (s) then
-        return self:find(s) + string.len(s)
-    end
-end
-
 -- new browser capability
 -- might be able to show armory in-game (nice for quick lookups off waitlist)
 -- not ready yet; doesn't seem to work and may break key binds
@@ -799,7 +792,6 @@ function oq.usage()
     print(L['  bnclear         clear OQ enabled battle-net associations'])
     print(L["  brb             signal to the group that you'll be-right-back"])
     print(L['  check           force OQ capability check'])
-    print(L['  cp              toggle class portraits to normal portrait'])
     print(L['  delist          de-waitlist with any premades currently pending'])
     print(L['  dg              drop group.  same as /script LeaveParty()'])
     print(L['  fixui           will reposition the UI to upper left area'])
@@ -825,7 +817,6 @@ end
 function oq.toon_init(t)
     t.last_tm = 0
     t.auto_role = 1
-    t.class_portrait = 1
     t.reports = tbl.new()
 end
 
@@ -1216,33 +1207,6 @@ function oq.utc_time(arg)
     end
 end
 
-function oq.reset_portrait(f, player, show_default)
-    if (f == nil) or (f.portrait == nil) then
-        return
-    end
-    if (show_default) then
-        SetPortraitTexture(f.portrait, player)
-        f.portrait:SetTexCoord(0, 1, 0, 1)
-    else
-        OQ_ClassPortrait(f)
-    end
-end
-
-function oq.toggle_class_portraits()
-    if (oq.toon.class_portrait == 1) then
-        oq.toon.class_portrait = 0
-    else
-        oq.toon.class_portrait = 1
-    end
-    oq.reset_portrait(PlayerFrame, 'player', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(TargetFrame, 'target', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(PartyMemberFrame1, 'party1', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(PartyMemberFrame2, 'party2', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(PartyMemberFrame3, 'party3', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(PartyMemberFrame4, 'party4', (oq.toon.class_portrait == 0))
-    oq.reset_portrait(PartyMemberFrame5, 'party5', (oq.toon.class_portrait == 0))
-end
-
 function oq.render_tm(dt, force_hours)
     -- if (dt == nil) then
     --     return 'xx:xx'
@@ -1260,7 +1224,6 @@ function oq.render_tm(dt, force_hours)
         dmin = floor(dt / 60)
         dt = dt % 60
         dsec = dt
-        dstr = ''
         if (dyrs > 0) then
             dstr = dyrs .. 'y ' .. ddays .. 'd ' .. string.format('%02d:%02d:%02d', dhr, dmin, dsec)
         elseif (ddays > 0) then
@@ -1709,7 +1672,7 @@ function oq.channel_join(chan_name, pword)
         oq.channels[n].id = 0
     end
 
-    local id, chname, instance_id = GetChannelName(n)
+    local id, chname = GetChannelName(n)
     if (chname == nil) then
         JoinTemporaryChannel(n, pword)
         id, chname, instance_id = GetChannelName(n)
@@ -2471,13 +2434,6 @@ function oq.flag_watcher()
                 if (_flags[name][statndx] == nil) then
                     _flags[name][statndx] = 0
                 end
-                if (_flags[name][statndx] ~= stat) then
-                    local stat_name = GetBattlefieldStatInfo(statndx)
-                    local str = stat_name .. ':  ' .. name
-                    if (OQ.BG_STAT_COLUMN[stat_name] ~= nil) then
-                        str = OQ.BG_STAT_COLUMN[stat_name] .. ':  ' .. name
-                    end
-                end
                 _flags[name][statndx] = stat
             end
         elseif (name) and (faction) and (faction ~= p_faction) then
@@ -2488,12 +2444,6 @@ function oq.flag_watcher()
             _enemy[name].last_seen = now -- always updating, last time seen ~= now... player left
             _enemy[name].strike = 0
         end
-    end
-
-    -- report rage-quitters
-    local s = oq.toon.stats['bg']
-    if (oq.raid.type == OQ.TYPE_RBG) then
-        s = oq.toon.stats['rbg']
     end
 
     if (nplayers > 10) then -- just incase the GetBattlefieldScore was wonky
@@ -2610,7 +2560,7 @@ function oq.deserted()
     if (not oq.iam_raid_leader()) then
         return
     end
-    local s = OQ_data.leader['bg']
+    s = OQ_data.leader['bg']
     if (oq.raid.type == OQ.TYPE_RBG) then
         s = OQ_data.leader['rbg']
     end
@@ -2771,10 +2721,8 @@ function oq.battleground_spy(opt)
     local numHorde = 0
     local numAlliance = 0
     local f = tbl.new()
-    local p_faction = 0 -- 0 == horde, 1 == alliance, -1 == offline
     local e_faction = 1
     if (oq.get_bg_faction() == 'A') then
-        p_faction = 1
         e_faction = 0
     end
 
@@ -4058,7 +4006,7 @@ function oq.send_my_premade_info()
     raid.last_seen = now
     raid.next_advert = now + OQ_SEC_BETWEEN_PROMO
 
-    local ad_text = nil
+    local ad_text
     if (_inside_bg) then
         ad_text = oq.get_ad_text()
     else
@@ -4374,7 +4322,7 @@ function oq.raid_create()
         tbl.delete(m)
         return
     end
-    m = tbl.delete(m) -- cleanup
+    tbl.delete(m)
 
     if (oq.raid == nil) or (oq.raid.type == nil) then
         oq.set_premade_type(OQ.TYPE_BG)
@@ -4460,7 +4408,7 @@ function oq.raid_create()
     return 1
 end
 
-function oq.bnbackflow(msg, to_pid)
+function oq.bnbackflow(msg)
     -- ie: "OQ,0A,P477389297,G17613410,name,1,3,Tinymasher,Magtheridon"
     local tok = msg:sub(7, 16)
     if (_msg_token ~= tok) then
@@ -4470,7 +4418,7 @@ function oq.bnbackflow(msg, to_pid)
 end
 
 function oq.bn_ok2send(msg, pid)
-    if (oq.bnbackflow(msg, pid)) then
+    if (oq.bnbackflow(msg)) then
         return nil
     end
 
@@ -5116,24 +5064,6 @@ function oq.show_premades(opt)
     print('--')
 end
 
-function oq.dead_token(name, noteText)
-    if (noteText:find('OQ,G') == nil) then
-        return nil
-    end
-    if (oq.raid.raid_token == nil) then
-        return true
-    end
-    local token = noteText:sub(4, -1)
-    if (token == oq.raid.raid_token) then
-        if (oq.raid.type ~= OQ.TYPE_BG) or (not oq.iam_raid_leader()) then
-            return true
-        else
-            return nil -- not dead yet
-        end
-    end
-    return true -- dead token
-end
-
 function oq.is_enabled(toonName, realm)
     local n = strlower(toonName .. '-' .. realm)
     if (OQ_data.bn_friends[n] == nil) then
@@ -5204,13 +5134,13 @@ function oq.announce(msg, to_name, to_realm)
     local m = 'OQ,' .. OQ_BUILD_STR .. ',' .. msg_tok .. ',' .. OQ_TTL .. ',' .. msg
 
     -- send to raid (which sends to local channel and real-id ppl in the raid)
-    oq.announce_relay(m, true)
+    oq.announce_relay(m)
 end
 
 --
 -- message relays
 --
-function oq.announce_relay(m, insure)
+function oq.announce_relay(m)
     if (oq.toon.disabled) then
         return
     end
@@ -5691,11 +5621,6 @@ function oq.reshuffle_premades_now()
     if (oq._scroll_paused) or (not OQTabPage2:IsVisible()) then
         return
     end
-    local x, y, cx, cy
-    x = 10
-    y = 10
-    cy = OQ_data._rowheight or 24
-    cx = oq.tab2._list:GetWidth() - 2 * x
 
     tbl.clear(_items)
     for raid_token, p in pairs(oq.premades) do
@@ -5727,6 +5652,8 @@ function oq.reshuffle_premades_now()
     end
 
     oq._npremades = 0
+
+    local x, y, cx, cy
     x = 11
     y = 4
     cy = OQ_data._rowheight or 24
@@ -7453,10 +7380,10 @@ function oq.target_cell_player(cell)
         return
     end
 
-    local n, key, r
+    local n, key
     for i = 1, 4 do
         key = 'party' .. tostring(i)
-        n, r = UnitName(key)
+        n = UnitName(key)
         if (n) and (n == m.name) then
             TargetUnit(key)
             return
@@ -7464,7 +7391,7 @@ function oq.target_cell_player(cell)
     end
     for i = 1, 40 do
         key = 'raid' .. tostring(i)
-        n, r = UnitName(key)
+        n = UnitName(key)
         if (n) and (n == m.name) then
             TargetUnit(key)
             return
@@ -9885,19 +9812,17 @@ function oq.create_tab1_battlegrounds(parent)
     -- in-battleground count
     x = 450
     y = 65 + 250 + 20
-    t = oq.label(parent, x + 175, y, 100, 20, L['# in battleground'])
+    oq.label(parent, x + 175, y, 100, 20, L['# in battleground'])
     t = oq.label(parent, x + 300 - 58, y, 50, 20, L['0'], 'MIDDLE', 'RIGHT')
     oq.tab1._nInBattleground = t
 end
 
 function oq.create_tab1_dungeon(parent)
-    local x, y, cx, cy, label_cx
+    local x, y, label_cx
     local group_id = 1 -- only one group
 
     x = 20
     y = 65
-    cx = 50
-    cy = 50
     label_cx = 150
 
     oq.dungeon_group = oq.create_dungeon_group(parent, x, y, parent:GetWidth() - x * 2, 250, label_cx, title, group_id)
@@ -10126,13 +10051,11 @@ function oq.update_tab1_common()
 end
 
 function oq.create_tab1_common(parent)
-    local x, y, cx, cy, label_cx
+    local x, y, cy
     x = 20
     y = 65
 
-    cx = parent:GetWidth() - 2 * x
     cy = (425 - 2 * y) / 10
-    label_cx = 150
 
     -- raid title
     oq.tab1_name = oq.label(parent, x, 30, 300, 30, '')
@@ -12414,10 +12337,6 @@ function oq.send_pending_note(self)
     if (req == nil) then
         return
     end
-    local req_token = ''
-    if (req and req.req_token) then
-        req_token = req.req_token
-    end
 
     oq.timer_oneshot(OQ_PENDINGNOTE_UPDATE_CD, oq.enable_button, self)
     local txt = self:GetParent().msg:GetText()
@@ -12758,21 +12677,7 @@ function oq.create_tab_setup()
         end
     )
     y = y + cy
-    oq.tab5_cp =
-        oq.checkbox(
-        parent,
-        x,
-        y,
-        23,
-        cy,
-        200,
-        OQ.SETUP_CLASSPORTRAIT,
-        (oq.toon.class_portrait == 1),
-        function(self)
-            oq.toggle_class_portraits(self)
-        end
-    )
-    y = y + cy
+
     oq.tab5_autoinspect =
         oq.checkbox(
         parent,
@@ -13903,7 +13808,7 @@ function oq.on_party_update(raid_token)
 end
 
 function oq.on_ping(token, ts)
-    if (_to_name == _player_name) then
+    if (_to_name == player_name) then
         _ok2relay = nil
     end
     if (not oq.iam_party_leader()) then
@@ -14306,7 +14211,6 @@ function oq.recently_disbanded(raid_tok)
 end
 
 local npremades = 0
-local _premadeinfo = nil
 function oq.on_premade(
     raid_tok,
     raid_name,
@@ -14348,7 +14252,6 @@ function oq.on_premade(
         return
     end
     oq._raid_token = raid_tok
-    _premadeinfo = premade_info
     local faction,
         has_pword,
         is_realm_specific,
@@ -14606,10 +14509,6 @@ function oq.process_premade_info(
 
     oq.premades[raid_tok] = r
 
-    local x, y, cy
-    cy = 25
-    x = 20
-    y = npremades * (cy + 2) + 10
     npremades = npremades + 1
 
     oq.on_premade_stats(raid_tok, nMem, is_source, tm_, status_, nWait, type_, subtype_)
@@ -16262,11 +16161,9 @@ function oq.on_stats(name, realm_id, stats, btag, queue_tm1, queue_tm2)
         -- most likely my slot... ignore
         return
     end
-    local realm_id = 0
     if (realm == nil) or (realm == '-') then
         realm = 'n/a'
     else
-        realm_id = tonumber(realm)
         realm = oq.GetRealmNameFromID(realm)
     end
 
@@ -17409,10 +17306,6 @@ function oq.set_name(gid, slot, name, realm, class, is_online)
     end
     m.flags = oq.bset(m.flags, OQ.FLAG_ONLINE, (is_online == nil) or (is_online == 'B'))
     if (name == player_name) and ((realm == nil) or (realm == '-') or (realm == player_realm)) then
-        local force_stats = nil
-        if ((my_group ~= gid) or (my_slot ~= slot)) then
-            force_stats = true
-        end
         my_group = gid
         my_slot = slot
         m.realm = player_realm
@@ -18110,7 +18003,7 @@ function oq.trim_old_premades()
 
     oq.old_raids = oq.old_raids or tbl.new()
     oq._p8s = oq._p8s or tbl.new()
-    local dt = floor(OQ_PREMADE_STAT_LIFETIME / 2)
+
     for tok, v in pairs(oq._p8s) do
         if ((now - v) > dt) then
             oq._p8s[tok] = nil
@@ -19695,7 +19588,6 @@ function oq.attempt_group_recovery()
     OQ_data._premade_type = OQ.TYPE_NONE
 
     if (oq.toon) then
-        oq.toon.class_portrait = oq.toon.class_portrait or 1
         OQ_data.ok2autoinspect = OQ_data.ok2autoinspect or 1
 
         -- more then 60 seconds passed, recovery not an option
@@ -19814,7 +19706,6 @@ function oq.attempt_group_recovery()
 
     -- initialize UI elements
     oq.tab5_ar:SetChecked((oq.toon.auto_role == 1))
-    oq.tab5_cp:SetChecked((oq.toon.class_portrait == 1))
     oq.tab5_autoinspect:SetChecked((OQ_data.ok2autoinspect == 1))
     oq.tab5_shoutads:SetChecked((OQ_data.show_premade_ads == 1))
     oq.tab5_autohide_friendreqs:SetChecked((OQ_data.autohide_friendreqs == 1))

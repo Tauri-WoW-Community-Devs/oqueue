@@ -113,7 +113,6 @@ OQ.SETUP_BTAG = 'Adresse email battlenet'
 OQ.SETUP_CAPCHK = 'Obliger OQ à vérifier la capacité'
 OQ.SETUP_ALTLIST = "Liste d'alts sur ce compte battle.net:\n (seulement pour multi-boxing)"
 OQ.SETUP_AUTOROLE = 'Choix automatique du rôle'
-OQ.SETUP_CLASSPORTRAIT = 'Utiliser des portaits de classe'
 OQ.SETUP_GARBAGE = 'garbage collect (30 sec intervals)'
 OQ.SETUP_SHOUTADS = 'Annoncer groupes'
 OQ.SETUP_AUTOHIDE_FRIENDREQS = 'Cacher automatiquement les requêtes amies'
